@@ -1,4 +1,4 @@
-export type UserRole = 'DIRETORIA' | 'SECRETARIA' | 'FINANCEIRO' | 'PROFESSOR';
+export type UserRole = 'DIRETORIA' | 'SECRETARIA' | 'FINANCEIRO' | 'PROFESSOR' | 'ENCARREGADO';
 
 export interface User {
   id: string;
@@ -31,7 +31,8 @@ export const ROLE_PERMISSIONS = {
   DIRETORIA: ['*'] as const, // Acesso total
   SECRETARIA: ['students', 'classes', 'teachers', 'subjects', 'attendance', 'evaluations', 'reports'] as const,
   FINANCEIRO: ['students', 'financial', 'reports'] as const,
-  PROFESSOR: ['attendance', 'evaluations', 'students.read'] as const
+  PROFESSOR: ['attendance', 'evaluations', 'students.read'] as const,
+  ENCARREGADO: ['students.read', 'evaluations.read', 'financial.read'] as const
 };
 
 export type Permission = 

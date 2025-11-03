@@ -8,12 +8,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Users, Settings as SettingsIcon, Save, AlertCircle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Shield, Users, Settings as SettingsIcon, Save, AlertCircle, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseQuery, useSupabaseMutation } from '@/hooks/useSupabaseQuery';
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from '@/types/auth';
 import { toast } from '@/hooks/use-toast';
+import { SchoolConfigForm } from '@/components/school/SchoolConfigForm';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 
 export default function Settings() {
   const { user } = useAuth();
@@ -76,10 +79,10 @@ export default function Settings() {
         .delete()
         .eq('user_id', profile.user_id);
       
-      // Inserir nova role
+      // Inserir nova role (cast para o tipo do banco)
       const { data, error } = await supabase
         .from('user_roles')
-        .insert({ user_id: profile.user_id, role: variables.role })
+        .insert([{ user_id: profile.user_id, role: variables.role as any }])
         .select()
         .single();
       
@@ -147,7 +150,23 @@ export default function Settings() {
 
   return (
     <MainLayout title="Configurações" subtitle="Gerenciar perfis de usuário e configurações do sistema">
-      <div className="space-y-6">
+      <Tabs defaultValue="onboarding" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="onboarding">Primeiros Passos</TabsTrigger>
+          <TabsTrigger value="school">Escola</TabsTrigger>
+          <TabsTrigger value="users">Usuários</TabsTrigger>
+          <TabsTrigger value="system">Sistema</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="onboarding">
+          <OnboardingWizard />
+        </TabsContent>
+
+        <TabsContent value="school">
+          <SchoolConfigForm />
+        </TabsContent>
+
+        <TabsContent value="users" className="space-y-6">
         {/* Gestão de Perfis */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -231,6 +250,7 @@ export default function Settings() {
                         <SelectItem value="SECRETARIA">SECRETARIA</SelectItem>
                         <SelectItem value="FINANCEIRO">FINANCEIRO</SelectItem>
                         <SelectItem value="PROFESSOR">PROFESSOR</SelectItem>
+                        <SelectItem value="ENCARREGADO">ENCARREGADO</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -250,7 +270,9 @@ export default function Settings() {
             </CardContent>
           </Card>
         </motion.div>
+        </TabsContent>
 
+        <TabsContent value="system" className="space-y-6">
         {/* Informações do Sistema */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -335,12 +357,20 @@ export default function Settings() {
                       Lançamento de notas, presenças e acesso aos seus educandos
                     </p>
                   </div>
+                  
+                  <div className="space-y-2">
+                    <Badge className="bg-cyan-500 text-white">ENCARREGADO</Badge>
+                    <p className="text-sm text-muted-foreground">
+                      Acompanhamento de notas, frequência e situação financeira dos educandos
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </motion.div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </MainLayout>
   );
 }

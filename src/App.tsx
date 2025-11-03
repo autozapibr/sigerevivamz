@@ -21,6 +21,7 @@ import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 import DevSeed from "./pages/DevSeed";
 import Settings from "./pages/Settings";
+import GuardianDashboard from "./pages/GuardianDashboard";
 
 const queryClient = new QueryClient();
 
@@ -157,6 +158,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/encarregado"
+        element={
+          <ProtectedRoute>
+            <GuardianDashboard />
           </ProtectedRoute>
         }
       />
