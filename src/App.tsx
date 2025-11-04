@@ -22,6 +22,18 @@ import NotFound from "./pages/NotFound";
 import DevSeed from "./pages/DevSeed";
 import Settings from "./pages/Settings";
 import GuardianDashboard from "./pages/GuardianDashboard";
+import CaixaPage from "./pages/financial/CaixaPage";
+import PropinasPage from "./pages/financial/PropinasPage";
+import CobrancasPage from "./pages/financial/CobrancasPage";
+import RelatoriosFinanceirosPage from "./pages/financial/RelatoriosFinanceirosPage";
+import CalendarioPage from "./pages/CalendarioPage";
+import BibliotecaPage from "./pages/BibliotecaPage";
+import CalendarioProvasPage from "./pages/pedagogico/CalendarioProvasPage";
+import PlanoAulasPage from "./pages/pedagogico/PlanoAulasPage";
+import CurriculoPage from "./pages/pedagogico/CurriculoPage";
+import ColaboradoresPage from "./pages/rh/ColaboradoresPage";
+import DocumentacaoPage from "./pages/rh/DocumentacaoPage";
+import ContratosPage from "./pages/rh/ContratosPage";
 
 const queryClient = new QueryClient();
 
@@ -166,6 +178,106 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <GuardianDashboard />
+          </ProtectedRoute>
+        }
+      />
+      {/* Rotas de Gestão Financeira */}
+      <Route
+        path="/financeiro/caixa"
+        element={
+          <ProtectedRoute>
+            <CaixaPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/financeiro/propinas"
+        element={
+          <ProtectedRoute>
+            <PropinasPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/financeiro/cobrancas"
+        element={
+          <ProtectedRoute>
+            <CobrancasPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/financeiro/relatorios"
+        element={
+          <ProtectedRoute>
+            <RelatoriosFinanceirosPage />
+          </ProtectedRoute>
+        }
+      />
+      {/* Rotas de Gestão Escolar */}
+      <Route
+        path="/calendario"
+        element={
+          <ProtectedRoute>
+            <CalendarioPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/biblioteca"
+        element={
+          <ProtectedRoute>
+            <BibliotecaPage />
+          </ProtectedRoute>
+        }
+      />
+      {/* Rotas de Gestão Pedagógica */}
+      <Route
+        path="/calendario-provas"
+        element={
+          <ProtectedRoute>
+            <CalendarioProvasPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/plano-aulas"
+        element={
+          <ProtectedRoute>
+            <PlanoAulasPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/curriculo"
+        element={
+          <ProtectedRoute>
+            <CurriculoPage />
+          </ProtectedRoute>
+        }
+      />
+      {/* Rotas de Recursos Humanos */}
+      <Route
+        path="/colaboradores"
+        element={
+          <ProtectedRoute>
+            <ColaboradoresPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/rh/documentacao"
+        element={
+          <ProtectedRoute>
+            <DocumentacaoPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/rh/contratos"
+        element={
+          <ProtectedRoute>
+            <ContratosPage />
           </ProtectedRoute>
         }
       />

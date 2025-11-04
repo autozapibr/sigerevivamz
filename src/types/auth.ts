@@ -1,4 +1,4 @@
-export type UserRole = 'DIRETORIA' | 'SECRETARIA' | 'FINANCEIRO' | 'PROFESSOR' | 'ENCARREGADO';
+export type UserRole = 'ADMIN' | 'DIRETORIA' | 'SECRETARIA' | 'FINANCEIRO' | 'PROFESSOR' | 'PEDAGOGICO' | 'ENCARREGADO';
 
 export interface User {
   id: string;
@@ -26,22 +26,30 @@ export interface RegisterData extends LoginCredentials {
   role: UserRole;
 }
 
-// Permissões por role
+// Módulos do sistema
+export type SystemModule = 
+  | 'gestao_financeira'
+  | 'gestao_escolar'
+  | 'gestao_pedagogica'
+  | 'gestao_rh'
+  | 'configuracoes';
+
+// Permissões por role (baseado em módulos)
 export const ROLE_PERMISSIONS = {
+  ADMIN: ['*'] as const, // Acesso total
   DIRETORIA: ['*'] as const, // Acesso total
-  SECRETARIA: ['students', 'classes', 'teachers', 'subjects', 'attendance', 'evaluations', 'reports'] as const,
-  FINANCEIRO: ['students', 'financial', 'reports'] as const,
-  PROFESSOR: ['attendance', 'evaluations', 'students.read'] as const,
-  ENCARREGADO: ['students.read', 'evaluations.read', 'financial.read'] as const
+  SECRETARIA: ['gestao_escolar', 'gestao_rh'] as const,
+  FINANCEIRO: ['gestao_financeira'] as const,
+  PROFESSOR: ['gestao_pedagogica'] as const,
+  PEDAGOGICO: ['gestao_pedagogica'] as const,
+  ENCARREGADO: ['portal_encarregado'] as const
 };
 
 export type Permission = 
-  | 'students' | 'students.read' | 'students.write'
-  | 'classes' | 'classes.read' | 'classes.write'
-  | 'teachers' | 'teachers.read' | 'teachers.write'
-  | 'subjects' | 'subjects.read' | 'subjects.write'
-  | 'attendance' | 'attendance.read' | 'attendance.write'
-  | 'evaluations' | 'evaluations.read' | 'evaluations.write'
-  | 'financial' | 'financial.read' | 'financial.write'
-  | 'reports' | 'reports.read' | 'reports.write'
+  | 'gestao_financeira'
+  | 'gestao_escolar'
+  | 'gestao_pedagogica'
+  | 'gestao_rh'
+  | 'configuracoes'
+  | 'portal_encarregado'
   | '*';

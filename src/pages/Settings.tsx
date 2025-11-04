@@ -140,10 +140,13 @@ export default function Settings() {
 
   const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
+      case 'ADMIN': return 'bg-red-500';
       case 'DIRETORIA': return 'bg-purple-500';
       case 'SECRETARIA': return 'bg-blue-500';
       case 'FINANCEIRO': return 'bg-green-500';
       case 'PROFESSOR': return 'bg-orange-500';
+      case 'PEDAGOGICO': return 'bg-teal-500';
+      case 'ENCARREGADO': return 'bg-yellow-500';
       default: return 'bg-gray-500';
     }
   };
@@ -246,11 +249,13 @@ export default function Settings() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="DIRETORIA">DIRETORIA</SelectItem>
-                        <SelectItem value="SECRETARIA">SECRETARIA</SelectItem>
-                        <SelectItem value="FINANCEIRO">FINANCEIRO</SelectItem>
-                        <SelectItem value="PROFESSOR">PROFESSOR</SelectItem>
-                        <SelectItem value="ENCARREGADO">ENCARREGADO</SelectItem>
+                        <SelectItem value="ADMIN">ADMIN - Acesso Total</SelectItem>
+                        <SelectItem value="DIRETORIA">DIRETORIA - Acesso Total</SelectItem>
+                        <SelectItem value="SECRETARIA">SECRETARIA - Gestão Escolar + RH</SelectItem>
+                        <SelectItem value="FINANCEIRO">FINANCEIRO - Gestão Financeira</SelectItem>
+                        <SelectItem value="PROFESSOR">PROFESSOR - Gestão Pedagógica</SelectItem>
+                        <SelectItem value="PEDAGOGICO">PEDAGÓGICO - Gestão Pedagógica</SelectItem>
+                        <SelectItem value="ENCARREGADO">ENCARREGADO - Portal do Encarregado</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

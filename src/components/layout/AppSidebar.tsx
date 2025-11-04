@@ -15,7 +15,21 @@ import {
   Building2,
   FileText,
   Bell,
-  LogOut
+  LogOut,
+  Wallet,
+  TrendingUp,
+  CreditCard,
+  Archive,
+  UsersRound,
+  LibraryBig,
+  CalendarDays,
+  ChartBar,
+  BookMarked,
+  NotebookPen,
+  FileSpreadsheet,
+  UserCog,
+  FileCheck,
+  Briefcase
 } from 'lucide-react';
 
 import {
@@ -34,81 +48,161 @@ import { ROLE_PERMISSIONS } from '@/types/auth';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 
-const navigationItems = [
-  {
-    title: 'Dashboard',
-    url: '/dashboard',
-    icon: Home,
-    permissions: ['*']
+// Estrutura modular do sistema
+const systemModules = {
+  gestao_financeira: {
+    label: 'GESTÃO FINANCEIRA',
+    permission: 'gestao_financeira',
+    items: [
+      {
+        title: 'Dashboard Financeiro',
+        url: '/financeiro',
+        icon: DollarSign,
+      },
+      {
+        title: 'Livro Caixa',
+        url: '/financeiro/caixa',
+        icon: Wallet,
+      },
+      {
+        title: 'Matrículas & Propinas',
+        url: '/financeiro/propinas',
+        icon: CreditCard,
+      },
+      {
+        title: 'Cobranças',
+        url: '/financeiro/cobrancas',
+        icon: TrendingUp,
+      },
+      {
+        title: 'Relatórios Financeiros',
+        url: '/financeiro/relatorios',
+        icon: ChartBar,
+      },
+    ],
   },
-  {
-    title: 'Estudantes',
-    url: '/students',
-    icon: Users,
-    permissions: ['students', '*']
+  gestao_escolar: {
+    label: 'GESTÃO ESCOLAR',
+    permission: 'gestao_escolar',
+    items: [
+      {
+        title: 'Dashboard',
+        url: '/dashboard',
+        icon: Home,
+      },
+      {
+        title: 'Estudantes',
+        url: '/students',
+        icon: Users,
+      },
+      {
+        title: 'Matrículas',
+        url: '/enrollments',
+        icon: FileText,
+      },
+      {
+        title: 'Classes & Turmas',
+        url: '/turmas',
+        icon: Building2,
+      },
+      {
+        title: 'Disciplinas',
+        url: '/disciplinas',
+        icon: BookOpen,
+      },
+      {
+        title: 'Calendário',
+        url: '/calendario',
+        icon: CalendarDays,
+      },
+      {
+        title: 'Biblioteca',
+        url: '/biblioteca',
+        icon: LibraryBig,
+      },
+      {
+        title: 'Relatórios Escolares',
+        url: '/relatorios',
+        icon: BarChart3,
+      },
+    ],
   },
-  {
-    title: 'Professores',
-    url: '/teachers',
-    icon: UserCheck,
-    permissions: ['teachers', '*']
+  gestao_pedagogica: {
+    label: 'GESTÃO PEDAGÓGICA',
+    permission: 'gestao_pedagogica',
+    items: [
+      {
+        title: 'Cadernetas (Notas)',
+        url: '/avaliacoes',
+        icon: NotebookPen,
+      },
+      {
+        title: 'Assiduidade',
+        url: '/presencas',
+        icon: ClipboardCheck,
+      },
+      {
+        title: 'Calendário de Provas',
+        url: '/calendario-provas',
+        icon: Calendar,
+      },
+      {
+        title: 'Plano de Aulas',
+        url: '/plano-aulas',
+        icon: BookMarked,
+      },
+      {
+        title: 'Currículo Escolar',
+        url: '/curriculo',
+        icon: FileSpreadsheet,
+      },
+    ],
   },
-  {
-    title: 'Classes & Turmas',
-    url: '/turmas',
-    icon: Building2,
-    permissions: ['classes', '*']
+  gestao_rh: {
+    label: 'RECURSOS HUMANOS',
+    permission: 'gestao_rh',
+    items: [
+      {
+        title: 'Professores',
+        url: '/teachers',
+        icon: UserCheck,
+      },
+      {
+        title: 'Colaboradores',
+        url: '/colaboradores',
+        icon: UsersRound,
+      },
+      {
+        title: 'Documentação',
+        url: '/rh/documentacao',
+        icon: FileCheck,
+      },
+      {
+        title: 'Contratos',
+        url: '/rh/contratos',
+        icon: Briefcase,
+      },
+    ],
   },
-  {
-    title: 'Matrículas',
-    url: '/enrollments',
-    icon: FileText,
-    permissions: ['students', '*']
+  configuracoes: {
+    label: 'CONFIGURAÇÕES',
+    permission: 'configuracoes',
+    items: [
+      {
+        title: 'Configurações',
+        url: '/configuracoes',
+        icon: Settings,
+      },
+    ],
   },
-  {
-    title: 'Disciplinas',
-    url: '/disciplinas',
-    icon: BookOpen,
-    permissions: ['subjects', '*']
-  },
-  {
-    title: 'Presenças',
-    url: '/presencas',
-    icon: Calendar,
-    permissions: ['attendance', '*']
-  },
-  {
-    title: 'Avaliações',
-    url: '/avaliacoes',
-    icon: ClipboardCheck,
-    permissions: ['evaluations', '*']
-  },
-  {
-    title: 'Financeiro',
-    url: '/financeiro',
-    icon: DollarSign,
-    permissions: ['financial', '*']
-  },
-  {
-    title: 'Relatórios',
-    url: '/relatorios',
-    icon: BarChart3,
-    permissions: ['reports', '*']
-  },
-];
+};
 
 const systemItems = [
   {
     title: 'Notificações',
     url: '/notificacoes',
     icon: Bell,
-    permissions: ['*']
-  },
-  {
-    title: 'Configurações',
-    url: '/configuracoes',
-    icon: Settings,
-    permissions: ['*']
+    permissions: ['*'],
   },
 ];
 
@@ -118,18 +212,15 @@ export function AppSidebar() {
   const { user, logout } = useAuth();
   const location = useLocation();
 
-  const hasPermission = (permissions: string[]) => {
+  const hasPermission = (permission: string) => {
     if (!user) return false;
     const userPermissions = ROLE_PERMISSIONS[user.role];
     
     // Verificar se o usuário tem acesso total
     if (userPermissions.includes('*' as never)) return true;
     
-    // Verificar permissões específicas
-    return permissions.some(permission => {
-      if (permission === '*') return false; // Já verificado acima
-      return userPermissions.includes(permission as never);
-    });
+    // Verificar permissão específica
+    return userPermissions.includes(permission as never);
   };
 
   const isActive = (path: string) => location.pathname === path;
@@ -139,6 +230,11 @@ export function AppSidebar() {
       ? "bg-primary text-primary-foreground font-medium shadow-md" 
       : "hover:bg-sidebar-accent text-sidebar-foreground";
   };
+
+  // Filtrar módulos que o usuário tem permissão para acessar
+  const accessibleModules = Object.entries(systemModules).filter(
+    ([_, module]) => hasPermission(module.permission)
+  );
 
   return (
     <Sidebar className={collapsed ? "w-16" : "w-64"} collapsible="icon">
@@ -187,57 +283,57 @@ export function AppSidebar() {
           </div>
         )}
 
-        {/* Navegação principal */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/70 text-xs font-medium px-4 py-2">
-            {!collapsed && "PRINCIPAL"}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navigationItems
-                .filter(item => hasPermission(item.permissions))
-                .map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${getNavClassName(item.url)}`}
-                    >
-                      <item.icon className="w-5 h-5 flex-shrink-0" />
-                      {!collapsed && <span className="text-sm">{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Módulos do sistema */}
+        <div className="flex-1 overflow-y-auto">
+          {accessibleModules.map(([key, module]) => (
+            <SidebarGroup key={key}>
+              <SidebarGroupLabel className="text-sidebar-foreground/70 text-xs font-medium px-4 py-2">
+                {!collapsed && module.label}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {module.items.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <NavLink 
+                          to={item.url} 
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${getNavClassName(item.url)}`}
+                        >
+                          <item.icon className="w-5 h-5 flex-shrink-0" />
+                          {!collapsed && <span className="text-sm">{item.title}</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
 
-        {/* Navegação do sistema */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/70 text-xs font-medium px-4 py-2">
-            {!collapsed && "SISTEMA"}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {systemItems
-                .filter(item => hasPermission(item.permissions))
-                .map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${getNavClassName(item.url)}`}
-                    >
-                      <item.icon className="w-5 h-5 flex-shrink-0" />
-                      {!collapsed && <span className="text-sm">{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+          {/* Navegação do sistema */}
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground/70 text-xs font-medium px-4 py-2">
+              {!collapsed && "SISTEMA"}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {systemItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink 
+                        to={item.url} 
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${getNavClassName(item.url)}`}
+                      >
+                        <item.icon className="w-5 h-5 flex-shrink-0" />
+                        {!collapsed && <span className="text-sm">{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </div>
 
         {/* Botão de logout */}
         <div className="mt-auto p-4 border-t border-sidebar-border">
