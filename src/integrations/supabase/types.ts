@@ -14,680 +14,289 @@ export type Database = {
   }
   public: {
     Tables: {
-      academic_years: {
+      calendar_events: {
         Row: {
-          created_at: string
-          end_date: string
-          id: string
-          is_current: boolean | null
-          school_id: string
-          start_date: string
-          year_name: string
-        }
-        Insert: {
-          created_at?: string
-          end_date: string
-          id?: string
-          is_current?: boolean | null
-          school_id: string
-          start_date: string
-          year_name: string
-        }
-        Update: {
-          created_at?: string
-          end_date?: string
-          id?: string
-          is_current?: boolean | null
-          school_id?: string
-          start_date?: string
-          year_name?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "academic_years_school_id_fkey"
-            columns: ["school_id"]
-            isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      attendance: {
-        Row: {
-          attendance_date: string
-          created_at: string
-          id: string
-          notes: string | null
-          recorded_by: string
-          status: Database["public"]["Enums"]["attendance_status"]
-          student_id: string
-          teacher_assignment_id: string
-        }
-        Insert: {
-          attendance_date: string
-          created_at?: string
-          id?: string
-          notes?: string | null
-          recorded_by: string
-          status: Database["public"]["Enums"]["attendance_status"]
-          student_id: string
-          teacher_assignment_id: string
-        }
-        Update: {
-          attendance_date?: string
-          created_at?: string
-          id?: string
-          notes?: string | null
-          recorded_by?: string
-          status?: Database["public"]["Enums"]["attendance_status"]
-          student_id?: string
-          teacher_assignment_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "attendance_recorded_by_fkey"
-            columns: ["recorded_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "attendance_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "attendance_teacher_assignment_id_fkey"
-            columns: ["teacher_assignment_id"]
-            isOneToOne: false
-            referencedRelation: "teacher_assignments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      classes: {
-        Row: {
-          class_name: string
-          created_at: string
-          grade_level: number
-          id: string
-          school_id: string
-        }
-        Insert: {
-          class_name: string
-          created_at?: string
-          grade_level: number
-          id?: string
-          school_id: string
-        }
-        Update: {
-          class_name?: string
-          created_at?: string
-          grade_level?: number
-          id?: string
-          school_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "classes_school_id_fkey"
-            columns: ["school_id"]
-            isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      evaluations: {
-        Row: {
-          created_at: string
-          created_by: string
-          evaluation_date: string
-          evaluation_type: string
-          grade: number
-          id: string
-          notes: string | null
-          student_id: string
-          teacher_assignment_id: string
-          trimester: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          evaluation_date?: string
-          evaluation_type?: string
-          grade: number
-          id?: string
-          notes?: string | null
-          student_id: string
-          teacher_assignment_id: string
-          trimester: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          evaluation_date?: string
-          evaluation_type?: string
-          grade?: number
-          id?: string
-          notes?: string | null
-          student_id?: string
-          teacher_assignment_id?: string
-          trimester?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "evaluations_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "evaluations_teacher_assignment_id_fkey"
-            columns: ["teacher_assignment_id"]
-            isOneToOne: false
-            referencedRelation: "teacher_assignments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      financial_records: {
-        Row: {
-          academic_year_id: string
-          amount: number
-          created_at: string
-          created_by: string
-          description: string
-          due_date: string | null
-          id: string
-          notes: string | null
-          payment_date: string | null
-          payment_method: string | null
-          school_id: string | null
-          status: Database["public"]["Enums"]["payment_status"] | null
-          student_id: string
-          updated_at: string
-        }
-        Insert: {
-          academic_year_id: string
-          amount: number
-          created_at?: string
-          created_by: string
-          description: string
-          due_date?: string | null
-          id?: string
-          notes?: string | null
-          payment_date?: string | null
-          payment_method?: string | null
-          school_id?: string | null
-          status?: Database["public"]["Enums"]["payment_status"] | null
-          student_id: string
-          updated_at?: string
-        }
-        Update: {
-          academic_year_id?: string
-          amount?: number
-          created_at?: string
-          created_by?: string
-          description?: string
-          due_date?: string | null
-          id?: string
-          notes?: string | null
-          payment_date?: string | null
-          payment_method?: string | null
-          school_id?: string | null
-          status?: Database["public"]["Enums"]["payment_status"] | null
-          student_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "financial_records_academic_year_id_fkey"
-            columns: ["academic_year_id"]
-            isOneToOne: false
-            referencedRelation: "academic_years"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "financial_records_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "financial_records_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notifications: {
-        Row: {
-          created_at: string
-          id: string
-          link: string | null
-          message: string
-          read: boolean
-          title: string
-          type: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          link?: string | null
-          message: string
-          read?: boolean
-          title: string
-          type?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          link?: string | null
-          message?: string
-          read?: boolean
-          title?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string
-          full_name: string
-          id: string
-          phone: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          full_name: string
-          id?: string
-          phone?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string
-          full_name?: string
-          id?: string
-          phone?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      schools: {
-        Row: {
-          address: string | null
-          created_at: string
-          director_id: string | null
-          email: string | null
-          id: string
-          name: string
-          phone: string | null
-          updated_at: string
-        }
-        Insert: {
-          address?: string | null
-          created_at?: string
-          director_id?: string | null
-          email?: string | null
-          id?: string
-          name: string
-          phone?: string | null
-          updated_at?: string
-        }
-        Update: {
-          address?: string | null
-          created_at?: string
-          director_id?: string | null
-          email?: string | null
-          id?: string
-          name?: string
-          phone?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "schools_director_id_fkey"
-            columns: ["director_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      student_enrollments: {
-        Row: {
-          academic_year_id: string
-          created_at: string
-          enrollment_date: string | null
-          id: string
-          status: string | null
-          student_id: string
-          turma_id: string
-        }
-        Insert: {
-          academic_year_id: string
-          created_at?: string
-          enrollment_date?: string | null
-          id?: string
-          status?: string | null
-          student_id: string
-          turma_id: string
-        }
-        Update: {
-          academic_year_id?: string
-          created_at?: string
-          enrollment_date?: string | null
-          id?: string
-          status?: string | null
-          student_id?: string
-          turma_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_enrollments_academic_year_id_fkey"
-            columns: ["academic_year_id"]
-            isOneToOne: false
-            referencedRelation: "academic_years"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_enrollments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_enrollments_turma_id_fkey"
-            columns: ["turma_id"]
-            isOneToOne: false
-            referencedRelation: "turmas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      students: {
-        Row: {
-          address: string | null
-          created_at: string
-          date_of_birth: string | null
-          email: string | null
-          emergency_contact_name: string | null
-          emergency_contact_phone: string | null
-          enrollment_date: string | null
-          full_name: string
-          gender: string | null
-          health_info: string | null
-          id: string
-          id_number: string | null
-          phone: string | null
-          photo_url: string | null
-          school_id: string
-          status: Database["public"]["Enums"]["student_status"] | null
-          student_number: string
-          updated_at: string
-        }
-        Insert: {
-          address?: string | null
-          created_at?: string
-          date_of_birth?: string | null
-          email?: string | null
-          emergency_contact_name?: string | null
-          emergency_contact_phone?: string | null
-          enrollment_date?: string | null
-          full_name: string
-          gender?: string | null
-          health_info?: string | null
-          id?: string
-          id_number?: string | null
-          phone?: string | null
-          photo_url?: string | null
-          school_id: string
-          status?: Database["public"]["Enums"]["student_status"] | null
-          student_number: string
-          updated_at?: string
-        }
-        Update: {
-          address?: string | null
-          created_at?: string
-          date_of_birth?: string | null
-          email?: string | null
-          emergency_contact_name?: string | null
-          emergency_contact_phone?: string | null
-          enrollment_date?: string | null
-          full_name?: string
-          gender?: string | null
-          health_info?: string | null
-          id?: string
-          id_number?: string | null
-          phone?: string | null
-          photo_url?: string | null
-          school_id?: string
-          status?: Database["public"]["Enums"]["student_status"] | null
-          student_number?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "students_school_id_fkey"
-            columns: ["school_id"]
-            isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      subjects: {
-        Row: {
-          created_at: string
+          class_id: number | null
+          created_at: string | null
+          date: string
           description: string | null
-          id: string
-          school_id: string
-          subject_code: string | null
-          subject_name: string
-          weekly_hours: number | null
+          id: number
+          subject_id: number | null
+          title: string
+          type: Database["public"]["Enums"]["calendar_event_type"]
         }
         Insert: {
-          created_at?: string
+          class_id?: number | null
+          created_at?: string | null
+          date: string
           description?: string | null
-          id?: string
-          school_id: string
-          subject_code?: string | null
-          subject_name: string
-          weekly_hours?: number | null
+          id?: number
+          subject_id?: number | null
+          title: string
+          type: Database["public"]["Enums"]["calendar_event_type"]
         }
         Update: {
-          created_at?: string
+          class_id?: number | null
+          created_at?: string | null
+          date?: string
           description?: string | null
-          id?: string
-          school_id?: string
-          subject_code?: string | null
-          subject_name?: string
-          weekly_hours?: number | null
+          id?: number
+          subject_id?: number | null
+          title?: string
+          type?: Database["public"]["Enums"]["calendar_event_type"]
         }
         Relationships: [
           {
-            foreignKeyName: "subjects_school_id_fkey"
-            columns: ["school_id"]
+            foreignKeyName: "calendar_events_class_id_fkey"
+            columns: ["class_id"]
             isOneToOne: false
-            referencedRelation: "schools"
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
       }
-      teacher_assignments: {
+      class_curriculum: {
         Row: {
-          academic_year_id: string
-          created_at: string
-          id: string
-          subject_id: string
-          teacher_id: string
-          turma_id: string
+          class_id: number
+          subject_id: number
+          teacher_id: number
         }
         Insert: {
-          academic_year_id: string
-          created_at?: string
-          id?: string
-          subject_id: string
-          teacher_id: string
-          turma_id: string
+          class_id: number
+          subject_id: number
+          teacher_id: number
         }
         Update: {
-          academic_year_id?: string
-          created_at?: string
-          id?: string
-          subject_id?: string
-          teacher_id?: string
-          turma_id?: string
+          class_id?: number
+          subject_id?: number
+          teacher_id?: number
         }
         Relationships: [
           {
-            foreignKeyName: "teacher_assignments_academic_year_id_fkey"
-            columns: ["academic_year_id"]
+            foreignKeyName: "class_curriculum_class_id_fkey"
+            columns: ["class_id"]
             isOneToOne: false
-            referencedRelation: "academic_years"
+            referencedRelation: "classes"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "teacher_assignments_subject_id_fkey"
+            foreignKeyName: "class_curriculum_subject_id_fkey"
             columns: ["subject_id"]
             isOneToOne: false
             referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "teacher_assignments_teacher_id_fkey"
+            foreignKeyName: "class_curriculum_teacher_id_fkey"
             columns: ["teacher_id"]
             isOneToOne: false
             referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      classes: {
+        Row: {
+          id: number
+          name: string
+          teacher_id: number | null
+          year: number
+        }
+        Insert: {
+          id?: number
+          name: string
+          teacher_id?: number | null
+          year: number
+        }
+        Update: {
+          id?: number
+          name?: string
+          teacher_id?: number | null
+          year?: number
+        }
+        Relationships: [
           {
-            foreignKeyName: "teacher_assignments_turma_id_fkey"
-            columns: ["turma_id"]
+            foreignKeyName: "classes_teacher_id_fkey"
+            columns: ["teacher_id"]
             isOneToOne: false
-            referencedRelation: "turmas"
+            referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
         ]
       }
-      teachers: {
+      enrollments: {
         Row: {
-          created_at: string
-          employee_number: string | null
-          hire_date: string | null
-          id: string
-          profile_id: string
-          qualification: string | null
-          salary: number | null
-          school_id: string
-          specialization: string | null
-          status: string | null
-          updated_at: string
+          amount: number | null
+          date: string | null
+          discount: number | null
+          id: number
+          status: Database["public"]["Enums"]["payment_status"] | null
+          student_name: string | null
         }
         Insert: {
-          created_at?: string
-          employee_number?: string | null
-          hire_date?: string | null
-          id?: string
-          profile_id: string
-          qualification?: string | null
-          salary?: number | null
-          school_id: string
-          specialization?: string | null
-          status?: string | null
-          updated_at?: string
+          amount?: number | null
+          date?: string | null
+          discount?: number | null
+          id?: number
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          student_name?: string | null
         }
         Update: {
-          created_at?: string
-          employee_number?: string | null
-          hire_date?: string | null
-          id?: string
-          profile_id?: string
-          qualification?: string | null
-          salary?: number | null
-          school_id?: string
-          specialization?: string | null
-          status?: string | null
-          updated_at?: string
+          amount?: number | null
+          date?: string | null
+          discount?: number | null
+          id?: number
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          student_name?: string | null
+        }
+        Relationships: []
+      }
+      financial_categories: {
+        Row: {
+          id: number
+          name: string
+          type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Insert: {
+          id?: number
+          name: string
+          type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Update: {
+          id?: number
+          name?: string
+          type?: Database["public"]["Enums"]["transaction_type"]
+        }
+        Relationships: []
+      }
+      grades: {
+        Row: {
+          final_exam: number | null
+          nota1: number | null
+          nota2: number | null
+          student_id: number
+          subject_id: number
+        }
+        Insert: {
+          final_exam?: number | null
+          nota1?: number | null
+          nota2?: number | null
+          student_id: number
+          subject_id: number
+        }
+        Update: {
+          final_exam?: number | null
+          nota1?: number | null
+          nota2?: number | null
+          student_id?: number
+          subject_id?: number
         }
         Relationships: [
           {
-            foreignKeyName: "teachers_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: "grades_student_id_fkey"
+            columns: ["student_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "students"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "teachers_school_id_fkey"
-            columns: ["school_id"]
+            foreignKeyName: "grades_subject_id_fkey"
+            columns: ["subject_id"]
             isOneToOne: false
-            referencedRelation: "schools"
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
       }
-      turmas: {
+      scholarships: {
         Row: {
-          academic_year_id: string
-          class_id: string
-          classroom: string | null
-          created_at: string
-          current_students: number | null
-          id: string
-          max_capacity: number | null
-          turma_name: string
+          id: number
+          name: string
+          type: Database["public"]["Enums"]["scholarship_type"]
+          value: number
         }
         Insert: {
-          academic_year_id: string
-          class_id: string
-          classroom?: string | null
-          created_at?: string
-          current_students?: number | null
-          id?: string
-          max_capacity?: number | null
-          turma_name: string
+          id?: number
+          name: string
+          type: Database["public"]["Enums"]["scholarship_type"]
+          value: number
         }
         Update: {
-          academic_year_id?: string
-          class_id?: string
-          classroom?: string | null
-          created_at?: string
-          current_students?: number | null
-          id?: string
-          max_capacity?: number | null
-          turma_name?: string
+          id?: number
+          name?: string
+          type?: Database["public"]["Enums"]["scholarship_type"]
+          value?: number
+        }
+        Relationships: []
+      }
+      student_scholarships: {
+        Row: {
+          scholarship_id: number
+          student_id: number
+        }
+        Insert: {
+          scholarship_id: number
+          student_id: number
+        }
+        Update: {
+          scholarship_id?: number
+          student_id?: number
         }
         Relationships: [
           {
-            foreignKeyName: "turmas_academic_year_id_fkey"
-            columns: ["academic_year_id"]
+            foreignKeyName: "student_scholarships_scholarship_id_fkey"
+            columns: ["scholarship_id"]
             isOneToOne: false
-            referencedRelation: "academic_years"
+            referencedRelation: "scholarships"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "turmas_class_id_fkey"
+            foreignKeyName: "student_scholarships_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          age: number | null
+          class_id: number | null
+          guardian: string | null
+          id: number
+          name: string
+          phone: string | null
+          status: Database["public"]["Enums"]["student_status"] | null
+        }
+        Insert: {
+          age?: number | null
+          class_id?: number | null
+          guardian?: string | null
+          id?: number
+          name: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["student_status"] | null
+        }
+        Update: {
+          age?: number | null
+          class_id?: number | null
+          guardian?: string | null
+          id?: number
+          name?: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["student_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
@@ -695,88 +304,139 @@ export type Database = {
           },
         ]
       }
-      user_roles: {
+      subjects: {
         Row: {
-          created_at: string | null
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          code: string | null
+          id: number
+          name: string
+          workload: number | null
         }
         Insert: {
-          created_at?: string | null
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          code?: string | null
+          id?: number
+          name: string
+          workload?: number | null
         }
         Update: {
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
+          code?: string | null
+          id?: number
+          name?: string
+          workload?: number | null
         }
         Relationships: []
+      }
+      teachers: {
+        Row: {
+          email: string | null
+          id: number
+          name: string
+          phone: string | null
+          qualifications: string | null
+          status: Database["public"]["Enums"]["teacher_status"] | null
+        }
+        Insert: {
+          email?: string | null
+          id?: number
+          name: string
+          phone?: string | null
+          qualifications?: string | null
+          status?: Database["public"]["Enums"]["teacher_status"] | null
+        }
+        Update: {
+          email?: string | null
+          id?: number
+          name?: string
+          phone?: string | null
+          qualifications?: string | null
+          status?: Database["public"]["Enums"]["teacher_status"] | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category_id: number | null
+          date: string
+          description: string | null
+          id: number
+          type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Insert: {
+          amount: number
+          category_id?: number | null
+          date: string
+          description?: string | null
+          id?: number
+          type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Update: {
+          amount?: number
+          category_id?: number | null
+          date?: string
+          description?: string | null
+          id?: number
+          type?: Database["public"]["Enums"]["transaction_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "financial_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tuition_fees: {
+        Row: {
+          amount: number | null
+          due_date: string | null
+          id: number
+          month: string
+          status: Database["public"]["Enums"]["tuition_status"] | null
+          student_id: number
+        }
+        Insert: {
+          amount?: number | null
+          due_date?: string | null
+          id?: number
+          month: string
+          status?: Database["public"]["Enums"]["tuition_status"] | null
+          student_id: number
+        }
+        Update: {
+          amount?: number | null
+          due_date?: string | null
+          id?: number
+          month?: string
+          status?: Database["public"]["Enums"]["tuition_status"] | null
+          student_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tuition_fees_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      generate_student_number: {
-        Args: { school_id_param: string }
-        Returns: string
-      }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: Database["public"]["Enums"]["app_role"]
-      }
-      get_teacher_assignment_ids: {
-        Args: { _user_id: string }
-        Returns: {
-          assignment_id: string
-        }[]
-      }
-      get_teacher_data: {
-        Args: { _teacher_id: string }
-        Returns: {
-          created_at: string
-          employee_number: string
-          hire_date: string
-          id: string
-          profile_id: string
-          qualification: string
-          salary: number
-          school_id: string
-          specialization: string
-          status: string
-          updated_at: string
-        }[]
-      }
-      get_user_role: {
-        Args: { _user_id: string }
-        Returns: Database["public"]["Enums"]["app_role"]
-      }
-      get_user_school_id: {
-        Args: { _user_id: string }
-        Returns: string
-      }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-      user_has_role: {
-        Args: { required_role: Database["public"]["Enums"]["app_role"] }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      app_role: "DIRETORIA" | "SECRETARIA" | "FINANCEIRO" | "PROFESSOR"
-      attendance_status: "PRESENTE" | "AUSENTE" | "JUSTIFICADO" | "ATRASADO"
-      payment_status: "PENDENTE" | "PAGO" | "VENCIDO" | "CANCELADO"
-      student_status: "ATIVO" | "INATIVO" | "TRANSFERIDO" | "GRADUADO"
-      user_role: "DIRETORIA" | "SECRETARIA" | "FINANCEIRO" | "PROFESSOR"
+      calendar_event_type: "Feriado" | "Evento" | "Prova" | "Prazo"
+      payment_status: "Pago" | "Pendente"
+      scholarship_type: "Percentagem" | "Valor Fixo"
+      student_status: "Ativo" | "Inativo"
+      teacher_status: "Ativo" | "Inativo"
+      transaction_type: "Receita" | "Despesa"
+      tuition_status: "Pago" | "Atrasado" | "Pendente"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -904,11 +564,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["DIRETORIA", "SECRETARIA", "FINANCEIRO", "PROFESSOR"],
-      attendance_status: ["PRESENTE", "AUSENTE", "JUSTIFICADO", "ATRASADO"],
-      payment_status: ["PENDENTE", "PAGO", "VENCIDO", "CANCELADO"],
-      student_status: ["ATIVO", "INATIVO", "TRANSFERIDO", "GRADUADO"],
-      user_role: ["DIRETORIA", "SECRETARIA", "FINANCEIRO", "PROFESSOR"],
+      calendar_event_type: ["Feriado", "Evento", "Prova", "Prazo"],
+      payment_status: ["Pago", "Pendente"],
+      scholarship_type: ["Percentagem", "Valor Fixo"],
+      student_status: ["Ativo", "Inativo"],
+      teacher_status: ["Ativo", "Inativo"],
+      transaction_type: ["Receita", "Despesa"],
+      tuition_status: ["Pago", "Atrasado", "Pendente"],
     },
   },
 } as const
