@@ -4,7 +4,7 @@
 // Creates 4 users (DIRETORIA, SECRETARIA, FINANCEIRO, PROFESSOR) with password 123456
 
 import { serve } from "https://deno.land/std@0.193.0/http/server.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.57.4";
+import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");

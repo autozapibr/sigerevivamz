@@ -58,39 +58,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const handleSession = (session: Session | null) => {
       if (session?.user) {
-        // Defer Supabase calls to avoid deadlocks inside auth listener
+        // Simplified auth - using only auth.users metadata
         setTimeout(async () => {
           try {
             const userId = session.user!.id;
             const email = session.user!.email || '';
+            const metadata = session.user!.user_metadata || {};
 
-            // Buscar perfil e role separadamente
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('user_id', userId)
-              .maybeSingle();
-
-            const { data: userRole } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', userId)
-              .maybeSingle();
-
-            if (profile && userRole) {
-              const user: User = {
-                id: profile.id,
-                email,
-                name: profile.full_name,
-                role: userRole.role as UserRole,
-                avatar: profile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${email}`,
-                createdAt: profile.created_at,
-                updatedAt: profile.updated_at,
-              };
-              dispatch({ type: 'SET_USER', payload: user });
-            } else {
-              dispatch({ type: 'SET_LOADING', payload: false });
-            }
+            const user: User = {
+              id: userId,
+              email,
+              name: metadata.full_name || email.split('@')[0],
+              role: (metadata.role as UserRole) || 'SECRETARIA',
+              avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${email}`,
+              createdAt: session.user!.created_at,
+              updatedAt: session.user!.updated_at || session.user!.created_at,
+            };
+            dispatch({ type: 'SET_USER', payload: user });
           } catch {
             dispatch({ type: 'SET_LOADING', payload: false });
           }

@@ -21,7 +21,7 @@ import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 import DevSeed from "./pages/DevSeed";
 import Settings from "./pages/Settings";
-import GuardianDashboard from "./pages/GuardianDashboard";
+
 import CaixaPage from "./pages/financial/CaixaPage";
 import PropinasPage from "./pages/financial/PropinasPage";
 import CobrancasPage from "./pages/financial/CobrancasPage";
@@ -170,14 +170,6 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Settings />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/encarregado"
-        element={
-          <ProtectedRoute>
-            <GuardianDashboard />
           </ProtectedRoute>
         }
       />
