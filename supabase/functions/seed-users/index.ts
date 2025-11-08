@@ -34,10 +34,18 @@ async function findUserIdByEmail(email: string): Promise<string | null> {
   return user?.id ?? null;
 }
 
-async function ensureProfile(user_id: string, full_name: string, role: string) {
+async function ensureProfile(user_id: string, full_name: string) {
   const { error } = await adminClient.from("profiles").upsert(
-    { user_id, full_name, role },
+    { user_id, full_name },
     { onConflict: "user_id" }
+  );
+  if (error) throw error;
+}
+
+async function ensureRole(user_id: string, role: string) {
+  const { error } = await adminClient.from("user_roles").upsert(
+    { user_id, role },
+    { onConflict: "user_id,role" }
   );
   if (error) throw error;
 }
@@ -82,7 +90,8 @@ serve(async (req) => {
 
       if (!userId) throw new Error(`Falha ao obter ID do usuário para ${u.email}`);
 
-      await ensureProfile(userId, u.full_name, u.role);
+      await ensureProfile(userId, u.full_name);
+      await ensureRole(userId, u.role);
 
       results.push({ email: u.email, role: u.role, status, user_id: userId });
     }
