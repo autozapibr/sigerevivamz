@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, GraduationCap, Mail, Lock } from 'lucide-react';
+import { Eye, EyeOff, GraduationCap, Mail, Lock, Zap, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,27 +9,23 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 
+// Dev users for quick login during development
+const DEV_USERS = [
+  { email: 'diretoria@escola.mz', password: '123456', role: 'DIRETORIA', color: 'bg-primary' },
+  { email: 'secretaria@escola.mz', password: '123456', role: 'SECRETARIA', color: 'bg-secondary' },
+  { email: 'financeiro@escola.mz', password: '123456', role: 'FINANCEIRO', color: 'bg-accent' },
+  { email: 'professor@escola.mz', password: '123456', role: 'PROFESSOR', color: 'bg-muted' },
+];
+
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [failedAttempts, setFailedAttempts] = useState(0);
-  const [lockoutUntil, setLockoutUntil] = useState<Date | null>(null);
+  const [showDevPanel, setShowDevPanel] = useState(true);
   const { login, isLoading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Check if account is locked
-    if (lockoutUntil && new Date() < lockoutUntil) {
-      const remainingMinutes = Math.ceil((lockoutUntil.getTime() - new Date().getTime()) / 60000);
-      toast({
-        title: "Conta bloqueada",
-        description: `Muitas tentativas falhadas. Tente novamente em ${remainingMinutes} minuto(s).`,
-        variant: "destructive",
-      });
-      return;
-    }
     
     if (!email || !password) {
       toast({
@@ -42,32 +38,33 @@ export function LoginForm() {
 
     try {
       await login({ email, password });
-      setFailedAttempts(0);
-      setLockoutUntil(null);
       toast({
         title: "Bem-vindo ao SGE REVIVA!",
         description: "Login realizado com sucesso.",
         variant: "default",
       });
-    } catch (error) {
-      const newAttempts = failedAttempts + 1;
-      setFailedAttempts(newAttempts);
-      
-      if (newAttempts >= 5) {
-        const lockoutTime = new Date(Date.now() + 15 * 60 * 1000);
-        setLockoutUntil(lockoutTime);
-        toast({
-          title: "Conta bloqueada",
-          description: "Muitas tentativas falhadas. Conta bloqueada por 15 minutos.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Erro no login",
-          description: `Credenciais inválidas. ${5 - newAttempts} tentativa(s) restante(s).`,
-          variant: "destructive",
-        });
-      }
+    } catch (error: any) {
+      toast({
+        title: "Erro no login",
+        description: error?.message || "Credenciais inválidas.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDevLogin = async (devUser: typeof DEV_USERS[0]) => {
+    try {
+      await login({ email: devUser.email, password: devUser.password });
+      toast({
+        title: `Logado como ${devUser.role}`,
+        description: `Bem-vindo ao modo de desenvolvimento!`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Usuário não existe",
+        description: "Clique em 'Criar usuários de teste' primeiro.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -100,7 +97,71 @@ export function LoginForm() {
             </div>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="space-y-4">
+            {/* DEV Quick Login Panel */}
+            {showDevPanel && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="p-4 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-primary">Login Rápido (Dev)</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs text-muted-foreground"
+                    onClick={() => setShowDevPanel(false)}
+                  >
+                    Ocultar
+                  </Button>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  {DEV_USERS.map((user) => (
+                    <Button
+                      key={user.email}
+                      variant="outline"
+                      size="sm"
+                      disabled={isLoading}
+                      onClick={() => handleDevLogin(user)}
+                      className="flex items-center gap-2 h-auto py-2 hover:bg-primary/10 hover:border-primary"
+                    >
+                      <User className="w-3 h-3" />
+                      <span className="text-xs">{user.role}</span>
+                    </Button>
+                  ))}
+                </div>
+                
+                <p className="text-xs text-muted-foreground mt-3 text-center">
+                  Primeiro, <Link to="/dev/seed" className="text-primary hover:underline font-medium">crie os usuários</Link>
+                </p>
+              </motion.div>
+            )}
+
+            {!showDevPanel && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs text-muted-foreground"
+                onClick={() => setShowDevPanel(true)}
+              >
+                <Zap className="w-3 h-3 mr-1" /> Mostrar Login Rápido
+              </Button>
+            )}
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">ou entre manualmente</span>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-foreground">
@@ -154,43 +215,11 @@ export function LoginForm() {
               <Button
                 type="submit"
                 className="w-full btn-hero"
-                disabled={isLoading || (lockoutUntil !== null && new Date() < lockoutUntil)}
+                disabled={isLoading}
               >
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Esqueceu a senha?{" "}
-                <button className="text-primary hover:underline font-medium">
-                  Recuperar senha
-                </button>
-              </p>
-            </div>
-
-            {/* Cadastro de novos usuários */}
-            <div className="mt-6 p-4 bg-accent rounded-lg">
-              <p className="text-xs text-accent-foreground font-medium mb-2">
-                Para criar uma conta:
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => window.location.href = '/register'}
-              >
-                Registrar Nova Conta
-              </Button>
-            </div>
-            {/* Dev seed helper */}
-            <p className="mt-4 text-xs text-muted-foreground text-center">
-              Problemas para entrar?{' '}
-              <Link to="/dev/seed" className="text-primary hover:underline font-medium">
-                Criar usuários de teste
-              </Link>
-            </p>
           </CardContent>
         </Card>
       </motion.div>
