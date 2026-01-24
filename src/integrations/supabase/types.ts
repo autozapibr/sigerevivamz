@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      academic_years: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: number
+          is_current: boolean | null
+          name: string
+          start_date: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: never
+          is_current?: boolean | null
+          name: string
+          start_date: string
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: never
+          is_current?: boolean | null
+          name?: string
+          start_date?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           class_id: number | null
@@ -215,6 +242,63 @@ export type Database = {
           },
         ]
       }
+      guardians: {
+        Row: {
+          address: string | null
+          bi_number: string | null
+          created_at: string | null
+          district: string | null
+          email: string | null
+          full_name: string
+          id: number
+          is_primary: boolean | null
+          nuit: string | null
+          occupation: string | null
+          phone: string
+          phone_alt: string | null
+          province: string | null
+          relationship: string
+          updated_at: string | null
+          workplace: string | null
+        }
+        Insert: {
+          address?: string | null
+          bi_number?: string | null
+          created_at?: string | null
+          district?: string | null
+          email?: string | null
+          full_name: string
+          id?: never
+          is_primary?: boolean | null
+          nuit?: string | null
+          occupation?: string | null
+          phone: string
+          phone_alt?: string | null
+          province?: string | null
+          relationship: string
+          updated_at?: string | null
+          workplace?: string | null
+        }
+        Update: {
+          address?: string | null
+          bi_number?: string | null
+          created_at?: string | null
+          district?: string | null
+          email?: string | null
+          full_name?: string
+          id?: never
+          is_primary?: boolean | null
+          nuit?: string | null
+          occupation?: string | null
+          phone?: string
+          phone_alt?: string | null
+          province?: string | null
+          relationship?: string
+          updated_at?: string | null
+          workplace?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -260,6 +344,177 @@ export type Database = {
         }
         Relationships: []
       }
+      student_documents: {
+        Row: {
+          created_at: string | null
+          document_name: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          file_size: number | null
+          file_url: string
+          id: number
+          is_verified: boolean | null
+          mime_type: string | null
+          notes: string | null
+          student_id: number
+          updated_at: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_name: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          file_size?: number | null
+          file_url: string
+          id?: never
+          is_verified?: boolean | null
+          mime_type?: string | null
+          notes?: string | null
+          student_id: number
+          updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_name?: string
+          document_type?: Database["public"]["Enums"]["document_type"]
+          file_size?: number | null
+          file_url?: string
+          id?: never
+          is_verified?: boolean | null
+          mime_type?: string | null
+          notes?: string | null
+          student_id?: number
+          updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_documents_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_enrollments: {
+        Row: {
+          academic_year_id: number
+          approved_at: string | null
+          approved_by: string | null
+          class_id: number | null
+          created_at: string | null
+          discount_percent: number | null
+          enrollment_date: string | null
+          enrollment_fee: number | null
+          enrollment_number: string | null
+          id: number
+          monthly_fee: number | null
+          notes: string | null
+          status: Database["public"]["Enums"]["enrollment_status"] | null
+          student_id: number
+          updated_at: string | null
+        }
+        Insert: {
+          academic_year_id: number
+          approved_at?: string | null
+          approved_by?: string | null
+          class_id?: number | null
+          created_at?: string | null
+          discount_percent?: number | null
+          enrollment_date?: string | null
+          enrollment_fee?: number | null
+          enrollment_number?: string | null
+          id?: never
+          monthly_fee?: number | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"] | null
+          student_id: number
+          updated_at?: string | null
+        }
+        Update: {
+          academic_year_id?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          class_id?: number | null
+          created_at?: string | null
+          discount_percent?: number | null
+          enrollment_date?: string | null
+          enrollment_fee?: number | null
+          enrollment_number?: string | null
+          id?: never
+          monthly_fee?: number | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"] | null
+          student_id?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_enrollments_academic_year_id_fkey"
+            columns: ["academic_year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_enrollments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_enrollments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_guardians: {
+        Row: {
+          created_at: string | null
+          guardian_id: number
+          id: number
+          is_primary: boolean | null
+          student_id: number
+        }
+        Insert: {
+          created_at?: string | null
+          guardian_id: number
+          id?: never
+          is_primary?: boolean | null
+          student_id: number
+        }
+        Update: {
+          created_at?: string | null
+          guardian_id?: number
+          id?: never
+          is_primary?: boolean | null
+          student_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_guardians_guardian_id_fkey"
+            columns: ["guardian_id"]
+            isOneToOne: false
+            referencedRelation: "guardians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_guardians_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_scholarships: {
         Row: {
           scholarship_id: number
@@ -292,31 +547,82 @@ export type Database = {
       }
       students: {
         Row: {
+          address: string | null
           age: number | null
+          bi_number: string | null
+          birth_date: string | null
           class_id: number | null
+          created_at: string | null
+          district: string | null
+          email: string | null
+          enrollment_status:
+            | Database["public"]["Enums"]["enrollment_status"]
+            | null
+          gender: Database["public"]["Enums"]["gender_type"] | null
           guardian: string | null
+          health_notes: string | null
           id: number
           name: string
+          nationality: string | null
+          nuit: string | null
           phone: string | null
+          photo_url: string | null
+          previous_school: string | null
+          province: string | null
           status: Database["public"]["Enums"]["student_status"] | null
+          updated_at: string | null
         }
         Insert: {
+          address?: string | null
           age?: number | null
+          bi_number?: string | null
+          birth_date?: string | null
           class_id?: number | null
+          created_at?: string | null
+          district?: string | null
+          email?: string | null
+          enrollment_status?:
+            | Database["public"]["Enums"]["enrollment_status"]
+            | null
+          gender?: Database["public"]["Enums"]["gender_type"] | null
           guardian?: string | null
+          health_notes?: string | null
           id?: number
           name: string
+          nationality?: string | null
+          nuit?: string | null
           phone?: string | null
+          photo_url?: string | null
+          previous_school?: string | null
+          province?: string | null
           status?: Database["public"]["Enums"]["student_status"] | null
+          updated_at?: string | null
         }
         Update: {
+          address?: string | null
           age?: number | null
+          bi_number?: string | null
+          birth_date?: string | null
           class_id?: number | null
+          created_at?: string | null
+          district?: string | null
+          email?: string | null
+          enrollment_status?:
+            | Database["public"]["Enums"]["enrollment_status"]
+            | null
+          gender?: Database["public"]["Enums"]["gender_type"] | null
           guardian?: string | null
+          health_notes?: string | null
           id?: number
           name?: string
+          nationality?: string | null
+          nuit?: string | null
           phone?: string | null
+          photo_url?: string | null
+          previous_school?: string | null
+          province?: string | null
           status?: Database["public"]["Enums"]["student_status"] | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -487,6 +793,22 @@ export type Database = {
         | "PEDAGOGICO"
         | "ENCARREGADO"
       calendar_event_type: "Feriado" | "Evento" | "Prova" | "Prazo"
+      document_type:
+        | "BI"
+        | "NUIT"
+        | "CERTIDAO_NASCIMENTO"
+        | "CERTIFICADO_HABILITACOES"
+        | "DECLARACAO_ESCOLA_ANTERIOR"
+        | "ATESTADO_MEDICO"
+        | "FOTO"
+        | "OUTRO"
+      enrollment_status:
+        | "PENDENTE"
+        | "EM_ANALISE"
+        | "APROVADA"
+        | "REJEITADA"
+        | "CANCELADA"
+      gender_type: "MASCULINO" | "FEMININO"
       payment_status: "Pago" | "Pendente"
       scholarship_type: "Percentagem" | "Valor Fixo"
       student_status: "Ativo" | "Inativo"
@@ -630,6 +952,24 @@ export const Constants = {
         "ENCARREGADO",
       ],
       calendar_event_type: ["Feriado", "Evento", "Prova", "Prazo"],
+      document_type: [
+        "BI",
+        "NUIT",
+        "CERTIDAO_NASCIMENTO",
+        "CERTIFICADO_HABILITACOES",
+        "DECLARACAO_ESCOLA_ANTERIOR",
+        "ATESTADO_MEDICO",
+        "FOTO",
+        "OUTRO",
+      ],
+      enrollment_status: [
+        "PENDENTE",
+        "EM_ANALISE",
+        "APROVADA",
+        "REJEITADA",
+        "CANCELADA",
+      ],
+      gender_type: ["MASCULINO", "FEMININO"],
       payment_status: ["Pago", "Pendente"],
       scholarship_type: ["Percentagem", "Valor Fixo"],
       student_status: ["Ativo", "Inativo"],
