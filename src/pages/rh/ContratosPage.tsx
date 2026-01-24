@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Search, FileText, AlertTriangle, CheckCircle, 
-  Clock, Calendar, Banknote, User, Filter
+  Clock, Calendar, Banknote, Plus, Eye, Printer,
+  MessageCircle, Mail, Download, MoreHorizontal
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -10,7 +11,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Select,
@@ -27,13 +28,27 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useContracts, useContractsStats, CONTRACT_TYPES, type ContractFilters } from '@/hooks/useContracts';
+import { useContracts, useContractsStats, CONTRACT_TYPES, type ContractFilters, type Contract } from '@/hooks/useContracts';
+import { ContractGeneratorDialog } from '@/components/contracts/ContractGeneratorDialog';
+import { ContractPreviewDialog } from '@/components/contracts/ContractPreviewDialog';
+import { StaffContractData } from '@/components/contracts/ContractTemplates';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ContratosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<ContractFilters['status']>('all');
   const [contractTypeFilter, setContractTypeFilter] = useState<string>('all');
+  const [showGenerator, setShowGenerator] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [selectedContract, setSelectedContract] = useState<StaffContractData | null>(null);
+  const { toast } = useToast();
 
   const filters: ContractFilters = {
     search: searchTerm,
@@ -75,6 +90,64 @@ export default function ContratosPage() {
     }).format(value);
   };
 
+  const getTemplateIdFromContractType = (contractType: string | null): string => {
+    switch (contractType) {
+      case 'Efectivo': return 'efectivo';
+      case 'Prazo Determinado': return 'prazo_determinado';
+      case 'Prestação de Serviços': return 'prestacao_servicos';
+      case 'Estágio': return 'estagio';
+      case 'Voluntário': return 'voluntariado';
+      default: return 'efectivo';
+    }
+  };
+
+  const handleViewContract = (contract: Contract) => {
+    const staffData: StaffContractData = {
+      id: contract.id,
+      staff_type: contract.staff_type,
+      name: contract.staff_name,
+      role: contract.staff_role,
+      bi_number: null,
+      nuit: null,
+      address: null,
+      province: null,
+      district: null,
+      phone: null,
+      email: null,
+      birth_date: null,
+      gender: null,
+      contract_number: contract.contract_number,
+      contract_type: contract.contract_type,
+      contract_start: contract.contract_start,
+      contract_end: contract.contract_end,
+      salary: contract.salary,
+      hire_date: null,
+      bank_name: null,
+      bank_account: null,
+      payment_method: null,
+      mobile_money_provider: null,
+      mobile_money_number: null,
+    };
+    setSelectedContract(staffData);
+    setShowPreview(true);
+  };
+
+  const handleSendWhatsApp = (contract: Contract) => {
+    toast({
+      title: 'WhatsApp',
+      description: 'Abra o contrato para enviar por WhatsApp.',
+    });
+    handleViewContract(contract);
+  };
+
+  const handleSendEmail = (contract: Contract) => {
+    toast({
+      title: 'E-mail',
+      description: 'Abra o contrato para enviar por e-mail.',
+    });
+    handleViewContract(contract);
+  };
+
   return (
     <MainLayout title="Contratos" subtitle="Gestão de contratos de trabalho">
       <div className="space-y-6">
@@ -96,10 +169,10 @@ export default function ContratosPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-green-500">Activos</p>
-                  <p className="text-2xl font-bold text-green-500">{stats?.activos || 0}</p>
+                  <p className="text-sm text-green-600 dark:text-green-400">Activos</p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats?.activos || 0}</p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-green-500" />
+                <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
             </CardContent>
           </Card>
@@ -108,10 +181,10 @@ export default function ContratosPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-orange-500">A Expirar</p>
-                  <p className="text-2xl font-bold text-orange-500">{stats?.aExpirar || 0}</p>
+                  <p className="text-sm text-orange-600 dark:text-orange-400">A Expirar</p>
+                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats?.aExpirar || 0}</p>
                 </div>
-                <Clock className="w-8 h-8 text-orange-500" />
+                <Clock className="w-8 h-8 text-orange-600 dark:text-orange-400" />
               </div>
             </CardContent>
           </Card>
@@ -129,10 +202,15 @@ export default function ContratosPage() {
           </Card>
         </div>
 
-        {/* Filters */}
+        {/* Action Button & Filters */}
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-4">
+              <Button onClick={() => setShowGenerator(true)} className="md:order-last">
+                <Plus className="w-4 h-4 mr-2" />
+                Gerar Contrato
+              </Button>
+
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -144,7 +222,7 @@ export default function ContratosPage() {
               </div>
               
               <div className="flex gap-2 flex-wrap">
-                <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v as any)}>
+                <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v as ContractFilters['status'])}>
                   <SelectTrigger className="w-32">
                     <SelectValue placeholder="Estado" />
                   </SelectTrigger>
@@ -184,6 +262,7 @@ export default function ContratosPage() {
                   <TableHead>Período</TableHead>
                   <TableHead>Salário</TableHead>
                   <TableHead>Estado</TableHead>
+                  <TableHead className="w-[100px]">Acções</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -196,14 +275,24 @@ export default function ContratosPage() {
                       <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                       <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                     </TableRow>
                   ))
                 ) : contracts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                       {searchTerm || statusFilter !== 'all' || contractTypeFilter !== 'all'
                         ? 'Nenhum contrato encontrado com os filtros aplicados.'
-                        : 'Nenhum contrato registado. Adicione contratos nos cadastros de Professores ou Colaboradores.'}
+                        : (
+                          <div className="space-y-4">
+                            <FileText className="w-12 h-12 mx-auto opacity-50" />
+                            <p>Nenhum contrato registado.</p>
+                            <Button variant="outline" onClick={() => setShowGenerator(true)}>
+                              <Plus className="w-4 h-4 mr-2" />
+                              Gerar Primeiro Contrato
+                            </Button>
+                          </div>
+                        )}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -248,7 +337,7 @@ export default function ContratosPage() {
                                 : 'Indeterminado'}
                             </div>
                             {daysRemaining !== null && daysRemaining > 0 && daysRemaining <= 30 && (
-                              <p className="text-xs text-orange-500">
+                              <p className="text-xs text-orange-600 dark:text-orange-400">
                                 Expira em {daysRemaining} dias
                               </p>
                             )}
@@ -259,6 +348,33 @@ export default function ContratosPage() {
                         </TableCell>
                         <TableCell>
                           {getStatusBadge(contract.status)}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleViewContract(contract)}>
+                                <Eye className="w-4 h-4 mr-2" />
+                                Visualizar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleViewContract(contract)}>
+                                <Printer className="w-4 h-4 mr-2" />
+                                Imprimir
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleSendWhatsApp(contract)}>
+                                <MessageCircle className="w-4 h-4 mr-2" />
+                                Enviar WhatsApp
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleSendEmail(contract)}>
+                                <Mail className="w-4 h-4 mr-2" />
+                                Enviar E-mail
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </motion.tr>
                     );
@@ -283,7 +399,11 @@ export default function ContratosPage() {
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                Nenhum contrato encontrado
+                <p className="mb-4">Nenhum contrato encontrado</p>
+                <Button variant="outline" onClick={() => setShowGenerator(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Gerar Contrato
+                </Button>
               </CardContent>
             </Card>
           ) : (
@@ -296,7 +416,7 @@ export default function ContratosPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card>
+                  <Card className="cursor-pointer" onClick={() => handleViewContract(contract)}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -335,11 +455,22 @@ export default function ContratosPage() {
                               : 'Indeterminado'}
                           </p>
                           {daysRemaining !== null && daysRemaining > 0 && daysRemaining <= 30 && (
-                            <p className="text-xs text-orange-500">
+                            <p className="text-xs text-orange-600 dark:text-orange-400">
                               {daysRemaining} dias restantes
                             </p>
                           )}
                         </div>
+                      </div>
+
+                      <div className="flex gap-2 mt-4 pt-4 border-t">
+                        <Button variant="outline" size="sm" className="flex-1" onClick={(e) => { e.stopPropagation(); handleViewContract(contract); }}>
+                          <Eye className="w-4 h-4 mr-2" />
+                          Ver
+                        </Button>
+                        <Button variant="outline" size="sm" className="flex-1" onClick={(e) => { e.stopPropagation(); handleSendWhatsApp(contract); }}>
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          WhatsApp
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -349,6 +480,19 @@ export default function ContratosPage() {
           )}
         </div>
       </div>
+
+      {/* Dialogs */}
+      <ContractGeneratorDialog 
+        open={showGenerator} 
+        onOpenChange={setShowGenerator} 
+      />
+
+      <ContractPreviewDialog
+        open={showPreview}
+        onOpenChange={setShowPreview}
+        staffData={selectedContract}
+        templateId={selectedContract ? getTemplateIdFromContractType(selectedContract.contract_type) : 'efectivo'}
+      />
     </MainLayout>
   );
 }
