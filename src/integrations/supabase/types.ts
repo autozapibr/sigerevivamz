@@ -775,6 +775,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_any_role: {
+        Args: {
+          _roles: Database["public"]["Enums"]["app_role"][]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -782,6 +789,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role:
@@ -792,6 +800,7 @@ export type Database = {
         | "PROFESSOR"
         | "PEDAGOGICO"
         | "ENCARREGADO"
+        | "ALUNO"
       calendar_event_type: "Feriado" | "Evento" | "Prova" | "Prazo"
       document_type:
         | "BI"
@@ -950,6 +959,7 @@ export const Constants = {
         "PROFESSOR",
         "PEDAGOGICO",
         "ENCARREGADO",
+        "ALUNO",
       ],
       calendar_event_type: ["Feriado", "Evento", "Prova", "Prazo"],
       document_type: [
