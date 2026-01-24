@@ -143,6 +143,28 @@ export const DISTRICTS_BY_PROVINCE: Record<Province, string[]> = {
   'Cabo Delgado': ['Pemba', 'Montepuez', 'Mueda', 'Mocímboa da Praia', 'Palma'],
 };
 
+// Formatadores para exibição
+export const formatPhone = (value: string): string => {
+  if (!value) return '';
+  const numbers = value.replace(/\D/g, '');
+  if (numbers.length === 9) {
+    return `+258 ${numbers.slice(0, 2)} ${numbers.slice(2, 5)} ${numbers.slice(5)}`;
+  }
+  if (numbers.length === 12 && numbers.startsWith('258')) {
+    return `+${numbers.slice(0, 3)} ${numbers.slice(3, 5)} ${numbers.slice(5, 8)} ${numbers.slice(8)}`;
+  }
+  return value;
+};
+
+export const formatBI = (value: string): string => {
+  if (!value) return '';
+  const cleaned = value.replace(/\D/g, '');
+  if (cleaned.length === 13) {
+    return `${cleaned.slice(0, 5)} ${cleaned.slice(5, 10)} ${cleaned.slice(10)}`;
+  }
+  return value;
+};
+
 // Formatador de moeda moçambicana
 export const formatMZN = (value: number): string => {
   return new Intl.NumberFormat('pt-MZ', {
