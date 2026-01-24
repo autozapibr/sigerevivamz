@@ -41,36 +41,212 @@ export type Database = {
         }
         Relationships: []
       }
+      announcement_reads: {
+        Row: {
+          announcement_id: number
+          id: number
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          announcement_id: number
+          id?: never
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          announcement_id?: number
+          id?: never
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_reads_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          class_ids: number[] | null
+          content: string
+          created_at: string | null
+          created_by: string | null
+          expires_at: string | null
+          id: number
+          is_published: boolean | null
+          priority: string
+          published_at: string | null
+          target_audience: string[]
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          class_ids?: number[] | null
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: never
+          is_published?: boolean | null
+          priority?: string
+          published_at?: string | null
+          target_audience?: string[]
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          class_ids?: number[] | null
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: never
+          is_published?: boolean | null
+          priority?: string
+          published_at?: string | null
+          target_audience?: string[]
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      attendance: {
+        Row: {
+          class_id: number
+          created_at: string | null
+          date: string
+          id: number
+          observation: string | null
+          recorded_by: string | null
+          status: string
+          student_id: number
+          subject_id: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          class_id: number
+          created_at?: string | null
+          date?: string
+          id?: never
+          observation?: string | null
+          recorded_by?: string | null
+          status: string
+          student_id: number
+          subject_id?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          class_id?: number
+          created_at?: string | null
+          date?: string
+          id?: never
+          observation?: string | null
+          recorded_by?: string | null
+          status?: string
+          student_id?: number
+          subject_id?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "attendance_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["student_id"]
+          },
+          {
+            foreignKeyName: "attendance_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calendar_events: {
         Row: {
           class_id: number | null
+          color: string | null
           created_at: string | null
+          created_by: string | null
           date: string
           description: string | null
+          end_time: string | null
           id: number
+          is_all_day: boolean | null
+          location: string | null
+          recurrence: string | null
+          start_time: string | null
           subject_id: number | null
           title: string
           type: Database["public"]["Enums"]["calendar_event_type"]
+          updated_at: string | null
         }
         Insert: {
           class_id?: number | null
+          color?: string | null
           created_at?: string | null
+          created_by?: string | null
           date: string
           description?: string | null
+          end_time?: string | null
           id?: number
+          is_all_day?: boolean | null
+          location?: string | null
+          recurrence?: string | null
+          start_time?: string | null
           subject_id?: number | null
           title: string
           type: Database["public"]["Enums"]["calendar_event_type"]
+          updated_at?: string | null
         }
         Update: {
           class_id?: number | null
+          color?: string | null
           created_at?: string | null
+          created_by?: string | null
           date?: string
           description?: string | null
+          end_time?: string | null
           id?: number
+          is_all_day?: boolean | null
+          location?: string | null
+          recurrence?: string | null
+          start_time?: string | null
           subject_id?: number | null
           title?: string
           type?: Database["public"]["Enums"]["calendar_event_type"]
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -79,6 +255,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["class_id"]
           },
           {
             foreignKeyName: "calendar_events_subject_id_fkey"
@@ -112,6 +295,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_curriculum_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["class_id"]
           },
           {
             foreignKeyName: "class_curriculum_subject_id_fkey"
@@ -205,27 +395,91 @@ export type Database = {
       }
       grades: {
         Row: {
+          academic_year_id: number | null
+          acf: number | null
+          acp: number | null
+          acs: number | null
+          class_id: number | null
+          created_at: string | null
           final_exam: number | null
+          media_final: number | null
+          media_trimestral: number | null
           nota1: number | null
           nota2: number | null
+          observation: string | null
+          recorded_by: string | null
           student_id: number
           subject_id: number
+          trimestre: number | null
+          updated_at: string | null
         }
         Insert: {
+          academic_year_id?: number | null
+          acf?: number | null
+          acp?: number | null
+          acs?: number | null
+          class_id?: number | null
+          created_at?: string | null
           final_exam?: number | null
+          media_final?: number | null
+          media_trimestral?: number | null
           nota1?: number | null
           nota2?: number | null
+          observation?: string | null
+          recorded_by?: string | null
           student_id: number
           subject_id: number
+          trimestre?: number | null
+          updated_at?: string | null
         }
         Update: {
+          academic_year_id?: number | null
+          acf?: number | null
+          acp?: number | null
+          acs?: number | null
+          class_id?: number | null
+          created_at?: string | null
           final_exam?: number | null
+          media_final?: number | null
+          media_trimestral?: number | null
           nota1?: number | null
           nota2?: number | null
+          observation?: string | null
+          recorded_by?: string | null
           student_id?: number
           subject_id?: number
+          trimestre?: number | null
+          updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "grades_academic_year_id_fkey"
+            columns: ["academic_year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grades_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grades_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "grades_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["student_id"]
+          },
           {
             foreignKeyName: "grades_student_id_fkey"
             columns: ["student_id"]
@@ -395,6 +649,13 @@ export type Database = {
             foreignKeyName: "student_documents_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["student_id"]
+          },
+          {
+            foreignKeyName: "student_documents_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
             referencedRelation: "students"
             referencedColumns: ["id"]
           },
@@ -468,6 +729,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "student_enrollments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "student_enrollments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["student_id"]
+          },
+          {
             foreignKeyName: "student_enrollments_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
@@ -510,6 +785,13 @@ export type Database = {
             foreignKeyName: "student_guardians_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["student_id"]
+          },
+          {
+            foreignKeyName: "student_guardians_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
             referencedRelation: "students"
             referencedColumns: ["id"]
           },
@@ -535,6 +817,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "scholarships"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_scholarships_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["student_id"]
           },
           {
             foreignKeyName: "student_scholarships_student_id_fkey"
@@ -631,6 +920,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["class_id"]
           },
         ]
       }
@@ -747,6 +1043,13 @@ export type Database = {
             foreignKeyName: "tuition_fees_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["student_id"]
+          },
+          {
+            foreignKeyName: "tuition_fees_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
             referencedRelation: "students"
             referencedColumns: ["id"]
           },
@@ -772,9 +1075,32 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      student_attendance_stats: {
+        Row: {
+          atrasos: number | null
+          class_id: number | null
+          class_name: string | null
+          faltas: number | null
+          faltas_justificadas: number | null
+          presencas: number | null
+          student_id: number | null
+          student_name: string | null
+          taxa_presenca: number | null
+          total_dias: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      calculate_final_average: {
+        Args: { _t1: number; _t2: number; _t3: number }
+        Returns: number
+      }
+      calculate_trimester_average: {
+        Args: { _acf: number; _acp: number; _acs: number }
+        Returns: number
+      }
+      classify_grade: { Args: { _grade: number }; Returns: string }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
