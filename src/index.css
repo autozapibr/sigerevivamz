@@ -2,113 +2,131 @@
 @tailwind components;
 @tailwind utilities;
 
-/* SGE REVIVA Design System - Moçambique School Management System
-Sistema de gestão escolar moderno com cores verde e preto
-Todas as cores são HSL para consistência
-*/
+/* ============================================
+   SiGER - Sistema de Gestão Escolar Reviva
+   Design System para Moçambique
+   Cores: Verde primário com tons modernos
+   ============================================ */
 
 @layer base {
   :root {
-    /* SGE REVIVA Core Colors - Verde e Preto */
-    --primary: 146 46% 27%;           /* Verde #2D5F3F */
-    --primary-foreground: 0 0% 100%;  /* Branco puro */
-    --primary-light: 142 37% 39%;     /* Verde claro #4A7C59 */
-    --primary-dark: 146 60% 20%;      /* Verde escuro */
-    
-    --secondary: 0 0% 10%;            /* Preto #1A1A1A */
-    --secondary-foreground: 0 0% 100%; /* Branco */
-    --secondary-light: 0 0% 17%;      /* Cinza escuro #2C2C2C */
-    --secondary-dark: 0 0% 6%;        /* Preto mais escuro */
+    /* === Primary Colors - Verde SiGER === */
+    --primary: 152 45% 28%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 148 38% 42%;
+    --primary-dark: 152 55% 20%;
 
-    /* Fundos e superfícies */
-    --background: 0 0% 100%;          /* Branco */
-    --foreground: 0 0% 10%;           /* Texto escuro */
-    --surface: 0 0% 98%;              /* Superfície clara */
-    --surface-elevated: 0 0% 100%;    /* Cards elevados */
+    /* === Secondary - Neutros Elegantes === */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 13% 18%;
+    --secondary-light: 220 14% 98%;
+    --secondary-dark: 220 14% 90%;
 
-    /* Estados e feedback */
-    --success: 142 53% 42%;           /* Verde sucesso */
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;            /* Amarelo alerta */
-    --warning-foreground: 0 0% 100%;
-    --error: 0 84% 60%;               /* Vermelho erro */
-    --error-foreground: 0 0% 100%;
-    --info: 213 94% 68%;              /* Azul informação */
-    --info-foreground: 0 0% 100%;
+    /* === Fundos e Superfícies === */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --surface: 220 14% 98%;
+    --surface-elevated: 0 0% 100%;
 
-    /* Componentes específicos */
+    /* === Componentes === */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 142 20% 95%;
-    --accent-foreground: 0 0% 10%;
+    --popover-foreground: 222 47% 11%;
+
+    /* === Estados === */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 152 30% 95%;
+    --accent-foreground: 152 45% 28%;
+
+    /* === Feedback === */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 146 46% 27%;
+    --success: 152 60% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --error: 0 84% 60%;
+    --error-foreground: 0 0% 100%;
+    --info: 213 94% 68%;
+    --info-foreground: 0 0% 100%;
 
-    /* Sidebar SGE REVIVA */
-    --sidebar-background: 0 0% 10%;        /* Fundo escuro */
-    --sidebar-foreground: 0 0% 95%;        /* Texto claro */
-    --sidebar-primary: 146 46% 27%;        /* Verde primário */
+    /* === Bordas e Inputs === */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 152 45% 28%;
+
+    /* === Sidebar === */
+    --sidebar-background: 220 14% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 152 45% 28%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 15%;            /* Hover state */
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 146 46% 27%;
+    --sidebar-accent: 220 14% 93%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 152 45% 28%;
 
-    /* Gradientes SGE REVIVA */
-    --gradient-primary: linear-gradient(135deg, hsl(146 46% 27%) 0%, hsl(142 37% 39%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(0 0% 10%) 0%, hsl(0 0% 17%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(146 46% 27%) 0%, hsl(0 0% 10%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 100%);
-
-    /* Sombras elegantes */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.1);
-    --shadow-primary: 0 10px 30px -10px hsl(146 46% 27% / 0.3);
-    --shadow-glow: 0 0 40px hsl(142 37% 39% / 0.4);
-
-    /* Animações suaves */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-
+    /* === Efeitos === */
     --radius: 0.75rem;
+    
+    /* Gradientes */
+    --gradient-primary: linear-gradient(135deg, hsl(152 45% 28%) 0%, hsl(148 38% 42%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(152 45% 28%) 0%, hsl(152 55% 20%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 14% 98%) 100%);
+
+    /* Sombras */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-primary: 0 10px 30px -10px hsl(152 45% 28% / 0.3);
+    --shadow-glow: 0 0 40px hsl(148 38% 42% / 0.3);
   }
 
   .dark {
-    /* Dark theme com cores SGE REVIVA */
-    --background: 0 0% 6%;               /* Fundo muito escuro */
-    --foreground: 0 0% 95%;              /* Texto claro */
-    --surface: 0 0% 10%;                 /* Superfícies escuras */
-    --surface-elevated: 0 0% 12%;        /* Cards elevados */
+    /* === Dark Mode Colors === */
+    --primary: 152 45% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 148 38% 55%;
+    --primary-dark: 152 50% 35%;
 
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 95%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 95%;
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    --secondary: 222 47% 11%;
+    --secondary-foreground: 210 20% 98%;
+    --secondary-light: 220 20% 18%;
+    --secondary-dark: 222 47% 8%;
 
-    /* Sidebar dark theme */
-    --sidebar-background: 0 0% 6%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 15%;
+    --background: 222 47% 8%;
+    --foreground: 210 20% 98%;
+    --surface: 222 40% 10%;
+    --surface-elevated: 222 35% 12%;
 
-    /* Gradientes dark */
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 6%) 0%, hsl(0 0% 10%) 100%);
+    --card: 222 40% 10%;
+    --card-foreground: 210 20% 98%;
+    --popover: 222 40% 10%;
+    --popover-foreground: 210 20% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 152 30% 15%;
+    --accent-foreground: 152 45% 60%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 152 45% 45%;
+
+    --sidebar-background: 222 47% 8%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-primary: 152 45% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 152 45% 45%;
+
+    --gradient-subtle: linear-gradient(180deg, hsl(222 47% 8%) 0%, hsl(222 40% 10%) 100%);
+    --shadow-primary: 0 10px 30px -10px hsl(152 45% 45% / 0.2);
+    --shadow-glow: 0 0 40px hsl(148 38% 55% / 0.15);
   }
 }
 
@@ -117,94 +135,151 @@ Todas as cores são HSL para consistência
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
+  html {
+    @apply scroll-smooth antialiased;
+    font-feature-settings: "cv11", "ss01";
   }
 
-  html {
-    scroll-behavior: smooth;
+  body {
+    @apply bg-background text-foreground font-sans;
+    text-rendering: optimizeLegibility;
   }
+
+  /* Typography scale */
+  h1 { @apply text-3xl md:text-4xl font-bold tracking-tight; }
+  h2 { @apply text-2xl md:text-3xl font-semibold tracking-tight; }
+  h3 { @apply text-xl md:text-2xl font-semibold; }
+  h4 { @apply text-lg md:text-xl font-medium; }
 }
 
 @layer components {
-  /* Hero button variant */
+  /* === Button Variants === */
   .btn-hero {
-    @apply bg-gradient-to-br from-primary to-primary-light text-primary-foreground shadow-primary hover:shadow-glow transition-all duration-300 hover:scale-105;
+    @apply bg-gradient-to-r from-primary to-primary-light text-primary-foreground;
+    @apply shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30;
+    @apply transition-all duration-300 hover:scale-[1.02];
   }
 
-  /* Surface cards */
+  /* === Card Styles === */
   .surface-card {
-    @apply bg-surface-elevated shadow-md rounded-lg border border-border/50;
+    @apply bg-card rounded-xl border border-border/50 shadow-sm;
+    @apply hover:shadow-md transition-shadow duration-200;
   }
 
-  /* Gradient backgrounds */
-  .bg-gradient-primary {
-    background: var(--gradient-primary);
+  .glass-card {
+    @apply bg-background/80 backdrop-blur-lg rounded-xl border border-border/50;
   }
 
-  .bg-gradient-hero {
-    background: var(--gradient-hero);
+  /* === Status Badges - Moçambique === */
+  .status-ativo {
+    @apply bg-success/10 text-success border-success/20;
+  }
+  .status-inativo {
+    @apply bg-destructive/10 text-destructive border-destructive/20;
+  }
+  .status-pendente {
+    @apply bg-warning/10 text-warning border-warning/20;
+  }
+  .status-aprovado {
+    @apply bg-success/10 text-success border-success/20;
   }
 
-  /* Loading skeleton */
+  /* === Grade Colors (0-20 Scale) === */
+  .grade-excelente { @apply text-emerald-600 dark:text-emerald-400 font-bold; }
+  .grade-bom { @apply text-blue-600 dark:text-blue-400 font-bold; }
+  .grade-suficiente { @apply text-amber-600 dark:text-amber-400 font-bold; }
+  .grade-insuficiente { @apply text-orange-600 dark:text-orange-400 font-bold; }
+  .grade-mau { @apply text-red-600 dark:text-red-400 font-bold; }
+
+  /* === Interactive Elements === */
+  .interactive-hover {
+    @apply transition-all duration-200;
+    @apply hover:bg-accent hover:shadow-sm;
+  }
+
+  /* === Focus Ring === */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2;
+  }
+
+  /* === Skeleton Loading === */
   .skeleton {
     @apply animate-pulse bg-muted rounded;
   }
 
-  /* Smooth transitions */
-  .transition-smooth {
-    transition: var(--transition-smooth);
+  /* === Scrollbar Custom === */
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-2;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+    @apply hover:bg-muted-foreground/30;
   }
 
-  .transition-bounce {
-    transition: var(--transition-bounce);
+  /* === Page Transitions === */
+  .page-enter {
+    @apply animate-in fade-in slide-in-from-bottom-4 duration-300;
   }
 
-  /* Status badges moçambicanos */
-  .status-ativo {
-    @apply bg-green-500/10 text-green-700 border-green-200;
+  /* === Stat Cards === */
+  .stat-card {
+    @apply relative overflow-hidden rounded-xl p-6;
+    @apply bg-gradient-to-br from-card to-card/80;
+    @apply border border-border/50 shadow-sm;
   }
 
-  .status-inativo {
-    @apply bg-red-500/10 text-red-700 border-red-200;
+  .stat-card-icon {
+    @apply absolute -right-4 -bottom-4 w-24 h-24 opacity-5;
   }
 
-  .status-transferido {
-    @apply bg-blue-500/10 text-blue-700 border-blue-200;
+  /* === Table Styles === */
+  .table-row-hover {
+    @apply hover:bg-accent/50 transition-colors;
   }
 
-  .status-graduado {
-    @apply bg-purple-500/10 text-purple-700 border-purple-200;
+  /* === Form Inputs Enhanced === */
+  .input-enhanced {
+    @apply h-11 bg-background border-border/50;
+    @apply focus:border-primary focus:ring-2 focus:ring-primary/20;
+    @apply transition-all duration-200;
   }
 
-  /* Grade colors (Sistema moçambicano 0-20) */
-  .grade-excelente {
-    @apply text-green-600 font-bold;
+  /* === Nav Active State === */
+  .nav-active {
+    @apply bg-primary text-primary-foreground font-medium;
+    @apply shadow-sm shadow-primary/20;
   }
 
-  .grade-bom {
-    @apply text-blue-600 font-bold;
-  }
-
-  .grade-suficiente {
-    @apply text-yellow-600 font-bold;
-  }
-
-  .grade-insuficiente {
-    @apply text-orange-600 font-bold;
-  }
-
-  .grade-mau {
-    @apply text-red-600 font-bold;
+  /* === Gradient Text === */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
+/* === Custom Animations === */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
 
-  body {
-    @apply bg-background text-foreground;
-  }
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px hsl(152 45% 28% / 0.3); }
+  50% { box-shadow: 0 0 40px hsl(152 45% 28% / 0.5); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* === Print Styles === */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; }
 }
