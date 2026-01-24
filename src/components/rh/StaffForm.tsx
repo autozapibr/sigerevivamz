@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, X, User } from 'lucide-react';
+import { Camera, Upload, X, User, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProvinceSelector } from '@/components/shared/ProvinceSelector';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -17,7 +18,7 @@ import {
 import { CONTRACT_TYPES } from '@/hooks/useContracts';
 import { useUploadStaffPhoto } from '@/hooks/useStaffDocuments';
 
-interface StaffFormData {
+export interface StaffFormData {
   name: string;
   email: string;
   phone: string;
@@ -42,6 +43,9 @@ interface StaffFormData {
   emergency_phone: string;
   bank_name: string;
   bank_account: string;
+  payment_method: string;
+  mobile_money_provider: string;
+  mobile_money_number: string;
   status: string;
 }
 
@@ -53,7 +57,7 @@ interface StaffFormProps {
   staffId?: number;
 }
 
-const EMPLOYEE_ROLES = [
+export const EMPLOYEE_ROLES = [
   'Administrativo',
   'Secretário(a)',
   'Contabilista',
@@ -67,7 +71,7 @@ const EMPLOYEE_ROLES = [
   'Outro',
 ];
 
-const DEPARTMENTS = [
+export const DEPARTMENTS = [
   'Direcção',
   'Secretaria',
   'Finanças',
@@ -79,23 +83,66 @@ const DEPARTMENTS = [
   'Transporte',
 ];
 
-const BANKS = [
+// Bancos moçambicanos
+export const BANKS = [
   'BCI - Banco Comercial e de Investimentos',
-  'BIM - Banco Internacional de Moçambique',
-  'Standard Bank',
-  'Absa Moçambique',
+  'BIM - Millennium BIM',
+  'Standard Bank Moçambique',
+  'Absa Bank Moçambique',
+  'FNB Moçambique',
   'Moza Banco',
-  'First National Bank',
   'UBA Moçambique',
-  'Access Bank',
+  'Access Bank Moçambique',
+  'Banco Único',
+  'Banco Terra',
+  'Socremo',
   'Letshego',
   'MyBucks',
   'Outro',
 ];
 
+// Provedores de Mobile Money
+export const MOBILE_MONEY_PROVIDERS = [
+  { value: 'mpesa', label: 'M-Pesa (Vodacom)', prefix: '84/85' },
+  { value: 'emola', label: 'e-Mola (Movitel)', prefix: '86/87' },
+  { value: 'mkesh', label: 'm-Kesh (Tmcel)', prefix: '82/83' },
+];
+
+export const initialStaffFormData: StaffFormData = {
+  name: '',
+  email: '',
+  phone: '',
+  bi_number: '',
+  nuit: '',
+  photo_url: '',
+  role: '',
+  department: '',
+  qualifications: '',
+  hire_date: '',
+  contract_number: '',
+  contract_type: 'Efectivo',
+  contract_start: '',
+  contract_end: '',
+  salary: '',
+  address: '',
+  province: '',
+  district: '',
+  birth_date: '',
+  gender: '',
+  emergency_contact: '',
+  emergency_phone: '',
+  bank_name: '',
+  bank_account: '',
+  payment_method: 'bank',
+  mobile_money_provider: '',
+  mobile_money_number: '',
+  status: 'Ativo',
+};
+
 export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: StaffFormProps) {
   const [photoPreview, setPhotoPreview] = useState<string | null>(formData.photo_url || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadPhoto = useUploadStaffPhoto();
 
   const getInitials = (name: string) => 
@@ -127,10 +174,20 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
     }
   };
 
+  const handleCameraCapture = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const handleFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
   const removePhoto = () => {
     setPhotoPreview(null);
     onChange({ ...formData, photo_url: '' });
     if (fileInputRef.current) fileInputRef.current.value = '';
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
+    (window as any).__tempPhotoFile = null;
   };
 
   return (
@@ -142,7 +199,7 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
       </TabsList>
 
       <TabsContent value="personal" className="space-y-4">
-        {/* Photo Upload */}
+        {/* Photo Upload with Camera Option */}
         <div className="flex items-center gap-4">
           <div className="relative">
             <Avatar className="h-24 w-24 border-2 border-primary/20">
@@ -164,6 +221,7 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
             )}
           </div>
           <div className="space-y-2">
+            {/* Hidden file inputs */}
             <input
               ref={fileInputRef}
               type="file"
@@ -171,17 +229,41 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
               className="hidden"
               onChange={handlePhotoUpload}
             />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadPhoto.isPending}
-            >
-              <Camera className="w-4 h-4 mr-2" />
-              {uploadPhoto.isPending ? 'A carregar...' : 'Carregar Foto'}
-            </Button>
-            <p className="text-xs text-muted-foreground">JPG, PNG até 2MB</p>
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="user"
+              className="hidden"
+              onChange={handlePhotoUpload}
+            />
+            
+            {/* Upload buttons */}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleFileUpload}
+                disabled={uploadPhoto.isPending}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Ficheiro
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCameraCapture}
+                disabled={uploadPhoto.isPending}
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                Câmara
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {uploadPhoto.isPending ? 'A carregar...' : 'JPG, PNG até 2MB'}
+            </p>
           </div>
         </div>
 
@@ -269,7 +351,6 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
           </div>
         </div>
 
-        {/* Province & District */}
         {/* Province & District */}
         <ProvinceSelector
           selectedProvince={formData.province as any}
@@ -461,34 +542,98 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
           />
         </div>
 
-        {/* Bank Info */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="bank_name">Banco</Label>
-            <Select 
-              value={formData.bank_name} 
-              onValueChange={(v) => onChange({ ...formData, bank_name: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccione o banco" />
-              </SelectTrigger>
-              <SelectContent>
-                {BANKS.map(bank => (
-                  <SelectItem key={bank} value={bank}>{bank}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="bank_account">Número da Conta</Label>
-            <Input
-              id="bank_account"
-              placeholder="Número da conta bancária"
-              value={formData.bank_account}
-              onChange={(e) => onChange({ ...formData, bank_account: e.target.value })}
-            />
-          </div>
+        {/* Payment Method Selection */}
+        <div className="space-y-3">
+          <Label>Método de Pagamento</Label>
+          <RadioGroup
+            value={formData.payment_method}
+            onValueChange={(v) => onChange({ ...formData, payment_method: v })}
+            className="flex flex-col space-y-2"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="bank" id="payment-bank" />
+              <Label htmlFor="payment-bank" className="font-normal cursor-pointer">
+                Transferência Bancária
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="mobile" id="payment-mobile" />
+              <Label htmlFor="payment-mobile" className="font-normal cursor-pointer flex items-center gap-2">
+                <Smartphone className="w-4 h-4" />
+                Dinheiro Móvel (M-Pesa, e-Mola, m-Kesh)
+              </Label>
+            </div>
+          </RadioGroup>
         </div>
+
+        {/* Bank Info - Only shown when bank payment method is selected */}
+        {formData.payment_method === 'bank' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg border">
+            <div className="space-y-2">
+              <Label htmlFor="bank_name">Banco</Label>
+              <Select 
+                value={formData.bank_name} 
+                onValueChange={(v) => onChange({ ...formData, bank_name: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccione o banco" />
+                </SelectTrigger>
+                <SelectContent>
+                  {BANKS.map(bank => (
+                    <SelectItem key={bank} value={bank}>{bank}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bank_account">Número da Conta (NIB)</Label>
+              <Input
+                id="bank_account"
+                placeholder="Ex: 0001 0000 0000 0000 0000 0"
+                value={formData.bank_account}
+                onChange={(e) => onChange({ ...formData, bank_account: e.target.value })}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Money Info - Only shown when mobile payment method is selected */}
+        {formData.payment_method === 'mobile' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg border">
+            <div className="space-y-2">
+              <Label htmlFor="mobile_money_provider">Operadora</Label>
+              <Select 
+                value={formData.mobile_money_provider} 
+                onValueChange={(v) => onChange({ ...formData, mobile_money_provider: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccione a operadora" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MOBILE_MONEY_PROVIDERS.map(provider => (
+                    <SelectItem key={provider.value} value={provider.value}>
+                      {provider.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="mobile_money_number">Número do Telemóvel</Label>
+              <Input
+                id="mobile_money_number"
+                placeholder="+258 84 000 0000"
+                value={formData.mobile_money_number}
+                onChange={(e) => onChange({ ...formData, mobile_money_number: e.target.value })}
+              />
+              {formData.mobile_money_provider && (
+                <p className="text-xs text-muted-foreground">
+                  Prefixo esperado: {MOBILE_MONEY_PROVIDERS.find(p => p.value === formData.mobile_money_provider)?.prefix}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </TabsContent>
     </Tabs>
   );

@@ -27,6 +27,9 @@ export interface Employee {
   emergency_phone: string | null;
   bank_name: string | null;
   bank_account: string | null;
+  payment_method: string | null;
+  mobile_money_provider: string | null;
+  mobile_money_number: string | null;
   status: string | null;
   created_at: string | null;
   updated_at: string | null;

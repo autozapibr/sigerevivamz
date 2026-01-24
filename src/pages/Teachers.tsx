@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Plus, Search, Users, User, Phone, Mail, 
-  MoreHorizontal, Eye, Edit, Trash2, UserCheck, UserX,
-  GraduationCap, BookOpen, Award
+  Plus, Search, Users, Phone, Mail, 
+  MoreHorizontal, Edit, Trash2, UserCheck, UserX,
+  GraduationCap, BookOpen, Award, FileText
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -34,8 +34,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Label } from '@/components/ui/label';
 import { 
   useTeachers, 
   useCreateTeacher, 
@@ -44,6 +53,8 @@ import {
   useTeachersStats,
   type TeacherFilters 
 } from '@/hooks/useTeachers';
+import { StaffForm, initialStaffFormData, type StaffFormData } from '@/components/rh/StaffForm';
+import { DocumentUploadDialog } from '@/components/rh/DocumentUploadDialog';
 import { formatPhone } from '@/lib/validators/mozambique';
 
 export default function Teachers() {
@@ -52,14 +63,9 @@ export default function Teachers() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDocumentDialog, setShowDocumentDialog] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    qualifications: '',
-    status: 'Ativo' as const,
-  });
+  const [formData, setFormData] = useState<StaffFormData>(initialStaffFormData);
 
   const filters: TeacherFilters = {
     search: searchTerm,
@@ -72,18 +78,34 @@ export default function Teachers() {
   const updateTeacher = useUpdateTeacher();
   const deleteTeacher = useDeleteTeacher();
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      qualifications: '',
-      status: 'Ativo',
-    });
-  };
+  const resetForm = () => setFormData(initialStaffFormData);
 
   const handleCreate = async () => {
-    await createTeacher.mutateAsync(formData);
+    await createTeacher.mutateAsync({
+      name: formData.name,
+      email: formData.email || null,
+      phone: formData.phone || null,
+      qualifications: formData.qualifications || null,
+      bi_number: formData.bi_number || null,
+      nuit: formData.nuit || null,
+      photo_url: formData.photo_url || null,
+      hire_date: formData.hire_date || null,
+      contract_number: formData.contract_number || null,
+      contract_type: formData.contract_type || null,
+      contract_start: formData.contract_start || null,
+      contract_end: formData.contract_end || null,
+      salary: formData.salary ? parseFloat(formData.salary) : null,
+      address: formData.address || null,
+      province: formData.province || null,
+      district: formData.district || null,
+      birth_date: formData.birth_date || null,
+      gender: formData.gender || null,
+      emergency_contact: formData.emergency_contact || null,
+      emergency_phone: formData.emergency_phone || null,
+      bank_name: formData.bank_name || null,
+      bank_account: formData.bank_account || null,
+      status: formData.status as 'Ativo' | 'Inativo',
+    } as any);
     setShowCreateDialog(false);
     resetForm();
   };
@@ -91,11 +113,34 @@ export default function Teachers() {
   const handleEdit = (teacher: any) => {
     setSelectedTeacher(teacher);
     setFormData({
-      name: teacher.name,
+      name: teacher.name || '',
       email: teacher.email || '',
       phone: teacher.phone || '',
+      bi_number: teacher.bi_number || '',
+      nuit: teacher.nuit || '',
+      photo_url: teacher.photo_url || '',
+      role: '',
+      department: '',
       qualifications: teacher.qualifications || '',
-      status: teacher.status,
+      hire_date: teacher.hire_date || '',
+      contract_number: teacher.contract_number || '',
+      contract_type: teacher.contract_type || 'Efectivo',
+      contract_start: teacher.contract_start || '',
+      contract_end: teacher.contract_end || '',
+      salary: teacher.salary?.toString() || '',
+      address: teacher.address || '',
+      province: teacher.province || '',
+      district: teacher.district || '',
+      birth_date: teacher.birth_date || '',
+      gender: teacher.gender || '',
+      emergency_contact: teacher.emergency_contact || '',
+      emergency_phone: teacher.emergency_phone || '',
+      bank_name: teacher.bank_name || '',
+      bank_account: teacher.bank_account || '',
+      payment_method: teacher.payment_method || 'bank',
+      mobile_money_provider: teacher.mobile_money_provider || '',
+      mobile_money_number: teacher.mobile_money_number || '',
+      status: teacher.status || 'Ativo',
     });
     setShowEditDialog(true);
   };
@@ -104,8 +149,30 @@ export default function Teachers() {
     if (selectedTeacher) {
       await updateTeacher.mutateAsync({
         id: selectedTeacher.id,
-        ...formData,
-      });
+        name: formData.name,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        qualifications: formData.qualifications || null,
+        bi_number: formData.bi_number || null,
+        nuit: formData.nuit || null,
+        photo_url: formData.photo_url || null,
+        hire_date: formData.hire_date || null,
+        contract_number: formData.contract_number || null,
+        contract_type: formData.contract_type || null,
+        contract_start: formData.contract_start || null,
+        contract_end: formData.contract_end || null,
+        salary: formData.salary ? parseFloat(formData.salary) : null,
+        address: formData.address || null,
+        province: formData.province || null,
+        district: formData.district || null,
+        birth_date: formData.birth_date || null,
+        gender: formData.gender || null,
+        emergency_contact: formData.emergency_contact || null,
+        emergency_phone: formData.emergency_phone || null,
+        bank_name: formData.bank_name || null,
+        bank_account: formData.bank_account || null,
+        status: formData.status as 'Ativo' | 'Inativo',
+      } as any);
       setShowEditDialog(false);
       resetForm();
     }
@@ -266,6 +333,7 @@ export default function Teachers() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-4">
                         <Avatar className="h-16 w-16 border-2 border-primary/20">
+                          <AvatarImage src={teacher.photo_url || undefined} />
                           <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">
                             {getInitials(teacher.name)}
                           </AvatarFallback>
@@ -301,6 +369,13 @@ export default function Teachers() {
                           <DropdownMenuItem onClick={() => handleEdit(teacher)}>
                             <Edit className="w-4 h-4 mr-2" />
                             Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedTeacher(teacher);
+                            setShowDocumentDialog(true);
+                          }}>
+                            <FileText className="w-4 h-4 mr-2" />
+                            Documentos
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => handleToggleStatus(teacher)}>
@@ -349,10 +424,11 @@ export default function Teachers() {
                         {teacher.status}
                       </Badge>
                       
-                      {/* Show assigned classes indicator */}
-                      <div className="text-xs text-muted-foreground">
-                        Director de Turma
-                      </div>
+                      {teacher.contract_number && (
+                        <span className="text-xs text-muted-foreground">
+                          {teacher.contract_number}
+                        </span>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -370,7 +446,7 @@ export default function Teachers() {
           resetForm();
         }
       }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>
               {showEditDialog ? 'Editar Professor' : 'Novo Professor'}
@@ -382,70 +458,17 @@ export default function Teachers() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome Completo *</Label>
-              <Input
-                id="name"
-                placeholder="Ex: Dr. João Manuel Silva"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-            </div>
+          <ScrollArea className="max-h-[60vh] pr-4">
+            <StaffForm
+              staffType="teacher"
+              formData={formData}
+              onChange={setFormData}
+              isEdit={showEditDialog}
+              staffId={selectedTeacher?.id}
+            />
+          </ScrollArea>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="professor@escola.mz"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Telefone</Label>
-                <Input
-                  id="phone"
-                  placeholder="+258 84 000 0000"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="qualifications">Qualificações</Label>
-              <Textarea
-                id="qualifications"
-                placeholder="Ex: Licenciatura em Matemática, Mestrado em Educação..."
-                value={formData.qualifications}
-                onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
-                rows={3}
-              />
-            </div>
-
-            {showEditDialog && (
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select 
-                  value={formData.status} 
-                  onValueChange={(v) => setFormData({ ...formData, status: v as any })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Ativo">Activo</SelectItem>
-                    <SelectItem value="Inativo">Inactivo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => {
               setShowCreateDialog(false);
               setShowEditDialog(false);
@@ -457,38 +480,47 @@ export default function Teachers() {
               onClick={showEditDialog ? handleUpdate : handleCreate}
               disabled={!formData.name || createTeacher.isPending || updateTeacher.isPending}
             >
-              {(createTeacher.isPending || updateTeacher.isPending) 
-                ? 'A guardar...' 
-                : showEditDialog ? 'Guardar Alterações' : 'Registar'}
+              {(createTeacher.isPending || updateTeacher.isPending) && (
+                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              )}
+              {showEditDialog ? 'Guardar' : 'Registar'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Eliminar Professor</DialogTitle>
-            <DialogDescription>
-              Tem a certeza que deseja eliminar o professor{' '}
-              <strong>{selectedTeacher?.name}</strong>? Esta acção não pode ser desfeita.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-              Cancelar
-            </Button>
-            <Button 
-              variant="destructive" 
+      {/* Delete Confirmation */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar Professor</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja eliminar o professor <strong>{selectedTeacher?.name}</strong>?
+              Esta acção não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleDelete}
-              disabled={deleteTeacher.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteTeacher.isPending ? 'A eliminar...' : 'Eliminar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Document Upload Dialog */}
+      {selectedTeacher && (
+        <DocumentUploadDialog
+          open={showDocumentDialog}
+          onOpenChange={setShowDocumentDialog}
+          staffType="teacher"
+          staffId={selectedTeacher.id}
+          staffName={selectedTeacher.name}
+        />
+      )}
     </MainLayout>
   );
 }
