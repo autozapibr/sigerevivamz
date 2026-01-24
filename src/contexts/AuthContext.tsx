@@ -7,6 +7,7 @@ interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   register: (data: { name: string; email: string; password: string; role: UserRole }) => Promise<void>;
+  devBypassLogin: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,7 +16,8 @@ type AuthAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'LOGIN_SUCCESS'; payload: User }
   | { type: 'LOGOUT' }
-  | { type: 'SET_USER'; payload: User | null };
+  | { type: 'SET_USER'; payload: User | null }
+  | { type: 'DEV_BYPASS'; payload: User };
 
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
@@ -39,6 +41,13 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         ...state, 
         user: action.payload, 
         isAuthenticated: !!action.payload,
+        isLoading: false
+      };
+    case 'DEV_BYPASS':
+      return {
+        ...state,
+        user: action.payload,
+        isAuthenticated: true,
         isLoading: false
       };
     default:
@@ -148,12 +157,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'LOGOUT' });
   };
 
+  // Development bypass login - creates a mock user without Supabase auth
+  const devBypassLogin = (role: UserRole) => {
+    const devUser: User = {
+      id: `dev-${role.toLowerCase()}-${Date.now()}`,
+      email: `${role.toLowerCase()}@dev.escola.mz`,
+      name: `Utilizador ${role}`,
+      role: role,
+      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${role}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    dispatch({ type: 'DEV_BYPASS', payload: devUser });
+  };
+
   return (
     <AuthContext.Provider value={{
       ...state,
       login,
       logout,
       register,
+      devBypassLogin,
     }}>
       {children}
     </AuthContext.Provider>
