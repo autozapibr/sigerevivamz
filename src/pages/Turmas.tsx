@@ -299,12 +299,20 @@ export default function Turmas() {
                     <div className="flex items-center gap-2 text-sm">
                       <User className="w-4 h-4 text-muted-foreground" />
                       <span className="text-muted-foreground">Director de Turma:</span>
-                      <span className="font-medium">
-                        {turma.teacher?.name || 
-                          <span className="text-orange-500">Não atribuído</span>
-                        }
-                      </span>
+                      {turma.teacher ? (
+                        <span className="font-medium text-primary">
+                          {turma.teacher.name}
+                        </span>
+                      ) : (
+                        <span className="text-orange-500 dark:text-orange-400">Não atribuído</span>
+                      )}
                     </div>
+
+                    {turma.teacher?.email && (
+                      <div className="text-xs text-muted-foreground pl-6">
+                        {turma.teacher.email}
+                      </div>
+                    )}
 
                     {/* Students count */}
                     <div className="flex items-center justify-between py-3 px-4 bg-muted/50 rounded-lg">

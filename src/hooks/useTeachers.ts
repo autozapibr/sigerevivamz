@@ -168,15 +168,22 @@ export function useTeachersStats() {
   return useQuery({
     queryKey: ['teachers-stats'],
     queryFn: async () => {
-      const [teachersRes, curriculumRes] = await Promise.all([
+      const [teachersRes, classesRes, curriculumRes] = await Promise.all([
         supabase.from('teachers').select('id, status'),
+        supabase.from('classes').select('id, teacher_id'),
         supabase.from('class_curriculum').select('teacher_id'),
       ]);
 
       if (teachersRes.error) throw teachersRes.error;
+      if (classesRes.error) throw classesRes.error;
       if (curriculumRes.error) throw curriculumRes.error;
 
-      const teachersWithClasses = new Set(curriculumRes.data.map(c => c.teacher_id));
+      // Teachers with classes as director
+      const teachersAsDirector = new Set(classesRes.data.filter(c => c.teacher_id).map(c => c.teacher_id));
+      // Teachers with curriculum assignments
+      const teachersWithCurriculum = new Set(curriculumRes.data.map(c => c.teacher_id));
+      // Combined set
+      const teachersWithClasses = new Set([...teachersAsDirector, ...teachersWithCurriculum]);
 
       return {
         total: teachersRes.data.length,
@@ -186,5 +193,25 @@ export function useTeachersStats() {
         semTurmas: teachersRes.data.filter(t => !teachersWithClasses.has(t.id)).length,
       };
     },
+  });
+}
+
+// Hook to get teacher's classes (as director)
+export function useTeacherClasses(teacherId: number | null) {
+  return useQuery({
+    queryKey: ['teacher-classes', teacherId],
+    queryFn: async () => {
+      if (!teacherId) return [];
+      
+      const { data, error } = await supabase
+        .from('classes')
+        .select('id, name, year')
+        .eq('teacher_id', teacherId)
+        .order('year', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!teacherId,
   });
 }

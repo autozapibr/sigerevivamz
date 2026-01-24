@@ -341,13 +341,18 @@ export default function Teachers() {
                     )}
 
                     <div className="mt-4 flex items-center justify-between">
-                      <Badge className={
+                      <Badge variant="secondary" className={
                         teacher.status === 'Ativo'
-                          ? 'bg-green-500/10 text-green-500 border-green-500/30'
-                          : 'bg-red-500/10 text-red-500 border-red-500/30'
+                          ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-0'
+                          : 'bg-destructive/10 text-destructive border-0'
                       }>
                         {teacher.status}
                       </Badge>
+                      
+                      {/* Show assigned classes indicator */}
+                      <div className="text-xs text-muted-foreground">
+                        Director de Turma
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
