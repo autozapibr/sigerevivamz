@@ -13,6 +13,7 @@ import Teachers from "./pages/Teachers";
 import Turmas from "./pages/Turmas";
 import Evaluations from "./pages/Evaluations";
 import Enrollments from "./pages/Enrollments";
+import Matriculas from "./pages/Matriculas";
 import Financial from "./pages/Financial";
 import Subjects from "./pages/Subjects";
 import Attendance from "./pages/Attendance";
@@ -114,6 +115,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Enrollments />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/matriculas"
+        element={
+          <ProtectedRoute>
+            <Matriculas />
           </ProtectedRoute>
         }
       />

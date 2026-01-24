@@ -97,7 +97,7 @@ const systemModules = {
       },
       {
         title: 'Matrículas',
-        url: '/enrollments',
+        url: '/matriculas',
         icon: FileText,
       },
       {
