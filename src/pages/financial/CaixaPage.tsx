@@ -1,27 +1,525 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wallet } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { 
+  Wallet, 
+  Search, 
+  Plus,
+  Calendar,
+  TrendingUp,
+  TrendingDown,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Filter,
+  Download,
+  Trash2,
+  Edit
+} from 'lucide-react';
+import { useTransactions, useFinancialCategories, useCreateTransaction, useDeleteTransaction, useFinancialSummary } from '@/hooks/useFinancial';
+import { formatMZN } from '@/lib/validators/mozambique';
+import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
+import { pt } from 'date-fns/locale';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import type { Database } from '@/integrations/supabase/types';
+
+type TransactionType = Database['public']['Enums']['transaction_type'];
+
+const MONTHS = [
+  { value: '2025-01', label: 'Janeiro 2025' },
+  { value: '2025-02', label: 'Fevereiro 2025' },
+  { value: '2025-03', label: 'Março 2025' },
+  { value: '2025-04', label: 'Abril 2025' },
+  { value: '2025-05', label: 'Maio 2025' },
+  { value: '2025-06', label: 'Junho 2025' },
+  { value: '2025-07', label: 'Julho 2025' },
+  { value: '2025-08', label: 'Agosto 2025' },
+  { value: '2025-09', label: 'Setembro 2025' },
+  { value: '2025-10', label: 'Outubro 2025' },
+  { value: '2025-11', label: 'Novembro 2025' },
+  { value: '2025-12', label: 'Dezembro 2025' },
+];
 
 export default function CaixaPage() {
+  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [newMovementDialog, setNewMovementDialog] = useState(false);
+  const [movementType, setMovementType] = useState<TransactionType>('Receita');
+  const [formData, setFormData] = useState({
+    amount: '',
+    description: '',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    category_id: '',
+  });
+
+  const startDate = format(startOfMonth(parseISO(`${selectedMonth}-01`)), 'yyyy-MM-dd');
+  const endDate = format(endOfMonth(parseISO(`${selectedMonth}-01`)), 'yyyy-MM-dd');
+
+  const { data: transactions = [], isLoading } = useTransactions({
+    type: typeFilter !== 'all' ? typeFilter as TransactionType : undefined,
+    startDate,
+    endDate,
+  });
+
+  const { data: categories = [] } = useFinancialCategories();
+  const { data: summary } = useFinancialSummary(selectedMonth);
+  const createTransaction = useCreateTransaction();
+  const deleteTransaction = useDeleteTransaction();
+
+  const filteredTransactions = transactions.filter(t => {
+    if (searchTerm && !t.description?.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    return true;
+  });
+
+  // Calculate running balance
+  let runningBalance = 0;
+  const transactionsWithBalance = [...filteredTransactions]
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .map(t => {
+      runningBalance += t.type === 'Receita' ? t.amount : -t.amount;
+      return { ...t, balance: runningBalance };
+    })
+    .reverse();
+
+  const handleSubmit = () => {
+    createTransaction.mutate(
+      {
+        type: movementType,
+        amount: parseFloat(formData.amount),
+        date: formData.date,
+        description: formData.description,
+        category_id: formData.category_id ? parseInt(formData.category_id) : undefined,
+      },
+      {
+        onSuccess: () => {
+          setNewMovementDialog(false);
+          setFormData({ amount: '', description: '', date: format(new Date(), 'yyyy-MM-dd'), category_id: '' });
+        },
+      }
+    );
+  };
+
+  const filteredCategories = categories.filter(c => c.type === movementType);
+
   return (
     <MainLayout 
       title="Livro Caixa" 
-      subtitle="Registro de entradas e saídas financeiras"
+      subtitle="Controlo de entradas e saídas financeiras"
     >
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Wallet className="w-5 h-5" />
-            Livro Caixa
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Funcionalidade em desenvolvimento: Registro de todas as movimentações financeiras da escola.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="border-l-4 border-l-success bg-gradient-to-br from-card to-success/5">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Receitas</p>
+                    <p className="text-2xl font-bold text-success">
+                      {formatMZN(summary?.totalReceitas || 0)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {transactions.filter(t => t.type === 'Receita').length} movimentos
+                    </p>
+                  </div>
+                  <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
+                    <TrendingUp className="h-6 w-6 text-success" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="border-l-4 border-l-destructive bg-gradient-to-br from-card to-destructive/5">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Despesas</p>
+                    <p className="text-2xl font-bold text-destructive">
+                      {formatMZN(summary?.totalDespesas || 0)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {transactions.filter(t => t.type === 'Despesa').length} movimentos
+                    </p>
+                  </div>
+                  <div className="h-12 w-12 rounded-xl bg-destructive/10 flex items-center justify-center">
+                    <TrendingDown className="h-6 w-6 text-destructive" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className={cn(
+              "border-l-4 bg-gradient-to-br from-card",
+              (summary?.saldo || 0) >= 0 
+                ? "border-l-primary to-primary/5" 
+                : "border-l-destructive to-destructive/5"
+            )}>
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Saldo do Mês</p>
+                    <p className={cn(
+                      "text-2xl font-bold",
+                      (summary?.saldo || 0) >= 0 ? "text-primary" : "text-destructive"
+                    )}>
+                      {formatMZN(summary?.saldo || 0)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {format(parseISO(`${selectedMonth}-01`), 'MMMM yyyy', { locale: pt })}
+                    </p>
+                  </div>
+                  <div className={cn(
+                    "h-12 w-12 rounded-xl flex items-center justify-center",
+                    (summary?.saldo || 0) >= 0 ? "bg-primary/10" : "bg-destructive/10"
+                  )}>
+                    <Wallet className={cn(
+                      "h-6 w-6",
+                      (summary?.saldo || 0) >= 0 ? "text-primary" : "text-destructive"
+                    )} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Filters & Actions */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex flex-col md:flex-row gap-4 justify-between">
+              <div className="flex flex-1 gap-3 flex-wrap">
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger className="w-[180px]">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MONTHS.map(m => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="w-[140px]">
+                    <Filter className="w-4 h-4 mr-2" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="Receita">Receitas</SelectItem>
+                    <SelectItem value="Despesa">Despesas</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Pesquisar descrição..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => {
+                    setMovementType('Receita');
+                    setNewMovementDialog(true);
+                  }}
+                  className="gap-2 bg-success hover:bg-success/90"
+                >
+                  <ArrowUpCircle className="h-4 w-4" />
+                  Receita
+                </Button>
+                <Button 
+                  variant="destructive"
+                  onClick={() => {
+                    setMovementType('Despesa');
+                    setNewMovementDialog(true);
+                  }}
+                  className="gap-2"
+                >
+                  <ArrowDownCircle className="h-4 w-4" />
+                  Despesa
+                </Button>
+                <Button variant="outline" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Exportar
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              </div>
+            ) : transactionsWithBalance.length === 0 ? (
+              <div className="text-center py-12">
+                <Wallet className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <h3 className="text-lg font-medium">Nenhum movimento encontrado</h3>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Comece registando uma receita ou despesa
+                </p>
+                <div className="flex gap-2 justify-center mt-4">
+                  <Button 
+                    onClick={() => {
+                      setMovementType('Receita');
+                      setNewMovementDialog(true);
+                    }}
+                    className="gap-2 bg-success hover:bg-success/90"
+                  >
+                    <ArrowUpCircle className="h-4 w-4" />
+                    Nova Receita
+                  </Button>
+                  <Button 
+                    variant="destructive"
+                    onClick={() => {
+                      setMovementType('Despesa');
+                      setNewMovementDialog(true);
+                    }}
+                    className="gap-2"
+                  >
+                    <ArrowDownCircle className="h-4 w-4" />
+                    Nova Despesa
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead>Data</TableHead>
+                      <TableHead>Descrição</TableHead>
+                      <TableHead>Categoria</TableHead>
+                      <TableHead className="text-right">Entrada</TableHead>
+                      <TableHead className="text-right">Saída</TableHead>
+                      <TableHead className="text-right">Saldo</TableHead>
+                      <TableHead className="text-right">Acções</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <AnimatePresence>
+                      {transactionsWithBalance.map((tx, index) => (
+                        <motion.tr
+                          key={tx.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 20 }}
+                          transition={{ delay: index * 0.02 }}
+                          className="group hover:bg-muted/50 transition-colors"
+                        >
+                          <TableCell className="font-medium">
+                            {format(parseISO(tx.date), 'dd/MM/yyyy')}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {tx.type === 'Receita' ? (
+                                <ArrowUpCircle className="h-4 w-4 text-success" />
+                              ) : (
+                                <ArrowDownCircle className="h-4 w-4 text-destructive" />
+                              )}
+                              {tx.description || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {tx.category?.name ? (
+                              <Badge variant="outline">{tx.category.name}</Badge>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {tx.type === 'Receita' && (
+                              <span className="text-success font-medium">
+                                {formatMZN(tx.amount)}
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {tx.type === 'Despesa' && (
+                              <span className="text-destructive font-medium">
+                                {formatMZN(tx.amount)}
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className={cn(
+                            "text-right font-medium",
+                            tx.balance >= 0 ? "text-primary" : "text-destructive"
+                          )}>
+                            {formatMZN(tx.balance)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => deleteTransaction.mutate(tx.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </motion.tr>
+                      ))}
+                    </AnimatePresence>
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* New Movement Dialog */}
+      <Dialog open={newMovementDialog} onOpenChange={setNewMovementDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {movementType === 'Receita' ? (
+                <ArrowUpCircle className="h-5 w-5 text-success" />
+              ) : (
+                <ArrowDownCircle className="h-5 w-5 text-destructive" />
+              )}
+              Nova {movementType}
+            </DialogTitle>
+            <DialogDescription>
+              Registe um novo movimento no livro caixa
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <Label>Tipo de Movimento</Label>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <Button
+                    type="button"
+                    variant={movementType === 'Receita' ? 'default' : 'outline'}
+                    className={cn(
+                      "gap-2",
+                      movementType === 'Receita' && "bg-success hover:bg-success/90"
+                    )}
+                    onClick={() => setMovementType('Receita')}
+                  >
+                    <ArrowUpCircle className="h-4 w-4" />
+                    Receita
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={movementType === 'Despesa' ? 'destructive' : 'outline'}
+                    className="gap-2"
+                    onClick={() => setMovementType('Despesa')}
+                  >
+                    <ArrowDownCircle className="h-4 w-4" />
+                    Despesa
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <Label>Valor (MZN)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={formData.amount}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label>Data</Label>
+                <Input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+
+              <div className="col-span-2">
+                <Label>Categoria</Label>
+                <Select 
+                  value={formData.category_id} 
+                  onValueChange={(v) => setFormData({ ...formData, category_id: v })}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Selecionar categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredCategories.map(cat => (
+                      <SelectItem key={cat.id} value={cat.id.toString()}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="col-span-2">
+                <Label>Descrição</Label>
+                <Textarea
+                  placeholder="Descreva o movimento..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="mt-1 resize-none"
+                  rows={2}
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setNewMovementDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSubmit} 
+              disabled={createTransaction.isPending || !formData.amount}
+              className={cn(
+                "gap-2",
+                movementType === 'Receita' ? "bg-success hover:bg-success/90" : "bg-destructive hover:bg-destructive/90"
+              )}
+            >
+              {createTransaction.isPending && (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+              )}
+              Registar {movementType}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 }
