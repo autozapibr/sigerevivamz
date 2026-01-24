@@ -53,37 +53,11 @@ import {
   useEmployeesStats,
   type EmployeeFilters 
 } from '@/hooks/useEmployees';
-import { StaffForm } from '@/components/rh/StaffForm';
+import { StaffForm, initialStaffFormData, type StaffFormData } from '@/components/rh/StaffForm';
 import { DocumentUploadDialog } from '@/components/rh/DocumentUploadDialog';
 import { formatPhone } from '@/lib/validators/mozambique';
 
-const initialFormData = {
-  name: '',
-  email: '',
-  phone: '',
-  bi_number: '',
-  nuit: '',
-  photo_url: '',
-  role: '',
-  department: '',
-  qualifications: '',
-  hire_date: '',
-  contract_number: '',
-  contract_type: 'Efectivo',
-  contract_start: '',
-  contract_end: '',
-  salary: '',
-  address: '',
-  province: '',
-  district: '',
-  birth_date: '',
-  gender: '',
-  emergency_contact: '',
-  emergency_phone: '',
-  bank_name: '',
-  bank_account: '',
-  status: 'Ativo',
-};
+// Using initialStaffFormData from StaffForm
 
 export default function ColaboradoresPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -93,7 +67,7 @@ export default function ColaboradoresPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDocumentDialog, setShowDocumentDialog] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] = useState<StaffFormData>(initialStaffFormData);
 
   const filters: EmployeeFilters = {
     search: searchTerm,
@@ -106,7 +80,7 @@ export default function ColaboradoresPage() {
   const updateEmployee = useUpdateEmployee();
   const deleteEmployee = useDeleteEmployee();
 
-  const resetForm = () => setFormData(initialFormData);
+  const resetForm = () => setFormData(initialStaffFormData);
 
   const handleCreate = async () => {
     await createEmployee.mutateAsync({
@@ -133,6 +107,9 @@ export default function ColaboradoresPage() {
       emergency_phone: formData.emergency_phone || null,
       bank_name: formData.bank_name || null,
       bank_account: formData.bank_account || null,
+      payment_method: formData.payment_method || 'bank',
+      mobile_money_provider: formData.mobile_money_provider || null,
+      mobile_money_number: formData.mobile_money_number || null,
       status: formData.status,
     });
     setShowCreateDialog(false);
@@ -166,6 +143,9 @@ export default function ColaboradoresPage() {
       emergency_phone: employee.emergency_phone || '',
       bank_name: employee.bank_name || '',
       bank_account: employee.bank_account || '',
+      payment_method: employee.payment_method || 'bank',
+      mobile_money_provider: employee.mobile_money_provider || '',
+      mobile_money_number: employee.mobile_money_number || '',
       status: employee.status || 'Ativo',
     });
     setShowEditDialog(true);
@@ -198,6 +178,9 @@ export default function ColaboradoresPage() {
         emergency_phone: formData.emergency_phone || null,
         bank_name: formData.bank_name || null,
         bank_account: formData.bank_account || null,
+        payment_method: formData.payment_method || 'bank',
+        mobile_money_provider: formData.mobile_money_provider || null,
+        mobile_money_number: formData.mobile_money_number || null,
         status: formData.status,
       });
       setShowEditDialog(false);

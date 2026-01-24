@@ -368,8 +368,11 @@ export type Database = {
           gender: string | null
           hire_date: string | null
           id: number
+          mobile_money_number: string | null
+          mobile_money_provider: string | null
           name: string
           nuit: string | null
+          payment_method: string | null
           phone: string | null
           photo_url: string | null
           province: string | null
@@ -397,8 +400,11 @@ export type Database = {
           gender?: string | null
           hire_date?: string | null
           id?: never
+          mobile_money_number?: string | null
+          mobile_money_provider?: string | null
           name: string
           nuit?: string | null
+          payment_method?: string | null
           phone?: string | null
           photo_url?: string | null
           province?: string | null
@@ -426,8 +432,11 @@ export type Database = {
           gender?: string | null
           hire_date?: string | null
           id?: never
+          mobile_money_number?: string | null
+          mobile_money_provider?: string | null
           name?: string
           nuit?: string | null
+          payment_method?: string | null
           phone?: string | null
           photo_url?: string | null
           province?: string | null
@@ -1114,8 +1123,11 @@ export type Database = {
           gender: string | null
           hire_date: string | null
           id: number
+          mobile_money_number: string | null
+          mobile_money_provider: string | null
           name: string
           nuit: string | null
+          payment_method: string | null
           phone: string | null
           photo_url: string | null
           province: string | null
@@ -1142,8 +1154,11 @@ export type Database = {
           gender?: string | null
           hire_date?: string | null
           id?: number
+          mobile_money_number?: string | null
+          mobile_money_provider?: string | null
           name: string
           nuit?: string | null
+          payment_method?: string | null
           phone?: string | null
           photo_url?: string | null
           province?: string | null
@@ -1170,8 +1185,11 @@ export type Database = {
           gender?: string | null
           hire_date?: string | null
           id?: number
+          mobile_money_number?: string | null
+          mobile_money_provider?: string | null
           name?: string
           nuit?: string | null
+          payment_method?: string | null
           phone?: string | null
           photo_url?: string | null
           province?: string | null
