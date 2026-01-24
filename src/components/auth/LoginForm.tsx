@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, GraduationCap, Mail, Lock, Zap, User, ArrowRight, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, GraduationCap, Mail, Lock, Zap, ArrowRight, Sparkles, Shield, BookOpen, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { UserRole } from '@/types/auth';
 
-// Dev users for quick login during development
-const DEV_USERS = [
-  { email: 'diretoria@escola.mz', password: '123456', role: 'DIRETORIA', icon: '👔' },
-  { email: 'secretaria@escola.mz', password: '123456', role: 'SECRETARIA', icon: '📋' },
-  { email: 'financeiro@escola.mz', password: '123456', role: 'FINANCEIRO', icon: '💰' },
-  { email: 'professor@escola.mz', password: '123456', role: 'PROFESSOR', icon: '📚' },
+// Dev quick access profiles - bypass login for development
+const DEV_PROFILES = [
+  { role: 'ADMIN' as UserRole, label: 'Admin', icon: Shield, color: 'from-red-500 to-red-600' },
+  { role: 'DIRETORIA' as UserRole, label: 'Diretoria', icon: GraduationCap, color: 'from-primary to-primary-dark' },
+  { role: 'SECRETARIA' as UserRole, label: 'Secretaria', icon: Users, color: 'from-blue-500 to-blue-600' },
+  { role: 'PROFESSOR' as UserRole, label: 'Professor', icon: BookOpen, color: 'from-amber-500 to-amber-600' },
+  { role: 'ALUNO' as UserRole, label: 'Aluno', icon: BookOpen, color: 'from-emerald-500 to-emerald-600' },
+  { role: 'ENCARREGADO' as UserRole, label: 'Encarregado', icon: Users, color: 'from-purple-500 to-purple-600' },
 ];
 
 export function LoginForm() {
@@ -22,7 +25,8 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showDevPanel, setShowDevPanel] = useState(true);
   const [isHovered, setIsHovered] = useState<string | null>(null);
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, devBypassLogin } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,20 +55,13 @@ export function LoginForm() {
     }
   };
 
-  const handleDevLogin = async (devUser: typeof DEV_USERS[0]) => {
-    try {
-      await login({ email: devUser.email, password: devUser.password });
-      toast({
-        title: `Logado como ${devUser.role}`,
-        description: "Bem-vindo ao modo de desenvolvimento!",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Utilizador não existe",
-        description: "Clique em 'Criar utilizadores de teste' primeiro.",
-        variant: "destructive",
-      });
-    }
+  const handleDevQuickAccess = (profile: typeof DEV_PROFILES[0]) => {
+    devBypassLogin(profile.role);
+    toast({
+      title: `Acesso como ${profile.label}`,
+      description: "Modo de desenvolvimento ativo!",
+    });
+    navigate('/');
   };
 
   return (
@@ -230,36 +227,37 @@ export function LoginForm() {
                     </Button>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2">
-                    {DEV_USERS.map((user) => (
-                      <motion.button
-                        key={user.email}
-                        type="button"
-                        disabled={isLoading}
-                        onClick={() => handleDevLogin(user)}
-                        onMouseEnter={() => setIsHovered(user.email)}
-                        onMouseLeave={() => setIsHovered(null)}
-                        className={`
-                          relative flex items-center gap-2 p-3 rounded-lg border transition-all duration-200
-                          ${isHovered === user.email 
-                            ? 'border-primary bg-primary/10 shadow-sm' 
-                            : 'border-border bg-card hover:border-primary/50'
-                          }
-                        `}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <span className="text-lg">{user.icon}</span>
-                        <span className="text-sm font-medium text-foreground">{user.role}</span>
-                      </motion.button>
-                    ))}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {DEV_PROFILES.map((profile) => {
+                      const IconComponent = profile.icon;
+                      return (
+                        <motion.button
+                          key={profile.role}
+                          type="button"
+                          disabled={isLoading}
+                          onClick={() => handleDevQuickAccess(profile)}
+                          onMouseEnter={() => setIsHovered(profile.role)}
+                          onMouseLeave={() => setIsHovered(null)}
+                          className={`
+                            relative flex flex-col items-center gap-2 p-3 rounded-xl border transition-all duration-200
+                            ${isHovered === profile.role 
+                              ? 'border-primary bg-primary/10 shadow-md scale-[1.02]' 
+                              : 'border-border bg-card hover:border-primary/50 hover:shadow-sm'
+                            }
+                          `}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${profile.color} flex items-center justify-center shadow-sm`}>
+                            <IconComponent className="w-5 h-5 text-white" />
+                          </div>
+                          <span className="text-xs font-medium text-foreground">{profile.label}</span>
+                        </motion.button>
+                      );
+                    })}
                   </div>
                   
                   <p className="text-xs text-muted-foreground mt-4 text-center">
-                    Primeiro,{' '}
-                    <Link to="/dev/seed" className="text-primary hover:underline font-medium">
-                      crie os utilizadores de teste
-                    </Link>
+                    Acesso directo para teste — sem autenticação
                   </p>
                 </div>
               </motion.div>
