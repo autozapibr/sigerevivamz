@@ -348,6 +348,96 @@ export type Database = {
           },
         ]
       }
+      employees: {
+        Row: {
+          address: string | null
+          bank_account: string | null
+          bank_name: string | null
+          bi_number: string | null
+          birth_date: string | null
+          contract_end: string | null
+          contract_number: string | null
+          contract_start: string | null
+          contract_type: string | null
+          created_at: string | null
+          department: string | null
+          district: string | null
+          email: string | null
+          emergency_contact: string | null
+          emergency_phone: string | null
+          gender: string | null
+          hire_date: string | null
+          id: number
+          name: string
+          nuit: string | null
+          phone: string | null
+          photo_url: string | null
+          province: string | null
+          role: string
+          salary: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          bank_account?: string | null
+          bank_name?: string | null
+          bi_number?: string | null
+          birth_date?: string | null
+          contract_end?: string | null
+          contract_number?: string | null
+          contract_start?: string | null
+          contract_type?: string | null
+          created_at?: string | null
+          department?: string | null
+          district?: string | null
+          email?: string | null
+          emergency_contact?: string | null
+          emergency_phone?: string | null
+          gender?: string | null
+          hire_date?: string | null
+          id?: never
+          name: string
+          nuit?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          province?: string | null
+          role: string
+          salary?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          bank_account?: string | null
+          bank_name?: string | null
+          bi_number?: string | null
+          birth_date?: string | null
+          contract_end?: string | null
+          contract_number?: string | null
+          contract_start?: string | null
+          contract_type?: string | null
+          created_at?: string | null
+          department?: string | null
+          district?: string | null
+          email?: string | null
+          emergency_contact?: string | null
+          emergency_phone?: string | null
+          gender?: string | null
+          hire_date?: string | null
+          id?: never
+          name?: string
+          nuit?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          province?: string | null
+          role?: string
+          salary?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       enrollments: {
         Row: {
           amount: number | null
@@ -595,6 +685,60 @@ export type Database = {
           name?: string
           type?: Database["public"]["Enums"]["scholarship_type"]
           value?: number
+        }
+        Relationships: []
+      }
+      staff_documents: {
+        Row: {
+          created_at: string | null
+          document_name: string
+          document_type: string
+          expiry_date: string | null
+          file_size: number | null
+          file_url: string
+          id: number
+          is_verified: boolean | null
+          mime_type: string | null
+          notes: string | null
+          staff_id: number
+          staff_type: string
+          updated_at: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_name: string
+          document_type: string
+          expiry_date?: string | null
+          file_size?: number | null
+          file_url: string
+          id?: never
+          is_verified?: boolean | null
+          mime_type?: string | null
+          notes?: string | null
+          staff_id: number
+          staff_type: string
+          updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_name?: string
+          document_type?: string
+          expiry_date?: string | null
+          file_size?: number | null
+          file_url?: string
+          id?: never
+          is_verified?: boolean | null
+          mime_type?: string | null
+          notes?: string | null
+          staff_id?: number
+          staff_type?: string
+          updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: []
       }
@@ -953,28 +1097,88 @@ export type Database = {
       }
       teachers: {
         Row: {
+          address: string | null
+          bank_account: string | null
+          bank_name: string | null
+          bi_number: string | null
+          birth_date: string | null
+          contract_end: string | null
+          contract_number: string | null
+          contract_start: string | null
+          contract_type: string | null
+          created_at: string | null
+          district: string | null
           email: string | null
+          emergency_contact: string | null
+          emergency_phone: string | null
+          gender: string | null
+          hire_date: string | null
           id: number
           name: string
+          nuit: string | null
           phone: string | null
+          photo_url: string | null
+          province: string | null
           qualifications: string | null
+          salary: number | null
           status: Database["public"]["Enums"]["teacher_status"] | null
+          updated_at: string | null
         }
         Insert: {
+          address?: string | null
+          bank_account?: string | null
+          bank_name?: string | null
+          bi_number?: string | null
+          birth_date?: string | null
+          contract_end?: string | null
+          contract_number?: string | null
+          contract_start?: string | null
+          contract_type?: string | null
+          created_at?: string | null
+          district?: string | null
           email?: string | null
+          emergency_contact?: string | null
+          emergency_phone?: string | null
+          gender?: string | null
+          hire_date?: string | null
           id?: number
           name: string
+          nuit?: string | null
           phone?: string | null
+          photo_url?: string | null
+          province?: string | null
           qualifications?: string | null
+          salary?: number | null
           status?: Database["public"]["Enums"]["teacher_status"] | null
+          updated_at?: string | null
         }
         Update: {
+          address?: string | null
+          bank_account?: string | null
+          bank_name?: string | null
+          bi_number?: string | null
+          birth_date?: string | null
+          contract_end?: string | null
+          contract_number?: string | null
+          contract_start?: string | null
+          contract_type?: string | null
+          created_at?: string | null
+          district?: string | null
           email?: string | null
+          emergency_contact?: string | null
+          emergency_phone?: string | null
+          gender?: string | null
+          hire_date?: string | null
           id?: number
           name?: string
+          nuit?: string | null
           phone?: string | null
+          photo_url?: string | null
+          province?: string | null
           qualifications?: string | null
+          salary?: number | null
           status?: Database["public"]["Enums"]["teacher_status"] | null
+          updated_at?: string | null
         }
         Relationships: []
       }
