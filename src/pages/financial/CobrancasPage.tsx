@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,30 +8,33 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   AlertTriangle, 
   Search, 
   Phone,
-  Mail,
-  Clock,
   CheckCircle2,
   MessageSquare,
-  User,
-  Calendar,
   Banknote,
   Smartphone,
   Building2,
   Send,
   FileText,
-  TrendingDown,
-  Users
+  Filter,
+  LayoutGrid,
+  List,
+  Loader2
 } from 'lucide-react';
 import { useOverdueFees, usePayTuition, type TuitionFee } from '@/hooks/useFinancial';
 import { formatMZN } from '@/lib/validators/mozambique';
-import { format, parseISO, differenceInDays } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { DebtorCard, getDaysOverdue, getUrgencyLevel } from '@/components/financial/DebtorCard';
+import { CollectionStatsCards } from '@/components/financial/CollectionStatsCards';
+import { BulkReminderDialog } from '@/components/financial/BulkReminderDialog';
+import { useToast } from '@/hooks/use-toast';
 
 const PAYMENT_METHODS = [
   { value: 'DINHEIRO', label: 'Dinheiro', icon: Banknote },
@@ -39,134 +42,58 @@ const PAYMENT_METHODS = [
   { value: 'TRANSFERENCIA', label: 'Transferência', icon: Building2 },
 ];
 
-function getDaysOverdue(dueDate: string | null) {
-  if (!dueDate) return 0;
-  return differenceInDays(new Date(), parseISO(dueDate));
-}
-
-function getUrgencyLevel(days: number): { label: string; color: string; bgColor: string } {
-  if (days <= 7) {
-    return { label: 'Baixa', color: 'text-warning', bgColor: 'bg-warning/10' };
-  } else if (days <= 30) {
-    return { label: 'Média', color: 'text-orange-500', bgColor: 'bg-orange-500/10' };
-  } else if (days <= 60) {
-    return { label: 'Alta', color: 'text-destructive', bgColor: 'bg-destructive/10' };
-  } else {
-    return { label: 'Crítica', color: 'text-destructive', bgColor: 'bg-destructive/20' };
-  }
-}
-
-interface DebtorCardProps {
-  fee: TuitionFee;
-  onPay: (fee: TuitionFee) => void;
-  onContact: (fee: TuitionFee) => void;
-}
-
-function DebtorCard({ fee, onPay, onContact }: DebtorCardProps) {
-  const daysOverdue = getDaysOverdue(fee.due_date);
-  const urgency = getUrgencyLevel(daysOverdue);
-
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      className="group"
-    >
-      <Card className="hover:shadow-md transition-all hover:border-primary/30">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-primary/10 text-primary">
-                {fee.student?.name?.split(' ').map(n => n[0]).slice(0, 2).join('')}
-              </AvatarFallback>
-            </Avatar>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h4 className="font-medium truncate">{fee.student?.name}</h4>
-                  <p className="text-xs text-muted-foreground">
-                    {format(parseISO(`${fee.month}-01`), 'MMMM yyyy', { locale: pt })}
-                  </p>
-                </div>
-                <Badge className={cn("text-xs", urgency.bgColor, urgency.color)}>
-                  {daysOverdue}d atraso
-                </Badge>
-              </div>
-
-              <div className="mt-3 flex items-center justify-between">
-                <div>
-                  <p className="text-lg font-bold text-destructive">
-                    {formatMZN(fee.amount || 0)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Venc: {fee.due_date ? format(parseISO(fee.due_date), 'dd/MM/yyyy') : '-'}
-                  </p>
-                </div>
-
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => onContact(fee)}
-                  >
-                    <Phone className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="h-8 bg-success hover:bg-success/90"
-                    onClick={() => onPay(fee)}
-                  >
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                    Pagar
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
+type UrgencyFilter = 'all' | 'baixa' | 'media' | 'alta' | 'critica';
+type ViewMode = 'kanban' | 'list';
 
 export default function CobrancasPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [urgencyFilter, setUrgencyFilter] = useState<UrgencyFilter>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('kanban');
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
   const [contactDialog, setContactDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
+  const [bulkReminderOpen, setBulkReminderOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('DINHEIRO');
+  const { toast } = useToast();
 
   const { data: overdueFees = [], isLoading } = useOverdueFees();
   const payTuition = usePayTuition();
 
-  // Group by urgency level
-  const feesByUrgency = {
-    baixa: overdueFees.filter(f => getDaysOverdue(f.due_date) <= 7),
-    media: overdueFees.filter(f => {
+  // Filter and group fees
+  const { feesByUrgency, filteredFees, stats } = useMemo(() => {
+    const baixa = overdueFees.filter(f => getDaysOverdue(f.due_date) <= 7);
+    const media = overdueFees.filter(f => {
       const days = getDaysOverdue(f.due_date);
       return days > 7 && days <= 30;
-    }),
-    alta: overdueFees.filter(f => {
+    });
+    const alta = overdueFees.filter(f => {
       const days = getDaysOverdue(f.due_date);
       return days > 30 && days <= 60;
-    }),
-    critica: overdueFees.filter(f => getDaysOverdue(f.due_date) > 60),
-  };
+    });
+    const critica = overdueFees.filter(f => getDaysOverdue(f.due_date) > 60);
 
-  const filteredFees = overdueFees.filter(f => 
-    !searchTerm || f.student?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    let filtered = overdueFees;
+    if (urgencyFilter !== 'all') {
+      filtered = { baixa, media, alta, critica }[urgencyFilter] || [];
+    }
+    if (searchTerm) {
+      filtered = filtered.filter(f => 
+        f.student?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-  const stats = {
-    total: overdueFees.length,
-    valorTotal: overdueFees.reduce((sum, f) => sum + (f.amount || 0), 0),
-    mediaDias: overdueFees.length > 0 
-      ? Math.round(overdueFees.reduce((sum, f) => sum + getDaysOverdue(f.due_date), 0) / overdueFees.length)
-      : 0,
-  };
+    return {
+      feesByUrgency: { baixa, media, alta, critica },
+      filteredFees: filtered,
+      stats: {
+        total: overdueFees.length,
+        valorTotal: overdueFees.reduce((sum, f) => sum + (f.amount || 0), 0),
+        mediaDias: overdueFees.length > 0 
+          ? Math.round(overdueFees.reduce((sum, f) => sum + getDaysOverdue(f.due_date), 0) / overdueFees.length)
+          : 0,
+        criticos: critica.length,
+      },
+    };
+  }, [overdueFees, urgencyFilter, searchTerm]);
 
   const handlePayment = () => {
     if (!paymentDialog.fee) return;
@@ -182,124 +109,153 @@ export default function CobrancasPage() {
     );
   };
 
+  const handleGenerateReport = () => {
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade de relatório de cobranças será implementada em breve.',
+    });
+  };
+
+  const renderKanbanColumn = (
+    fees: TuitionFee[], 
+    title: string, 
+    colorClass: string,
+    borderClass: string
+  ) => (
+    <div className="space-y-3 min-w-[280px] flex-1">
+      <div className={`flex items-center gap-2 pb-2 border-b ${borderClass}`}>
+        <div className={`h-2 w-2 rounded-full ${colorClass}`} />
+        <h3 className="font-medium text-sm truncate">{title}</h3>
+        <Badge variant="outline" className="ml-auto shrink-0">{fees.length}</Badge>
+      </div>
+      <ScrollArea className="h-[calc(100vh-450px)] min-h-[300px] pr-2">
+        <div className="space-y-3">
+          <AnimatePresence>
+            {fees
+              .filter(f => !searchTerm || f.student?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+              .map(fee => (
+                <DebtorCard
+                  key={fee.id}
+                  fee={fee}
+                  onPay={(f) => setPaymentDialog({ open: true, fee: f })}
+                  onContact={(f) => setContactDialog({ open: true, fee: f })}
+                />
+              ))}
+          </AnimatePresence>
+        </div>
+      </ScrollArea>
+    </div>
+  );
+
   return (
     <MainLayout 
       title="Cobranças" 
       subtitle="Gestão de inadimplência e cobranças"
     >
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card className="border-l-4 border-l-destructive bg-gradient-to-br from-card to-destructive/5">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Inadimplentes</p>
-                    <p className="text-2xl font-bold text-destructive">{stats.total}</p>
-                    <p className="text-xs text-muted-foreground mt-1">educandos</p>
-                  </div>
-                  <div className="h-12 w-12 rounded-xl bg-destructive/10 flex items-center justify-center">
-                    <Users className="h-6 w-6 text-destructive" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+        <CollectionStatsCards
+          totalDebtors={stats.total}
+          totalAmount={stats.valorTotal}
+          averageDays={stats.mediaDias}
+          criticalCount={stats.criticos}
+        />
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card className="border-l-4 border-l-warning bg-gradient-to-br from-card to-warning/5">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Valor em Atraso</p>
-                    <p className="text-2xl font-bold text-warning">
-                      {formatMZN(stats.valorTotal)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">total pendente</p>
-                  </div>
-                  <div className="h-12 w-12 rounded-xl bg-warning/10 flex items-center justify-center">
-                    <TrendingDown className="h-6 w-6 text-warning" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card className="border-l-4 border-l-orange-500 bg-gradient-to-br from-card to-orange-500/5">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Média de Atraso</p>
-                    <p className="text-2xl font-bold text-orange-500">{stats.mediaDias}</p>
-                    <p className="text-xs text-muted-foreground mt-1">dias</p>
-                  </div>
-                  <div className="h-12 w-12 rounded-xl bg-orange-500/10 flex items-center justify-center">
-                    <Clock className="h-6 w-6 text-orange-500" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card className="border-l-4 border-l-primary bg-gradient-to-br from-card to-primary/5">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Críticos</p>
-                    <p className="text-2xl font-bold">{feesByUrgency.critica.length}</p>
-                    <p className="text-xs text-muted-foreground mt-1">&gt;60 dias</p>
-                  </div>
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <AlertTriangle className="h-6 w-6 text-primary" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Search & Kanban View */}
+        {/* Search & Actions */}
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex flex-col md:flex-row gap-4 justify-between">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Pesquisar educando..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
+            <div className="flex flex-col gap-3">
+              {/* Search Row */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Pesquisar educando..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+
+                {/* Mobile Filter */}
+                <div className="flex gap-2 sm:hidden">
+                  <Select value={urgencyFilter} onValueChange={(v) => setUrgencyFilter(v as UrgencyFilter)}>
+                    <SelectTrigger className="flex-1">
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Urgência" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas</SelectItem>
+                      <SelectItem value="baixa">Baixa (≤7d)</SelectItem>
+                      <SelectItem value="media">Média (8-30d)</SelectItem>
+                      <SelectItem value="alta">Alta (31-60d)</SelectItem>
+                      <SelectItem value="critica">Crítica (&gt;60d)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setViewMode(viewMode === 'kanban' ? 'list' : 'kanban')}
+                  >
+                    {viewMode === 'kanban' ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+                  </Button>
+                </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button variant="outline" className="gap-2">
-                  <FileText className="h-4 w-4" />
-                  Gerar Relatório
-                </Button>
-                <Button variant="outline" className="gap-2">
-                  <Send className="h-4 w-4" />
-                  Enviar Lembretes
-                </Button>
+              {/* Actions Row */}
+              <div className="flex flex-wrap gap-2 justify-between">
+                <div className="hidden sm:flex gap-2">
+                  <Select value={urgencyFilter} onValueChange={(v) => setUrgencyFilter(v as UrgencyFilter)}>
+                    <SelectTrigger className="w-[160px]">
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Urgência" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas</SelectItem>
+                      <SelectItem value="baixa">Baixa (≤7d)</SelectItem>
+                      <SelectItem value="media">Média (8-30d)</SelectItem>
+                      <SelectItem value="alta">Alta (31-60d)</SelectItem>
+                      <SelectItem value="critica">Crítica (&gt;60d)</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <div className="hidden md:flex border rounded-md">
+                    <Button
+                      variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                      size="sm"
+                      className="rounded-r-none"
+                      onClick={() => setViewMode('kanban')}
+                    >
+                      <LayoutGrid className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                      size="sm"
+                      className="rounded-l-none"
+                      onClick={() => setViewMode('list')}
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 flex-wrap">
+                  <Button variant="outline" className="gap-2" size="sm" onClick={handleGenerateReport}>
+                    <FileText className="h-4 w-4" />
+                    <span className="hidden sm:inline">Relatório</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="gap-2" 
+                    size="sm"
+                    onClick={() => setBulkReminderOpen(true)}
+                    disabled={overdueFees.length === 0}
+                  >
+                    <Send className="h-4 w-4" />
+                    <span className="hidden sm:inline">Enviar Lembretes</span>
+                    <span className="sm:hidden">Lembretes</span>
+                  </Button>
+                </div>
               </div>
             </div>
           </CardHeader>
@@ -307,7 +263,7 @@ export default function CobrancasPage() {
           <CardContent>
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : overdueFees.length === 0 ? (
               <div className="text-center py-12">
@@ -318,131 +274,52 @@ export default function CobrancasPage() {
                 </p>
               </div>
             ) : (
-              <Tabs defaultValue="kanban" className="w-full">
-                <TabsList className="grid w-full max-w-md grid-cols-2 mb-4">
-                  <TabsTrigger value="kanban">Kanban</TabsTrigger>
-                  <TabsTrigger value="list">Lista</TabsTrigger>
-                </TabsList>
+              <>
+                {/* Mobile List View */}
+                <div className="md:hidden space-y-2">
+                  <AnimatePresence>
+                    {filteredFees.map(fee => (
+                      <DebtorCard
+                        key={fee.id}
+                        fee={fee}
+                        compact
+                        onPay={(f) => setPaymentDialog({ open: true, fee: f })}
+                        onContact={(f) => setContactDialog({ open: true, fee: f })}
+                      />
+                    ))}
+                  </AnimatePresence>
+                  {filteredFees.length === 0 && (
+                    <p className="text-center text-muted-foreground py-8">
+                      Nenhum resultado encontrado
+                    </p>
+                  )}
+                </div>
 
-                <TabsContent value="kanban">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Baixa Urgência */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 pb-2 border-b border-warning/30">
-                        <div className="h-2 w-2 rounded-full bg-warning" />
-                        <h3 className="font-medium text-sm">Baixa (≤7 dias)</h3>
-                        <Badge variant="outline" className="ml-auto">{feesByUrgency.baixa.length}</Badge>
-                      </div>
-                      <ScrollArea className="h-[400px] pr-2">
-                        <div className="space-y-3">
-                          <AnimatePresence>
-                            {feesByUrgency.baixa
-                              .filter(f => !searchTerm || f.student?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
-                              .map(fee => (
-                                <DebtorCard
-                                  key={fee.id}
-                                  fee={fee}
-                                  onPay={(f) => setPaymentDialog({ open: true, fee: f })}
-                                  onContact={(f) => setContactDialog({ open: true, fee: f })}
-                                />
-                              ))}
-                          </AnimatePresence>
-                        </div>
-                      </ScrollArea>
+                {/* Desktop View */}
+                <div className="hidden md:block">
+                  {viewMode === 'kanban' && urgencyFilter === 'all' ? (
+                    <div className="flex gap-4 overflow-x-auto pb-4">
+                      {renderKanbanColumn(feesByUrgency.baixa, 'Baixa (≤7 dias)', 'bg-warning', 'border-warning/30')}
+                      {renderKanbanColumn(feesByUrgency.media, 'Média (8-30 dias)', 'bg-orange-500', 'border-orange-500/30')}
+                      {renderKanbanColumn(feesByUrgency.alta, 'Alta (31-60 dias)', 'bg-destructive', 'border-destructive/30')}
+                      {renderKanbanColumn(feesByUrgency.critica, 'Crítica (>60 dias)', 'bg-destructive animate-pulse', 'border-destructive')}
                     </div>
-
-                    {/* Média Urgência */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 pb-2 border-b border-orange-500/30">
-                        <div className="h-2 w-2 rounded-full bg-orange-500" />
-                        <h3 className="font-medium text-sm">Média (8-30 dias)</h3>
-                        <Badge variant="outline" className="ml-auto">{feesByUrgency.media.length}</Badge>
-                      </div>
-                      <ScrollArea className="h-[400px] pr-2">
-                        <div className="space-y-3">
-                          <AnimatePresence>
-                            {feesByUrgency.media
-                              .filter(f => !searchTerm || f.student?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
-                              .map(fee => (
-                                <DebtorCard
-                                  key={fee.id}
-                                  fee={fee}
-                                  onPay={(f) => setPaymentDialog({ open: true, fee: f })}
-                                  onContact={(f) => setContactDialog({ open: true, fee: f })}
-                                />
-                              ))}
-                          </AnimatePresence>
-                        </div>
-                      </ScrollArea>
+                  ) : (
+                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                      <AnimatePresence>
+                        {filteredFees.map(fee => (
+                          <DebtorCard
+                            key={fee.id}
+                            fee={fee}
+                            onPay={(f) => setPaymentDialog({ open: true, fee: f })}
+                            onContact={(f) => setContactDialog({ open: true, fee: f })}
+                          />
+                        ))}
+                      </AnimatePresence>
                     </div>
-
-                    {/* Alta Urgência */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 pb-2 border-b border-destructive/30">
-                        <div className="h-2 w-2 rounded-full bg-destructive" />
-                        <h3 className="font-medium text-sm">Alta (31-60 dias)</h3>
-                        <Badge variant="outline" className="ml-auto">{feesByUrgency.alta.length}</Badge>
-                      </div>
-                      <ScrollArea className="h-[400px] pr-2">
-                        <div className="space-y-3">
-                          <AnimatePresence>
-                            {feesByUrgency.alta
-                              .filter(f => !searchTerm || f.student?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
-                              .map(fee => (
-                                <DebtorCard
-                                  key={fee.id}
-                                  fee={fee}
-                                  onPay={(f) => setPaymentDialog({ open: true, fee: f })}
-                                  onContact={(f) => setContactDialog({ open: true, fee: f })}
-                                />
-                              ))}
-                          </AnimatePresence>
-                        </div>
-                      </ScrollArea>
-                    </div>
-
-                    {/* Crítica */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 pb-2 border-b border-destructive">
-                        <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
-                        <h3 className="font-medium text-sm">Crítica (&gt;60 dias)</h3>
-                        <Badge variant="outline" className="ml-auto">{feesByUrgency.critica.length}</Badge>
-                      </div>
-                      <ScrollArea className="h-[400px] pr-2">
-                        <div className="space-y-3">
-                          <AnimatePresence>
-                            {feesByUrgency.critica
-                              .filter(f => !searchTerm || f.student?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
-                              .map(fee => (
-                                <DebtorCard
-                                  key={fee.id}
-                                  fee={fee}
-                                  onPay={(f) => setPaymentDialog({ open: true, fee: f })}
-                                  onContact={(f) => setContactDialog({ open: true, fee: f })}
-                                />
-                              ))}
-                          </AnimatePresence>
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="list">
-                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                    <AnimatePresence>
-                      {filteredFees.map(fee => (
-                        <DebtorCard
-                          key={fee.id}
-                          fee={fee}
-                          onPay={(f) => setPaymentDialog({ open: true, fee: f })}
-                          onContact={(f) => setContactDialog({ open: true, fee: f })}
-                        />
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                </TabsContent>
-              </Tabs>
+                  )}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -466,7 +343,7 @@ export default function CobrancasPage() {
               <div className="p-4 rounded-lg bg-muted/50 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Educando:</span>
-                  <span className="font-medium">{paymentDialog.fee.student?.name}</span>
+                  <span className="font-medium truncate ml-2">{paymentDialog.fee.student?.name}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Referência:</span>
@@ -514,7 +391,7 @@ export default function CobrancasPage() {
               disabled={payTuition.isPending}
               className="bg-success hover:bg-success/90 gap-2"
             >
-              {payTuition.isPending && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}
+              {payTuition.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Confirmar Pagamento
             </Button>
           </DialogFooter>
@@ -542,9 +419,9 @@ export default function CobrancasPage() {
                     {contactDialog.fee.student?.name?.split(' ').map(n => n[0]).slice(0, 2).join('')}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <p className="font-medium">{contactDialog.fee.student?.name}</p>
-                  <p className="text-sm text-muted-foreground">
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{contactDialog.fee.student?.name}</p>
+                  <p className="text-sm text-muted-foreground truncate">
                     {contactDialog.fee.student?.guardian || 'Sem encarregado registado'}
                   </p>
                 </div>
@@ -581,7 +458,7 @@ export default function CobrancasPage() {
 
               <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 <div className="flex items-center gap-2 text-destructive text-sm">
-                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
                   <span>Propina em atraso há {getDaysOverdue(contactDialog.fee.due_date)} dias</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -598,6 +475,13 @@ export default function CobrancasPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Reminder Dialog */}
+      <BulkReminderDialog
+        open={bulkReminderOpen}
+        onOpenChange={setBulkReminderOpen}
+        fees={overdueFees}
+      />
     </MainLayout>
   );
 }
