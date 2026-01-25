@@ -41,6 +41,50 @@ export type Database = {
         }
         Relationships: []
       }
+      agreement_installments: {
+        Row: {
+          agreement_id: number
+          amount: number
+          created_at: string | null
+          due_date: string
+          id: number
+          installment_number: number
+          paid: boolean | null
+          paid_at: string | null
+          payment_method: string | null
+        }
+        Insert: {
+          agreement_id: number
+          amount: number
+          created_at?: string | null
+          due_date: string
+          id?: number
+          installment_number: number
+          paid?: boolean | null
+          paid_at?: string | null
+          payment_method?: string | null
+        }
+        Update: {
+          agreement_id?: number
+          amount?: number
+          created_at?: string | null
+          due_date?: string
+          id?: number
+          installment_number?: number
+          paid?: boolean | null
+          paid_at?: string | null
+          payment_method?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_installments_agreement_id_fkey"
+            columns: ["agreement_id"]
+            isOneToOne: false
+            referencedRelation: "payment_agreements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       announcement_reads: {
         Row: {
           announcement_id: number
@@ -344,6 +388,101 @@ export type Database = {
             columns: ["teacher_id"]
             isOneToOne: false
             referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communication_history: {
+        Row: {
+          agreement_id: number | null
+          communication_type: Database["public"]["Enums"]["communication_type"]
+          created_at: string | null
+          delivered_at: string | null
+          external_id: string | null
+          external_response: Json | null
+          id: number
+          message_content: string
+          message_template: string | null
+          read_at: string | null
+          recipient_email: string | null
+          recipient_name: string
+          recipient_phone: string | null
+          scheduled_at: string | null
+          sent_at: string | null
+          sent_by: string | null
+          status: Database["public"]["Enums"]["communication_status"] | null
+          student_id: number | null
+          tuition_fee_id: number | null
+        }
+        Insert: {
+          agreement_id?: number | null
+          communication_type: Database["public"]["Enums"]["communication_type"]
+          created_at?: string | null
+          delivered_at?: string | null
+          external_id?: string | null
+          external_response?: Json | null
+          id?: number
+          message_content: string
+          message_template?: string | null
+          read_at?: string | null
+          recipient_email?: string | null
+          recipient_name: string
+          recipient_phone?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: Database["public"]["Enums"]["communication_status"] | null
+          student_id?: number | null
+          tuition_fee_id?: number | null
+        }
+        Update: {
+          agreement_id?: number | null
+          communication_type?: Database["public"]["Enums"]["communication_type"]
+          created_at?: string | null
+          delivered_at?: string | null
+          external_id?: string | null
+          external_response?: Json | null
+          id?: number
+          message_content?: string
+          message_template?: string | null
+          read_at?: string | null
+          recipient_email?: string | null
+          recipient_name?: string
+          recipient_phone?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: Database["public"]["Enums"]["communication_status"] | null
+          student_id?: number | null
+          tuition_fee_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_history_agreement_id_fkey"
+            columns: ["agreement_id"]
+            isOneToOne: false
+            referencedRelation: "payment_agreements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_history_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["student_id"]
+          },
+          {
+            foreignKeyName: "communication_history_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_history_tuition_fee_id_fkey"
+            columns: ["tuition_fee_id"]
+            isOneToOne: false
+            referencedRelation: "tuition_fees"
             referencedColumns: ["id"]
           },
         ]
@@ -721,6 +860,86 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_agreements: {
+        Row: {
+          agreed_amount: number
+          created_at: string | null
+          created_by: string | null
+          discount_amount: number | null
+          discount_percent: number | null
+          id: number
+          installment_amount: number | null
+          installments: number | null
+          notes: string | null
+          original_amount: number
+          promised_date: string | null
+          status: Database["public"]["Enums"]["payment_agreement_status"] | null
+          student_id: number
+          tuition_fee_id: number
+          updated_at: string | null
+        }
+        Insert: {
+          agreed_amount: number
+          created_at?: string | null
+          created_by?: string | null
+          discount_amount?: number | null
+          discount_percent?: number | null
+          id?: number
+          installment_amount?: number | null
+          installments?: number | null
+          notes?: string | null
+          original_amount: number
+          promised_date?: string | null
+          status?:
+            | Database["public"]["Enums"]["payment_agreement_status"]
+            | null
+          student_id: number
+          tuition_fee_id: number
+          updated_at?: string | null
+        }
+        Update: {
+          agreed_amount?: number
+          created_at?: string | null
+          created_by?: string | null
+          discount_amount?: number | null
+          discount_percent?: number | null
+          id?: number
+          installment_amount?: number | null
+          installments?: number | null
+          notes?: string | null
+          original_amount?: number
+          promised_date?: string | null
+          status?:
+            | Database["public"]["Enums"]["payment_agreement_status"]
+            | null
+          student_id?: number
+          tuition_fee_id?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_agreements_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["student_id"]
+          },
+          {
+            foreignKeyName: "payment_agreements_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_agreements_tuition_fee_id_fkey"
+            columns: ["tuition_fee_id"]
+            isOneToOne: false
+            referencedRelation: "tuition_fees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -744,6 +963,84 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      scheduled_reminders: {
+        Row: {
+          agreement_id: number | null
+          channel: Database["public"]["Enums"]["communication_type"] | null
+          communication_id: number | null
+          created_at: string | null
+          id: number
+          processed: boolean | null
+          processed_at: string | null
+          reminder_type: Database["public"]["Enums"]["reminder_type"]
+          scheduled_for: string
+          student_id: number
+          tuition_fee_id: number | null
+        }
+        Insert: {
+          agreement_id?: number | null
+          channel?: Database["public"]["Enums"]["communication_type"] | null
+          communication_id?: number | null
+          created_at?: string | null
+          id?: number
+          processed?: boolean | null
+          processed_at?: string | null
+          reminder_type: Database["public"]["Enums"]["reminder_type"]
+          scheduled_for: string
+          student_id: number
+          tuition_fee_id?: number | null
+        }
+        Update: {
+          agreement_id?: number | null
+          channel?: Database["public"]["Enums"]["communication_type"] | null
+          communication_id?: number | null
+          created_at?: string | null
+          id?: number
+          processed?: boolean | null
+          processed_at?: string | null
+          reminder_type?: Database["public"]["Enums"]["reminder_type"]
+          scheduled_for?: string
+          student_id?: number
+          tuition_fee_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_reminders_agreement_id_fkey"
+            columns: ["agreement_id"]
+            isOneToOne: false
+            referencedRelation: "payment_agreements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_reminders_communication_id_fkey"
+            columns: ["communication_id"]
+            isOneToOne: false
+            referencedRelation: "communication_history"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_reminders_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["student_id"]
+          },
+          {
+            foreignKeyName: "scheduled_reminders_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_reminders_tuition_fee_id_fkey"
+            columns: ["tuition_fee_id"]
+            isOneToOne: false
+            referencedRelation: "tuition_fees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scholarships: {
         Row: {
@@ -1513,6 +1810,18 @@ export type Database = {
         | "ENCARREGADO"
         | "ALUNO"
       calendar_event_type: "Feriado" | "Evento" | "Prova" | "Prazo"
+      communication_status:
+        | "ENVIADO"
+        | "ENTREGUE"
+        | "LIDO"
+        | "FALHOU"
+        | "AGENDADO"
+      communication_type:
+        | "WHATSAPP"
+        | "SMS"
+        | "TELEFONE"
+        | "EMAIL"
+        | "PRESENCIAL"
       document_type:
         | "BI"
         | "NUIT"
@@ -1529,7 +1838,20 @@ export type Database = {
         | "REJEITADA"
         | "CANCELADA"
       gender_type: "MASCULINO" | "FEMININO"
+      payment_agreement_status:
+        | "PENDENTE"
+        | "ATIVO"
+        | "CUMPRIDO"
+        | "QUEBRADO"
+        | "CANCELADO"
       payment_status: "Pago" | "Pendente"
+      reminder_type:
+        | "VENCIMENTO_PROXIMO"
+        | "DIA_VENCIMENTO"
+        | "ATRASO_LEVE"
+        | "ATRASO_MODERADO"
+        | "ATRASO_GRAVE"
+        | "PARCELA_ACORDO"
       scholarship_type: "Percentagem" | "Valor Fixo"
       student_status: "Ativo" | "Inativo"
       teacher_status: "Ativo" | "Inativo"
@@ -1673,6 +1995,20 @@ export const Constants = {
         "ALUNO",
       ],
       calendar_event_type: ["Feriado", "Evento", "Prova", "Prazo"],
+      communication_status: [
+        "ENVIADO",
+        "ENTREGUE",
+        "LIDO",
+        "FALHOU",
+        "AGENDADO",
+      ],
+      communication_type: [
+        "WHATSAPP",
+        "SMS",
+        "TELEFONE",
+        "EMAIL",
+        "PRESENCIAL",
+      ],
       document_type: [
         "BI",
         "NUIT",
@@ -1691,7 +2027,22 @@ export const Constants = {
         "CANCELADA",
       ],
       gender_type: ["MASCULINO", "FEMININO"],
+      payment_agreement_status: [
+        "PENDENTE",
+        "ATIVO",
+        "CUMPRIDO",
+        "QUEBRADO",
+        "CANCELADO",
+      ],
       payment_status: ["Pago", "Pendente"],
+      reminder_type: [
+        "VENCIMENTO_PROXIMO",
+        "DIA_VENCIMENTO",
+        "ATRASO_LEVE",
+        "ATRASO_MODERADO",
+        "ATRASO_GRAVE",
+        "PARCELA_ACORDO",
+      ],
       scholarship_type: ["Percentagem", "Valor Fixo"],
       student_status: ["Ativo", "Inativo"],
       teacher_status: ["Ativo", "Inativo"],
