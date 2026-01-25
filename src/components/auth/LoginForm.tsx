@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, GraduationCap, Mail, Lock, Zap, ArrowRight, Sparkles, Shield, BookOpen, Users } from 'lucide-react';
+import { Eye, EyeOff, GraduationCap, Mail, Lock, Zap, ArrowRight, Sparkles, Shield, BookOpen, Users, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,8 +14,8 @@ const DEV_PROFILES = [
   { role: 'ADMIN' as UserRole, label: 'Admin', icon: Shield, color: 'from-red-500 to-red-600' },
   { role: 'DIRETORIA' as UserRole, label: 'Diretoria', icon: GraduationCap, color: 'from-primary to-primary-dark' },
   { role: 'SECRETARIA' as UserRole, label: 'Secretaria', icon: Users, color: 'from-blue-500 to-blue-600' },
+  { role: 'FINANCEIRO' as UserRole, label: 'Financeiro', icon: Wallet, color: 'from-teal-500 to-teal-600' },
   { role: 'PROFESSOR' as UserRole, label: 'Professor', icon: BookOpen, color: 'from-amber-500 to-amber-600' },
-  { role: 'ALUNO' as UserRole, label: 'Aluno', icon: BookOpen, color: 'from-emerald-500 to-emerald-600' },
   { role: 'ENCARREGADO' as UserRole, label: 'Encarregado', icon: Users, color: 'from-purple-500 to-purple-600' },
 ];
 
