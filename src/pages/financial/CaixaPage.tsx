@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Wallet, 
   Search, 
@@ -21,7 +22,9 @@ import {
   Filter,
   Download,
   Trash2,
-  Edit
+  Edit,
+  ArrowLeft,
+  RefreshCw
 } from 'lucide-react';
 import { useTransactions, useFinancialCategories, useCreateTransaction, useDeleteTransaction, useFinancialSummary } from '@/hooks/useFinancial';
 import { formatMZN } from '@/lib/validators/mozambique';
@@ -29,6 +32,7 @@ import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 import type { Database } from '@/integrations/supabase/types';
 
 type TransactionType = Database['public']['Enums']['transaction_type'];
@@ -47,6 +51,63 @@ const MONTHS = [
   { value: '2026-11', label: 'Novembro 2026' },
   { value: '2026-12', label: 'Dezembro 2026' },
 ];
+
+// Mobile transaction card
+function TransactionCard({ 
+  tx, 
+  onDelete 
+}: { 
+  tx: any; 
+  onDelete: (id: number) => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="p-4 border rounded-lg bg-card"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className={cn(
+            'h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0',
+            tx.type === 'Receita' ? 'bg-success/10' : 'bg-destructive/10'
+          )}>
+            {tx.type === 'Receita' ? (
+              <ArrowUpCircle className="h-4 w-4 text-success" />
+            ) : (
+              <ArrowDownCircle className="h-4 w-4 text-destructive" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium truncate">{tx.description || 'Sem descrição'}</p>
+            <p className="text-xs text-muted-foreground">
+              {format(parseISO(tx.date), 'dd/MM/yyyy')}
+            </p>
+            {tx.category?.name && (
+              <Badge variant="outline" className="mt-1 text-xs">{tx.category.name}</Badge>
+            )}
+          </div>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <p className={cn(
+            'font-medium',
+            tx.type === 'Receita' ? 'text-success' : 'text-destructive'
+          )}>
+            {tx.type === 'Receita' ? '+' : '-'}{formatMZN(tx.amount)}
+          </p>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 mt-1"
+            onClick={() => onDelete(tx.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function CaixaPage() {
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
@@ -115,28 +176,36 @@ export default function CaixaPage() {
       title="Livro Caixa" 
       subtitle="Controlo de entradas e saídas financeiras"
     >
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
+        {/* Back navigation */}
+        <Button variant="ghost" size="sm" asChild className="gap-2 -ml-2">
+          <Link to="/financeiro/dashboard">
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao Dashboard
+          </Link>
+        </Button>
+
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
             <Card className="border-l-4 border-l-success bg-gradient-to-br from-card to-success/5">
-              <CardContent className="pt-4">
+              <CardContent className="pt-4 pb-4">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Receitas</p>
-                    <p className="text-2xl font-bold text-success">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Total Receitas</p>
+                    <p className="text-xl sm:text-2xl font-bold text-success truncate">
                       {formatMZN(summary?.totalReceitas || 0)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {transactions.filter(t => t.type === 'Receita').length} movimentos
                     </p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-success" />
+                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-success/10 flex items-center justify-center flex-shrink-0 ml-2">
+                    <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-success" />
                   </div>
                 </div>
               </CardContent>
@@ -149,19 +218,19 @@ export default function CaixaPage() {
             transition={{ delay: 0.2 }}
           >
             <Card className="border-l-4 border-l-destructive bg-gradient-to-br from-card to-destructive/5">
-              <CardContent className="pt-4">
+              <CardContent className="pt-4 pb-4">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Despesas</p>
-                    <p className="text-2xl font-bold text-destructive">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Total Despesas</p>
+                    <p className="text-xl sm:text-2xl font-bold text-destructive truncate">
                       {formatMZN(summary?.totalDespesas || 0)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {transactions.filter(t => t.type === 'Despesa').length} movimentos
                     </p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-destructive/10 flex items-center justify-center">
-                    <TrendingDown className="h-6 w-6 text-destructive" />
+                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0 ml-2">
+                    <TrendingDown className="h-5 w-5 sm:h-6 sm:w-6 text-destructive" />
                   </div>
                 </div>
               </CardContent>
@@ -179,12 +248,12 @@ export default function CaixaPage() {
                 ? "border-l-primary to-primary/5" 
                 : "border-l-destructive to-destructive/5"
             )}>
-              <CardContent className="pt-4">
+              <CardContent className="pt-4 pb-4">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Saldo do Mês</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Saldo do Mês</p>
                     <p className={cn(
-                      "text-2xl font-bold",
+                      "text-xl sm:text-2xl font-bold truncate",
                       (summary?.saldo || 0) >= 0 ? "text-primary" : "text-destructive"
                     )}>
                       {formatMZN(summary?.saldo || 0)}
@@ -194,11 +263,11 @@ export default function CaixaPage() {
                     </p>
                   </div>
                   <div className={cn(
-                    "h-12 w-12 rounded-xl flex items-center justify-center",
+                    "h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center flex-shrink-0 ml-2",
                     (summary?.saldo || 0) >= 0 ? "bg-primary/10" : "bg-destructive/10"
                   )}>
                     <Wallet className={cn(
-                      "h-6 w-6",
+                      "h-5 w-5 sm:h-6 sm:w-6",
                       (summary?.saldo || 0) >= 0 ? "text-primary" : "text-destructive"
                     )} />
                   </div>
@@ -211,10 +280,11 @@ export default function CaixaPage() {
         {/* Filters & Actions */}
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex flex-col md:flex-row gap-4 justify-between">
-              <div className="flex flex-1 gap-3 flex-wrap">
+            <div className="flex flex-col gap-4">
+              {/* Filters Row */}
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <Calendar className="w-4 h-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
@@ -226,7 +296,7 @@ export default function CaixaPage() {
                 </Select>
 
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-[140px]">
+                  <SelectTrigger className="w-full sm:w-[140px]">
                     <Filter className="w-4 h-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
@@ -237,7 +307,7 @@ export default function CaixaPage() {
                   </SelectContent>
                 </Select>
 
-                <div className="relative flex-1 min-w-[200px]">
+                <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Pesquisar descrição..."
@@ -248,13 +318,14 @@ export default function CaixaPage() {
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              {/* Actions Row */}
+              <div className="flex flex-wrap gap-2">
                 <Button 
                   onClick={() => {
                     setMovementType('Receita');
                     setNewMovementDialog(true);
                   }}
-                  className="gap-2 bg-success hover:bg-success/90"
+                  className="gap-2 bg-success hover:bg-success/90 flex-1 sm:flex-none"
                 >
                   <ArrowUpCircle className="h-4 w-4" />
                   Receita
@@ -265,12 +336,12 @@ export default function CaixaPage() {
                     setMovementType('Despesa');
                     setNewMovementDialog(true);
                   }}
-                  className="gap-2"
+                  className="gap-2 flex-1 sm:flex-none"
                 >
                   <ArrowDownCircle className="h-4 w-4" />
                   Despesa
                 </Button>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2 flex-1 sm:flex-none">
                   <Download className="h-4 w-4" />
                   Exportar
                 </Button>
@@ -280,8 +351,10 @@ export default function CaixaPage() {
 
           <CardContent>
             {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full" />
+                ))}
               </div>
             ) : transactionsWithBalance.length === 0 ? (
               <div className="text-center py-12">
@@ -290,7 +363,7 @@ export default function CaixaPage() {
                 <p className="text-muted-foreground text-sm mt-1">
                   Comece registando uma receita ou despesa
                 </p>
-                <div className="flex gap-2 justify-center mt-4">
+                <div className="flex flex-col sm:flex-row gap-2 justify-center mt-4">
                   <Button 
                     onClick={() => {
                       setMovementType('Receita');
@@ -315,86 +388,102 @@ export default function CaixaPage() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-lg border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead>Data</TableHead>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead>Categoria</TableHead>
-                      <TableHead className="text-right">Entrada</TableHead>
-                      <TableHead className="text-right">Saída</TableHead>
-                      <TableHead className="text-right">Saldo</TableHead>
-                      <TableHead className="text-right">Acções</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <AnimatePresence>
-                      {transactionsWithBalance.map((tx, index) => (
-                        <motion.tr
-                          key={tx.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 20 }}
-                          transition={{ delay: index * 0.02 }}
-                          className="group hover:bg-muted/50 transition-colors"
-                        >
-                          <TableCell className="font-medium">
-                            {format(parseISO(tx.date), 'dd/MM/yyyy')}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              {tx.type === 'Receita' ? (
-                                <ArrowUpCircle className="h-4 w-4 text-success" />
+              <>
+                {/* Mobile View - Cards */}
+                <div className="block lg:hidden space-y-3">
+                  <AnimatePresence>
+                    {transactionsWithBalance.map(tx => (
+                      <TransactionCard 
+                        key={tx.id} 
+                        tx={tx} 
+                        onDelete={(id) => deleteTransaction.mutate(id)}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+
+                {/* Desktop View - Table */}
+                <div className="hidden lg:block rounded-lg border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead>Data</TableHead>
+                        <TableHead>Descrição</TableHead>
+                        <TableHead>Categoria</TableHead>
+                        <TableHead className="text-right">Entrada</TableHead>
+                        <TableHead className="text-right">Saída</TableHead>
+                        <TableHead className="text-right">Saldo</TableHead>
+                        <TableHead className="text-right">Acções</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <AnimatePresence>
+                        {transactionsWithBalance.map((tx, index) => (
+                          <motion.tr
+                            key={tx.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            transition={{ delay: index * 0.02 }}
+                            className="group hover:bg-muted/50 transition-colors"
+                          >
+                            <TableCell className="font-medium">
+                              {format(parseISO(tx.date), 'dd/MM/yyyy')}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {tx.type === 'Receita' ? (
+                                  <ArrowUpCircle className="h-4 w-4 text-success" />
+                                ) : (
+                                  <ArrowDownCircle className="h-4 w-4 text-destructive" />
+                                )}
+                                {tx.description || '-'}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {tx.category?.name ? (
+                                <Badge variant="outline">{tx.category.name}</Badge>
                               ) : (
-                                <ArrowDownCircle className="h-4 w-4 text-destructive" />
+                                <span className="text-muted-foreground">-</span>
                               )}
-                              {tx.description || '-'}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {tx.category?.name ? (
-                              <Badge variant="outline">{tx.category.name}</Badge>
-                            ) : (
-                              <span className="text-muted-foreground">-</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {tx.type === 'Receita' && (
-                              <span className="text-success font-medium">
-                                {formatMZN(tx.amount)}
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {tx.type === 'Despesa' && (
-                              <span className="text-destructive font-medium">
-                                {formatMZN(tx.amount)}
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell className={cn(
-                            "text-right font-medium",
-                            tx.balance >= 0 ? "text-primary" : "text-destructive"
-                          )}>
-                            {formatMZN(tx.balance)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                              onClick={() => deleteTransaction.mutate(tx.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </motion.tr>
-                      ))}
-                    </AnimatePresence>
-                  </TableBody>
-                </Table>
-              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {tx.type === 'Receita' && (
+                                <span className="text-success font-medium">
+                                  {formatMZN(tx.amount)}
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {tx.type === 'Despesa' && (
+                                <span className="text-destructive font-medium">
+                                  {formatMZN(tx.amount)}
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell className={cn(
+                              "text-right font-medium",
+                              tx.balance >= 0 ? "text-primary" : "text-destructive"
+                            )}>
+                              {formatMZN(tx.balance)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => deleteTransaction.mutate(tx.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </motion.tr>
+                        ))}
+                      </AnimatePresence>
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -420,62 +509,36 @@ export default function CaixaPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                <Label>Tipo de Movimento</Label>
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                  <Button
-                    type="button"
-                    variant={movementType === 'Receita' ? 'default' : 'outline'}
-                    className={cn(
-                      "gap-2",
-                      movementType === 'Receita' && "bg-success hover:bg-success/90"
-                    )}
-                    onClick={() => setMovementType('Receita')}
-                  >
-                    <ArrowUpCircle className="h-4 w-4" />
-                    Receita
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={movementType === 'Despesa' ? 'destructive' : 'outline'}
-                    className="gap-2"
-                    onClick={() => setMovementType('Despesa')}
-                  >
-                    <ArrowDownCircle className="h-4 w-4" />
-                    Despesa
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <Label>Valor (MZN)</Label>
+                <Label htmlFor="amount">Valor (MZN)</Label>
                 <Input
+                  id="amount"
                   type="number"
-                  step="0.01"
-                  placeholder="0.00"
                   value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label>Data</Label>
-                <Input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="mt-1"
+                  onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                  placeholder="0.00"
+                  className="mt-1.5"
                 />
               </div>
 
               <div className="col-span-2">
-                <Label>Categoria</Label>
+                <Label htmlFor="date">Data</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                  className="mt-1.5"
+                />
+              </div>
+
+              <div className="col-span-2">
+                <Label htmlFor="category">Categoria</Label>
                 <Select 
                   value={formData.category_id} 
-                  onValueChange={(v) => setFormData({ ...formData, category_id: v })}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
                 >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Selecionar categoria" />
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue placeholder="Seleccione..." />
                   </SelectTrigger>
                   <SelectContent>
                     {filteredCategories.map(cat => (
@@ -488,32 +551,37 @@ export default function CaixaPage() {
               </div>
 
               <div className="col-span-2">
-                <Label>Descrição</Label>
+                <Label htmlFor="description">Descrição</Label>
                 <Textarea
-                  placeholder="Descreva o movimento..."
+                  id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="mt-1 resize-none"
-                  rows={2}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Descreva o movimento..."
+                  className="mt-1.5"
+                  rows={3}
                 />
               </div>
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setNewMovementDialog(false)}>
               Cancelar
             </Button>
             <Button 
-              onClick={handleSubmit} 
+              onClick={handleSubmit}
               disabled={createTransaction.isPending || !formData.amount}
               className={cn(
                 "gap-2",
-                movementType === 'Receita' ? "bg-success hover:bg-success/90" : "bg-destructive hover:bg-destructive/90"
+                movementType === 'Receita' ? 'bg-success hover:bg-success/90' : ''
               )}
             >
-              {createTransaction.isPending && (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+              {createTransaction.isPending ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : movementType === 'Receita' ? (
+                <ArrowUpCircle className="h-4 w-4" />
+              ) : (
+                <ArrowDownCircle className="h-4 w-4" />
               )}
               Registar {movementType}
             </Button>
