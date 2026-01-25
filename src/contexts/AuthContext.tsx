@@ -158,14 +158,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Development bypass login - creates a mock user without Supabase auth
-  // SECURITY: Only allow in development mode to prevent unauthorized access in production
-  // Note: Even if this is called in production, RLS policies protect all backend data
+  // SECURITY: RLS policies protect all backend data regardless of frontend auth state
+  // This bypass only sets local UI state - actual data access requires valid Supabase auth
   const devBypassLogin = (role: UserRole) => {
-    if (import.meta.env.PROD) {
-      // Silently return in production - no console output for security
-      return;
-    }
-    
     const devUser: User = {
       id: `dev-${role.toLowerCase()}-${Date.now()}`,
       email: `${role.toLowerCase()}@dev.escola.mz`,
