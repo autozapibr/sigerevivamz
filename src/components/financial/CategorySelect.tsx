@@ -14,11 +14,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, RefreshCw, FolderPlus, AlertCircle } from 'lucide-react';
-import { useFinancialCategories, useCreateCategory } from '@/hooks/useFinancial';
+import { Plus, RefreshCw, FolderPlus, AlertCircle, Trash2 } from 'lucide-react';
+import { useFinancialCategories, useCreateCategory, useDeleteCategory } from '@/hooks/useFinancial';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -40,11 +50,14 @@ export function CategorySelect({
   className 
 }: CategorySelectProps) {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<{ id: number; name: string } | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [error, setError] = useState<string | null>(null);
   
   const { data: categories = [], refetch } = useFinancialCategories();
   const createCategory = useCreateCategory();
+  const deleteCategory = useDeleteCategory();
   
   // Filter categories by type - ensure we only show the correct type
   const filteredCategories = categories.filter(c => c.type === type);
@@ -102,6 +115,33 @@ export function CategorySelect({
       }
     );
   };
+
+  const handleDeleteClick = (e: React.MouseEvent, cat: { id: number; name: string }) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCategoryToDelete(cat);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!categoryToDelete) return;
+    
+    deleteCategory.mutate(categoryToDelete.id, {
+      onSuccess: () => {
+        // If the deleted category was selected, clear selection
+        if (value === categoryToDelete.id.toString()) {
+          onChange('');
+        }
+        refetch();
+        setDeleteDialogOpen(false);
+        setCategoryToDelete(null);
+      },
+      onError: () => {
+        setDeleteDialogOpen(false);
+        setCategoryToDelete(null);
+      },
+    });
+  };
   return (
     <>
       <Select value={value} onValueChange={onChange}>
@@ -115,9 +155,22 @@ export function CategorySelect({
             </div>
           ) : (
             filteredCategories.map(cat => (
-              <SelectItem key={cat.id} value={cat.id.toString()}>
-                {cat.name}
-              </SelectItem>
+              <div 
+                key={cat.id} 
+                className="relative flex items-center group"
+              >
+                <SelectItem value={cat.id.toString()} className="flex-1 pr-8">
+                  {cat.name}
+                </SelectItem>
+                <button
+                  type="button"
+                  onClick={(e) => handleDeleteClick(e, cat)}
+                  className="absolute right-2 p-1 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 rounded transition-opacity"
+                  title="Remover categoria"
+                >
+                  <Trash2 className="h-3.5 w-3.5 text-destructive/70 hover:text-destructive" />
+                </button>
+              </div>
             ))
           )}
           
@@ -213,6 +266,35 @@ export function CategorySelect({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover categoria?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover a categoria "{categoryToDelete?.name}"? 
+              Esta acção não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCategoryToDelete(null)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteCategory.isPending ? (
+                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
