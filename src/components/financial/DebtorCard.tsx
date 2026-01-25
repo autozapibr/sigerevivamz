@@ -5,15 +5,42 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Phone, CheckCircle2, MessageSquare } from 'lucide-react';
 import { formatMZN } from '@/lib/validators/mozambique';
-import { format, parseISO, differenceInDays } from 'date-fns';
+import { format, parseISO, differenceInDays, isValid } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import type { TuitionFee } from '@/hooks/useFinancial';
 
+// Safe date parsing for due_date
 export function getDaysOverdue(dueDate: string | null) {
   if (!dueDate) return 0;
-  return differenceInDays(new Date(), parseISO(dueDate));
+  try {
+    const date = parseISO(dueDate);
+    if (!isValid(date)) return 0;
+    return differenceInDays(new Date(), date);
+  } catch {
+    return 0;
+  }
+}
+
+// Safe month formatting - handles both "YYYY-MM" and text formats like "Julho"
+export function formatMonthSafe(month: string | null, formatStr: string = 'MMMM yyyy'): string {
+  if (!month) return '-';
+  
+  // Check if it's already a YYYY-MM format
+  if (/^\d{4}-\d{2}$/.test(month)) {
+    try {
+      const date = parseISO(`${month}-01`);
+      if (isValid(date)) {
+        return format(date, formatStr, { locale: pt });
+      }
+    } catch {
+      // Fall through to return original
+    }
+  }
+  
+  // If it's a text month name (legacy data), just return it capitalized
+  return month.charAt(0).toUpperCase() + month.slice(1);
 }
 
 export function getUrgencyLevel(days: number): { label: string; color: string; bgColor: string } {
@@ -57,7 +84,7 @@ export function DebtorCard({ fee, onPay, onContact, compact = false }: DebtorCar
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{fee.student?.name}</p>
             <p className="text-xs text-muted-foreground">
-              {format(parseISO(`${fee.month}-01`), 'MMM/yy', { locale: pt })}
+              {formatMonthSafe(fee.month, 'MMM/yy')}
             </p>
           </div>
 
@@ -113,7 +140,7 @@ export function DebtorCard({ fee, onPay, onContact, compact = false }: DebtorCar
                 <div>
                   <h4 className="font-medium truncate">{fee.student?.name}</h4>
                   <p className="text-xs text-muted-foreground">
-                    {format(parseISO(`${fee.month}-01`), 'MMMM yyyy', { locale: pt })}
+                    {formatMonthSafe(fee.month)}
                   </p>
                 </div>
                 <Badge className={cn("text-xs", urgency.bgColor, urgency.color)}>
@@ -127,7 +154,7 @@ export function DebtorCard({ fee, onPay, onContact, compact = false }: DebtorCar
                     {formatMZN(fee.amount || 0)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Venc: {fee.due_date ? format(parseISO(fee.due_date), 'dd/MM/yyyy') : '-'}
+                    Venc: {fee.due_date && isValid(parseISO(fee.due_date)) ? format(parseISO(fee.due_date), 'dd/MM/yyyy') : '-'}
                   </p>
                 </div>
 
