@@ -523,6 +523,30 @@ export function useCreateCategory() {
   });
 }
 
+export function useDeleteCategory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase
+        .from('financial_categories')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['financial-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['category-stats'] });
+      toast.success('Categoria removida!');
+    },
+    onError: (error) => {
+      toast.error('Erro ao remover categoria: ' + error.message);
+    },
+  });
+}
+
 // Category statistics for charts and reports
 export function useCategoryStats(filters?: {
   startDate?: string;
