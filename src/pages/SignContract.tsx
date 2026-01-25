@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import { sanitizeForReact } from '@/lib/sanitize';
 import { 
   FileSignature, 
   Check, 
@@ -255,7 +256,7 @@ export default function SignContract() {
               <div 
                 className="bg-white rounded-lg border shadow-inner p-6 max-h-96 overflow-y-auto text-black"
                 style={{ fontFamily: "'Times New Roman', Times, serif" }}
-                dangerouslySetInnerHTML={{ __html: signatureRequest.contract_html }}
+                dangerouslySetInnerHTML={sanitizeForReact(signatureRequest.contract_html)}
               />
             </div>
 

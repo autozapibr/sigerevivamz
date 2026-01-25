@@ -128,12 +128,14 @@ export function useUploadStaffDocument() {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
+      // Get signed URL (bucket is now private for security)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('staff-files')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 year expiry for stored reference
 
-      // Create document record
+      if (signedUrlError) throw signedUrlError;
+
+      // Create document record with the file path (not the signed URL, as that expires)
       const { data, error } = await supabase
         .from('staff_documents')
         .insert({
@@ -141,7 +143,7 @@ export function useUploadStaffDocument() {
           staff_id: staffId,
           document_type: documentType,
           document_name: documentName,
-          file_url: urlData.publicUrl,
+          file_url: filePath, // Store path, not URL
           file_size: file.size,
           mime_type: file.type,
           notes,
@@ -275,12 +277,14 @@ export function useUploadStaffPhoto() {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
+      // Get signed URL (bucket is now private)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('staff-files')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 year
 
-      return urlData.publicUrl;
+      if (signedUrlError) throw signedUrlError;
+
+      return signedUrlData.signedUrl;
     },
     onError: (error: Error) => {
       toast({
@@ -290,4 +294,29 @@ export function useUploadStaffPhoto() {
       });
     },
   });
+}
+
+// Helper function to get a signed URL for a staff document
+export async function getStaffDocumentSignedUrl(filePath: string): Promise<string | null> {
+  // If it's already a full URL, extract the path
+  let path = filePath;
+  if (filePath.startsWith('http')) {
+    const url = new URL(filePath);
+    const pathParts = url.pathname.split('/');
+    const bucketIndex = pathParts.indexOf('staff-files');
+    if (bucketIndex !== -1) {
+      path = pathParts.slice(bucketIndex + 1).join('/');
+    }
+  }
+
+  const { data, error } = await supabase.storage
+    .from('staff-files')
+    .createSignedUrl(path, 60 * 60); // 1 hour expiry for viewing
+
+  if (error) {
+    console.error('Error creating signed URL:', error);
+    return null;
+  }
+
+  return data.signedUrl;
 }

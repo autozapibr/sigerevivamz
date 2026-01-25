@@ -13,6 +13,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { StaffContractData, generateContractHTML, CONTRACT_TEMPLATES } from './ContractTemplates';
 import { SignatureDialog } from './SignatureDialog';
+import { sanitizeHtml, sanitizeForReact } from '@/lib/sanitize';
 
 interface ContractPreviewDialogProps {
   open: boolean;
@@ -34,7 +35,8 @@ export function ContractPreviewDialog({
 
   if (!staffData || !template) return null;
 
-  const contractHTML = generateContractHTML(templateId, staffData);
+  // Sanitize HTML to prevent XSS attacks
+  const contractHTML = sanitizeHtml(generateContractHTML(templateId, staffData));
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
@@ -203,7 +205,7 @@ export function ContractPreviewDialog({
               ref={printRef}
               className="p-8 min-h-full bg-white text-foreground dark:bg-white dark:text-black"
               style={{ fontFamily: "'Times New Roman', Times, serif" }}
-              dangerouslySetInnerHTML={{ __html: contractHTML }}
+              dangerouslySetInnerHTML={sanitizeForReact(contractHTML)}
             />
           </div>
         </DialogContent>
