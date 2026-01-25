@@ -17,7 +17,9 @@ import {
   CreditCard,
   Users,
   Target,
-  FileText
+  FileText,
+  FileSpreadsheet,
+  Loader2
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -42,6 +44,9 @@ import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { exportSimpleFinancialExcel } from '@/lib/exporters/financial-excel';
+import { exportFinancialPDF } from '@/lib/exporters/financial-pdf';
+import { useToast } from '@/hooks/use-toast';
 
 const COLORS = {
   receitas: 'hsl(var(--success))',
@@ -54,7 +59,9 @@ const PIE_COLORS = ['hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--des
 
 export default function RelatoriosFinanceirosPage() {
   const [selectedYear, setSelectedYear] = useState(2026);
+  const [isExporting, setIsExporting] = useState(false);
   const currentMonth = format(new Date(), 'yyyy-MM');
+  const { toast } = useToast();
 
   const { data: monthlyData = [], isLoading: loadingMonthly } = useMonthlyReport(selectedYear);
   const { data: summary } = useFinancialSummary(currentMonth);
@@ -100,6 +107,45 @@ export default function RelatoriosFinanceirosPage() {
     return null;
   };
 
+  // Export handlers
+  const handleExportPDF = () => {
+    setIsExporting(true);
+    try {
+      exportFinancialPDF(monthlyData, selectedYear, summary?.taxaAdimplencia);
+      toast({
+        title: 'PDF gerado com sucesso',
+        description: 'Na janela de impressão, seleccione "Guardar como PDF" para salvar o documento.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro ao gerar PDF',
+        description: 'Ocorreu um erro ao gerar o relatório. Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportExcel = () => {
+    setIsExporting(true);
+    try {
+      exportSimpleFinancialExcel(monthlyData, selectedYear);
+      toast({
+        title: 'Excel exportado com sucesso',
+        description: 'O ficheiro foi descarregado para a sua pasta de downloads.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro ao exportar Excel',
+        description: 'Ocorreu um erro ao gerar o ficheiro. Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <MainLayout 
       title="Relatórios Financeiros" 
@@ -123,12 +169,30 @@ export default function RelatoriosFinanceirosPage() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2">
-              <FileText className="h-4 w-4" />
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={handleExportPDF}
+              disabled={isExporting || loadingMonthly}
+            >
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileText className="h-4 w-4" />
+              )}
               Gerar PDF
             </Button>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={handleExportExcel}
+              disabled={isExporting || loadingMonthly}
+            >
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileSpreadsheet className="h-4 w-4" />
+              )}
               Exportar Excel
             </Button>
           </div>
