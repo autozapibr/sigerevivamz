@@ -250,15 +250,18 @@ export function useMonthlyReport(year: number) {
       
       for (let month = 1; month <= 12; month++) {
         const monthStr = `${year}-${String(month).padStart(2, '0')}`;
-        const startDate = `${monthStr}-01`;
-        const endDate = `${monthStr}-31`;
+        // Use proper last day of month calculation
+        const monthDate = new Date(year, month - 1, 1);
+        const lastDay = endOfMonth(monthDate);
+        const startDate = format(monthDate, 'yyyy-MM-dd');
+        const endDateStr = format(lastDay, 'yyyy-MM-dd');
 
         const [transactionsRes, tuitionRes] = await Promise.all([
           supabase
             .from('transactions')
             .select('type, amount')
             .gte('date', startDate)
-            .lte('date', endDate),
+            .lte('date', endDateStr),
           supabase
             .from('tuition_fees')
             .select('status, amount')
