@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Phone, CheckCircle2, MessageSquare } from 'lucide-react';
+import { Phone, CheckCircle2, MessageSquare, User } from 'lucide-react';
 import { formatMZN } from '@/lib/validators/mozambique';
 import { format, parseISO, differenceInDays, isValid } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -59,10 +59,11 @@ interface DebtorCardProps {
   fee: TuitionFee;
   onPay: (fee: TuitionFee) => void;
   onContact: (fee: TuitionFee) => void;
+  onViewProfile?: (fee: TuitionFee) => void;
   compact?: boolean;
 }
 
-export function DebtorCard({ fee, onPay, onContact, compact = false }: DebtorCardProps) {
+export function DebtorCard({ fee, onPay, onContact, onViewProfile, compact = false }: DebtorCardProps) {
   const daysOverdue = getDaysOverdue(fee.due_date);
   const urgency = getUrgencyLevel(daysOverdue);
 
@@ -159,6 +160,17 @@ export function DebtorCard({ fee, onPay, onContact, compact = false }: DebtorCar
                 </div>
 
                 <div className="flex gap-1">
+                  {onViewProfile && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => onViewProfile(fee)}
+                      title="Ver perfil completo"
+                    >
+                      <User className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
