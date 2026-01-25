@@ -454,6 +454,47 @@ export default function Dashboard() {
 
           {/* === TAB: FINANCEIRO (Finance Summary) === */}
           <TabsContent value="financeiro" className="space-y-4 mt-4">
+            {/* Financial Quick Links - FIRST */}
+            <motion.div variants={itemVariants}>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Acesso Rápido - Financeiro</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <ModuleQuickAction 
+                      icon={CreditCard} 
+                      label="Propinas" 
+                      description="Gestão de mensalidades"
+                      href="/financeiro/propinas"
+                      color="success"
+                    />
+                    <ModuleQuickAction 
+                      icon={Wallet} 
+                      label="Livro Caixa" 
+                      description="Receitas e despesas"
+                      href="/financeiro/caixa"
+                      color="primary"
+                    />
+                    <ModuleQuickAction 
+                      icon={AlertCircle} 
+                      label="Cobranças" 
+                      description="Dívidas em atraso"
+                      href="/financeiro/cobrancas"
+                      color="warning"
+                    />
+                    <ModuleQuickAction 
+                      icon={BarChart3} 
+                      label="Relatórios" 
+                      description="Análises financeiras"
+                      href="/financeiro/relatorios"
+                      color="primary"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
             {/* Financial KPIs */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <StatCard
@@ -489,47 +530,6 @@ export default function Dashboard() {
                 isLoading={financialLoading}
               />
             </div>
-
-            {/* Financial Quick Links */}
-            <motion.div variants={itemVariants}>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Acesso Rápido - Financeiro</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <ModuleQuickAction 
-                      icon={CreditCard} 
-                      label="Propinas" 
-                      description="Gestão de mensalidades"
-                      href="/financeiro/propinas"
-                      color="success"
-                    />
-                    <ModuleQuickAction 
-                      icon={Wallet} 
-                      label="Livro Caixa" 
-                      description="Receitas e despesas"
-                      href="/financeiro/caixa"
-                      color="primary"
-                    />
-                    <ModuleQuickAction 
-                      icon={AlertCircle} 
-                      label="Cobranças" 
-                      description="Dívidas em atraso"
-                      href="/financeiro/cobrancas"
-                      color="warning"
-                    />
-                    <ModuleQuickAction 
-                      icon={BarChart3} 
-                      label="Relatórios" 
-                      description="Análises financeiras"
-                      href="/financeiro/relatorios"
-                      color="primary"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
 
             {/* Link to Full Dashboard */}
             <motion.div variants={itemVariants}>
