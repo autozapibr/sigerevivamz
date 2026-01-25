@@ -860,6 +860,54 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_settings: {
+        Row: {
+          additional_config: Json | null
+          api_key: string | null
+          api_url: string | null
+          created_at: string | null
+          created_by: string | null
+          id: number
+          instance_name: string | null
+          integration_name: string
+          is_active: boolean | null
+          last_test_success: boolean | null
+          last_tested_at: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          additional_config?: Json | null
+          api_key?: string | null
+          api_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: never
+          instance_name?: string | null
+          integration_name: string
+          is_active?: boolean | null
+          last_test_success?: boolean | null
+          last_tested_at?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          additional_config?: Json | null
+          api_key?: string | null
+          api_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: never
+          instance_name?: string | null
+          integration_name?: string
+          is_active?: boolean | null
+          last_test_success?: boolean | null
+          last_tested_at?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       payment_agreements: {
         Row: {
           agreed_amount: number
