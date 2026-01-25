@@ -1,9 +1,6 @@
-import { MainLayout } from '@/components/layout/MainLayout';
+import { Navigate } from 'react-router-dom';
 
+// Redirecionar para o Dashboard Financeiro
 export default function Financial() {
-  return (
-    <MainLayout title="Financeiro" subtitle="Gestão financeira">
-      <p>Em desenvolvimento</p>
-    </MainLayout>
-  );
+  return <Navigate to="/financeiro/dashboard" replace />;
 }
