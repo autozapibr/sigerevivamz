@@ -49,38 +49,43 @@ export default function SignContract() {
       }
 
       try {
+        // Use secure RPC function to fetch contract data
+        // This prevents exposure of sensitive fields not needed for signing
         const { data, error: fetchError } = await supabase
-          .from('contract_signatures')
-          .select('*')
-          .eq('signature_token', token)
-          .single();
+          .rpc('get_contract_for_signing', { _token: token });
 
         if (fetchError) throw fetchError;
 
-        if (!data) {
-          setError('Pedido de assinatura não encontrado.');
+        if (!data || data.length === 0) {
+          setError('Pedido de assinatura não encontrado ou expirado.');
           return;
         }
 
+        const contractData = data[0];
+
         // Verificar se já foi assinado
-        if (data.status === 'signed') {
+        if (contractData.status === 'signed') {
           setError('Este contrato já foi assinado.');
           return;
         }
 
-        // Verificar se expirou
-        if (data.token_expires_at && new Date(data.token_expires_at) < new Date()) {
-          setError('O link de assinatura expirou. Por favor, solicite um novo link.');
-          return;
-        }
-
         // Verificar se foi cancelado
-        if (data.status === 'cancelled' || data.status === 'expired') {
+        if (contractData.status === 'cancelled' || contractData.status === 'expired') {
           setError('Este pedido de assinatura foi cancelado ou expirou.');
           return;
         }
 
-        setSignatureRequest(data);
+        // Map the RPC response to the expected format
+        setSignatureRequest({
+          id: contractData.id,
+          staff_name: contractData.staff_name,
+          contract_type: contractData.contract_type,
+          contract_number: null, // Not exposed by secure function
+          contract_html: contractData.contract_html,
+          status: contractData.status,
+          token_expires_at: null, // Expiry already validated in function
+          signature_token: token,
+        });
       } catch (err: any) {
         // Log error only in development mode
         if (import.meta.env.DEV) {
