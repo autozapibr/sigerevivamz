@@ -187,13 +187,6 @@ export default function PropinasPage() {
       subtitle="Controlo de mensalidades escolares"
     >
       <div className="space-y-4 sm:space-y-6">
-        {/* Back navigation */}
-        <Button variant="ghost" size="sm" asChild className="gap-2 -ml-2">
-          <Link to="/financeiro/dashboard">
-            <ArrowLeft className="h-4 w-4" />
-            Voltar ao Dashboard
-          </Link>
-        </Button>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
