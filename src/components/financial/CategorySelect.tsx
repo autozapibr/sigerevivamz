@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Select,
   SelectContent,
@@ -17,8 +17,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, RefreshCw, FolderPlus } from 'lucide-react';
+import { Plus, RefreshCw, FolderPlus, AlertCircle } from 'lucide-react';
 import { useFinancialCategories, useCreateCategory } from '@/hooks/useFinancial';
+import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 
 type TransactionType = Database['public']['Enums']['transaction_type'];
@@ -40,30 +41,67 @@ export function CategorySelect({
 }: CategorySelectProps) {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [error, setError] = useState<string | null>(null);
   
-  const { data: categories = [] } = useFinancialCategories();
+  const { data: categories = [], refetch } = useFinancialCategories();
   const createCategory = useCreateCategory();
   
+  // Filter categories by type - ensure we only show the correct type
   const filteredCategories = categories.filter(c => c.type === type);
   
-  const handleAddCategory = () => {
-    if (!newCategoryName.trim()) return;
+  // Check if category already exists
+  const categoryExists = filteredCategories.some(
+    c => c.name.toLowerCase().trim() === newCategoryName.toLowerCase().trim()
+  );
+  
+  // Clear error when dialog closes
+  useEffect(() => {
+    if (!addDialogOpen) {
+      setError(null);
+      setNewCategoryName('');
+    }
+  }, [addDialogOpen]);
+  
+  const handleAddCategory = async () => {
+    const trimmedName = newCategoryName.trim();
+    if (!trimmedName) {
+      setError('O nome da categoria é obrigatório');
+      return;
+    }
+    
+    // Check for existing category with same name and type
+    if (categoryExists) {
+      setError('Já existe uma categoria com este nome');
+      return;
+    }
+    
+    setError(null);
     
     createCategory.mutate(
-      { name: newCategoryName.trim(), type },
+      { name: trimmedName, type },
       {
         onSuccess: (data) => {
           setNewCategoryName('');
           setAddDialogOpen(false);
+          // Refetch categories to get the updated list
+          refetch();
           // Select the newly created category
           if (data?.id) {
             onChange(data.id.toString());
+          }
+          toast.success(`Categoria "${trimmedName}" criada com sucesso!`);
+        },
+        onError: (err: any) => {
+          // Handle unique constraint violation
+          if (err?.message?.includes('unique') || err?.code === '23505') {
+            setError('Já existe uma categoria com este nome');
+          } else {
+            setError(err?.message || 'Erro ao criar categoria');
           }
         },
       }
     );
   };
-  
   return (
     <>
       <Select value={value} onValueChange={onChange}>
@@ -121,16 +159,32 @@ export function CategorySelect({
               <Input
                 id="categoryName"
                 value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
+                onChange={(e) => {
+                  setNewCategoryName(e.target.value);
+                  setError(null);
+                }}
                 placeholder={type === 'Receita' ? 'ex: Propinas, Matrículas...' : 'ex: Salários, Material...'}
-                className="mt-1.5"
+                className={`mt-1.5 ${error ? 'border-destructive' : ''}`}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
                     handleAddCategory();
                   }
                 }}
+                autoFocus
               />
+              {error && (
+                <p className="text-sm text-destructive mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  {error}
+                </p>
+              )}
+              {categoryExists && !error && newCategoryName.trim() && (
+                <p className="text-sm text-amber-500 mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  Esta categoria já existe
+                </p>
+              )}
             </div>
           </div>
 
@@ -146,7 +200,7 @@ export function CategorySelect({
             </Button>
             <Button
               onClick={handleAddCategory}
-              disabled={createCategory.isPending || !newCategoryName.trim()}
+              disabled={createCategory.isPending || !newCategoryName.trim() || categoryExists}
               className="gap-2"
             >
               {createCategory.isPending ? (
