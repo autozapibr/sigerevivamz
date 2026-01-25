@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Search, FileText, AlertTriangle, CheckCircle, 
-  Clock, Calendar, Banknote, Plus, Eye, Printer,
-  MessageCircle, Mail, Download, MoreHorizontal
+  Clock, Calendar, Plus, Eye, Printer,
+  MessageCircle, Mail, MoreHorizontal, Wand2, Edit
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -38,6 +38,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useContracts, useContractsStats, CONTRACT_TYPES, type ContractFilters, type Contract } from '@/hooks/useContracts';
 import { ContractGeneratorDialog } from '@/components/contracts/ContractGeneratorDialog';
 import { ContractPreviewDialog } from '@/components/contracts/ContractPreviewDialog';
+import { ContractEditorDialog } from '@/components/contracts/ContractEditorDialog';
 import { StaffContractData } from '@/components/contracts/ContractTemplates';
 import { useToast } from '@/hooks/use-toast';
 
@@ -47,7 +48,9 @@ export default function ContratosPage() {
   const [contractTypeFilter, setContractTypeFilter] = useState<string>('all');
   const [showGenerator, setShowGenerator] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
   const [selectedContract, setSelectedContract] = useState<StaffContractData | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const { toast } = useToast();
 
   const filters: ContractFilters = {
@@ -202,14 +205,20 @@ export default function ContratosPage() {
           </Card>
         </div>
 
-        {/* Action Button & Filters */}
+        {/* Action Buttons & Filters */}
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-4">
-              <Button onClick={() => setShowGenerator(true)} className="md:order-last">
-                <Plus className="w-4 h-4 mr-2" />
-                Gerar Contrato
-              </Button>
+              <div className="flex gap-2 md:order-last">
+                <Button onClick={() => setShowGenerator(true)} variant="outline">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Modelo Rápido
+                </Button>
+                <Button onClick={() => setShowEditor(true)}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Editor Avançado
+                </Button>
+              </div>
 
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -492,6 +501,13 @@ export default function ContratosPage() {
         onOpenChange={setShowPreview}
         staffData={selectedContract}
         templateId={selectedContract ? getTemplateIdFromContractType(selectedContract.contract_type) : 'efectivo'}
+      />
+
+      <ContractEditorDialog
+        open={showEditor}
+        onOpenChange={setShowEditor}
+        initialStaff={selectedContract}
+        initialTemplate={selectedTemplateId}
       />
     </MainLayout>
   );
