@@ -3,17 +3,25 @@ import { motion } from 'framer-motion';
 import { 
   Users, GraduationCap, BookOpen, DollarSign, 
   TrendingUp, TrendingDown, ArrowUpRight, Calendar,
-  UserCheck, ClipboardCheck, AlertCircle
+  UserCheck, ClipboardCheck, AlertCircle, Wallet, Building2
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useDashboardStats, useFinancialDashboard } from '@/hooks/useDashboardStats';
+import {
+  ChartCard,
+  StudentDistributionChart,
+  MonthlyFinancialChart,
+  EnrollmentStatusChart,
+  TuitionTrendChart,
+  ClassDistributionChart,
+} from '@/components/dashboard/DashboardCharts';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -36,9 +44,28 @@ interface StatCardProps {
   icon: React.ReactNode;
   color: string;
   onClick?: () => void;
+  isLoading?: boolean;
 }
 
-function StatCard({ title, value, change, changeType = 'neutral', icon, color, onClick }: StatCardProps) {
+function StatCard({ title, value, change, changeType = 'neutral', icon, color, onClick, isLoading }: StatCardProps) {
+  if (isLoading) {
+    return (
+      <motion.div variants={itemVariants}>
+        <Card className="relative overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-16" />
+              </div>
+              <Skeleton className="h-12 w-12 rounded-xl" />
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div variants={itemVariants}>
       <Card 
@@ -76,29 +103,18 @@ function StatCard({ title, value, change, changeType = 'neutral', icon, color, o
   );
 }
 
+function formatMZN(value: number): string {
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M MZN`;
+  if (value >= 1000) return `${(value / 1000).toFixed(0)}k MZN`;
+  return `${value.toLocaleString('pt-MZ')} MZN`;
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
-
-  // Fetch statistics
-  const { data: stats } = useQuery({
-    queryKey: ['dashboard-stats'],
-    queryFn: async () => {
-      const [students, teachers, classes, pendingEnrollments] = await Promise.all([
-        supabase.from('students').select('id', { count: 'exact', head: true }).eq('status', 'Ativo'),
-        supabase.from('teachers').select('id', { count: 'exact', head: true }).eq('status', 'Ativo'),
-        supabase.from('classes').select('id', { count: 'exact', head: true }),
-        supabase.from('student_enrollments').select('id', { count: 'exact', head: true }).eq('status', 'PENDENTE'),
-      ]);
-      
-      return {
-        students: students.count || 0,
-        teachers: teachers.count || 0,
-        classes: classes.count || 0,
-        pendingEnrollments: pendingEnrollments.count || 0,
-      };
-    },
-  });
+  
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: financial, isLoading: financialLoading } = useFinancialDashboard();
 
   const quickActions = [
     { title: 'Nova Matrícula', icon: GraduationCap, path: '/matriculas', color: 'bg-primary text-primary-foreground' },
@@ -110,7 +126,7 @@ export default function Dashboard() {
   return (
     <MainLayout title="Dashboard" subtitle="Visão geral do sistema">
       <motion.div 
-        className="space-y-8"
+        className="space-y-6"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -121,14 +137,13 @@ export default function Dashboard() {
             <CardContent className="p-8">
               <div className="relative z-10">
                 <h2 className="text-2xl font-bold mb-2">
-                  Bom dia, {user?.name.split(' ')[0]}! 👋
+                  Bom dia, {user?.name?.split(' ')[0] || 'Utilizador'}! 👋
                 </h2>
                 <p className="text-white/80 max-w-xl">
                   Bem-vindo ao SiGER - Sistema de Gestão Escolar Reviva. 
                   Aqui tens uma visão geral da tua escola.
                 </p>
               </div>
-              {/* Decorative elements */}
               <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="absolute right-20 bottom-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2" />
             </CardContent>
@@ -136,37 +151,172 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <StatCard
-            title="Total de Educandos"
-            value={stats?.students || 0}
-            change="+12 este mês"
-            changeType="positive"
+            title="Educandos Activos"
+            value={stats?.counts.students || 0}
             icon={<Users className="w-6 h-6 text-white" />}
             color="bg-primary"
             onClick={() => navigate('/students')}
+            isLoading={statsLoading}
           />
           <StatCard
-            title="Professores Activos"
-            value={stats?.teachers || 0}
+            title="Professores"
+            value={stats?.counts.teachers || 0}
             icon={<UserCheck className="w-6 h-6 text-white" />}
             color="bg-blue-500"
             onClick={() => navigate('/teachers')}
+            isLoading={statsLoading}
           />
           <StatCard
             title="Turmas"
-            value={stats?.classes || 0}
+            value={stats?.counts.classes || 0}
             icon={<BookOpen className="w-6 h-6 text-white" />}
             color="bg-purple-500"
             onClick={() => navigate('/turmas')}
+            isLoading={statsLoading}
           />
           <StatCard
             title="Matrículas Pendentes"
-            value={stats?.pendingEnrollments || 0}
+            value={stats?.counts.pendingEnrollments || 0}
             icon={<AlertCircle className="w-6 h-6 text-white" />}
             color="bg-amber-500"
             onClick={() => navigate('/matriculas')}
+            isLoading={statsLoading}
           />
+          <StatCard
+            title="Colaboradores"
+            value={stats?.counts.employees || 0}
+            icon={<Building2 className="w-6 h-6 text-white" />}
+            color="bg-teal-500"
+            onClick={() => navigate('/rh/colaboradores')}
+            isLoading={statsLoading}
+          />
+        </div>
+
+        {/* Financial Summary Cards */}
+        <motion.div variants={itemVariants}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="bg-success/10 border-success/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-success/20">
+                    <TrendingUp className="w-5 h-5 text-success" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Receitas (mês)</p>
+                    <p className="text-lg font-bold text-success">
+                      {financialLoading ? <Skeleton className="h-6 w-20" /> : formatMZN(financial?.currentSummary.receitas || 0)}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-destructive/10 border-destructive/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-destructive/20">
+                    <TrendingDown className="w-5 h-5 text-destructive" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Despesas (mês)</p>
+                    <p className="text-lg font-bold text-destructive">
+                      {financialLoading ? <Skeleton className="h-6 w-20" /> : formatMZN(financial?.currentSummary.despesas || 0)}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-primary/10 border-primary/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/20">
+                    <Wallet className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Saldo (mês)</p>
+                    <p className="text-lg font-bold text-primary">
+                      {financialLoading ? <Skeleton className="h-6 w-20" /> : formatMZN(financial?.currentSummary.saldo || 0)}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-info/10 border-info/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-info/20">
+                    <DollarSign className="w-5 h-5 text-info" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Taxa Adimplência</p>
+                    <p className="text-lg font-bold text-info">
+                      {financialLoading ? <Skeleton className="h-6 w-12" /> : `${financial?.currentSummary.taxaAdimplencia || 0}%`}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </motion.div>
+
+        {/* Charts Row 1 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <motion.div variants={itemVariants}>
+            <ChartCard title="Receitas vs Despesas" description="Últimos 6 meses">
+              {financialLoading ? (
+                <Skeleton className="h-[250px] w-full" />
+              ) : (
+                <MonthlyFinancialChart data={financial?.monthlyData || []} />
+              )}
+            </ChartCard>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <ChartCard title="Propinas - Tendência" description="Pagos vs Pendentes por mês">
+              {financialLoading ? (
+                <Skeleton className="h-[200px] w-full" />
+              ) : (
+                <TuitionTrendChart data={financial?.tuitionTrend || []} />
+              )}
+            </ChartCard>
+          </motion.div>
+        </div>
+
+        {/* Charts Row 2 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div variants={itemVariants}>
+            <ChartCard title="Distribuição por Género" description="Educandos matriculados">
+              {statsLoading ? (
+                <Skeleton className="h-[200px] w-full" />
+              ) : (
+                <StudentDistributionChart data={stats?.genderDistribution || []} />
+              )}
+            </ChartCard>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <ChartCard title="Estado das Matrículas" description="Ano lectivo actual">
+              {statsLoading ? (
+                <Skeleton className="h-[200px] w-full" />
+              ) : (
+                <EnrollmentStatusChart data={stats?.enrollmentStatus || []} />
+              )}
+            </ChartCard>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <ChartCard title="Educandos por Turma" description="Top 8 turmas">
+              {statsLoading ? (
+                <Skeleton className="h-[200px] w-full" />
+              ) : (
+                <ClassDistributionChart data={stats?.classDistribution || []} />
+              )}
+            </ChartCard>
+          </motion.div>
         </div>
 
         {/* Quick Actions */}
