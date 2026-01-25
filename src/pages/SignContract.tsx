@@ -82,7 +82,10 @@ export default function SignContract() {
 
         setSignatureRequest(data);
       } catch (err: any) {
-        console.error('Error fetching signature request:', err);
+        // Log error only in development mode
+        if (import.meta.env.DEV) {
+          console.error('Error fetching signature request:', err);
+        }
         setError('Não foi possível carregar o contrato. Verifique o link e tente novamente.');
       } finally {
         setLoading(false);
@@ -114,7 +117,10 @@ export default function SignContract() {
 
       setSigned(true);
     } catch (err: any) {
-      console.error('Error signing contract:', err);
+      // Log error only in development mode
+      if (import.meta.env.DEV) {
+        console.error('Error signing contract:', err);
+      }
       setError('Não foi possível gravar a assinatura. Por favor, tente novamente.');
     } finally {
       setIsSigning(false);

@@ -85,7 +85,10 @@ export function SignatureDialog({
       if (error) throw error;
       return data;
     } catch (error: any) {
-      console.error('Error creating signature request:', error);
+      // Log error only in development mode
+      if (import.meta.env.DEV) {
+        console.error('Error creating signature request:', error);
+      }
       throw error;
     }
   };
@@ -132,7 +135,10 @@ export function SignatureDialog({
       onSignatureComplete();
       onOpenChange(false);
     } catch (error: any) {
-      console.error('Error signing contract:', error);
+      // Log error only in development mode
+      if (import.meta.env.DEV) {
+        console.error('Error signing contract:', error);
+      }
       toast({
         title: 'Erro ao assinar',
         description: error.message || 'Não foi possível gravar a assinatura.',

@@ -1366,6 +1366,60 @@ export type Database = {
       }
     }
     Views: {
+      employees_public_info: {
+        Row: {
+          contract_type: string | null
+          created_at: string | null
+          department: string | null
+          district: string | null
+          email: string | null
+          gender: string | null
+          hire_date: string | null
+          id: number | null
+          name: string | null
+          phone: string | null
+          photo_url: string | null
+          province: string | null
+          role: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          contract_type?: string | null
+          created_at?: string | null
+          department?: string | null
+          district?: string | null
+          email?: string | null
+          gender?: string | null
+          hire_date?: string | null
+          id?: number | null
+          name?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          province?: string | null
+          role?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          contract_type?: string | null
+          created_at?: string | null
+          department?: string | null
+          district?: string | null
+          email?: string | null
+          gender?: string | null
+          hire_date?: string | null
+          id?: number | null
+          name?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          province?: string | null
+          role?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       student_attendance_stats: {
         Row: {
           atrasos: number | null
