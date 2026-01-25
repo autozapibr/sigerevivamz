@@ -74,7 +74,7 @@ export function ClassFeeStep({ form }: ClassFeeStepProps) {
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder={
-                        isLoading ? "A carregar turmas..." : "Selecione a turma"
+                        isLoading ? "A carregar turmas..." : "Seleccione a turma"
                       } />
                     </SelectTrigger>
                   </FormControl>

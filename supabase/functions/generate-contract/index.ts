@@ -42,10 +42,10 @@ serve(async (req) => {
       trabalho: "contrato de trabalho formal com todas as cláusulas laborais obrigatórias",
       voluntariado: "termo de voluntariado para organização sem fins lucrativos (escola)",
       estagio: "contrato de estágio curricular ou profissional",
-      prestacao_servicos: "contrato de prestação de serviços autônomos",
+      prestacao_servicos: "contrato de prestação de serviços autónomos",
     };
 
-    const systemPrompt = `Você é um especialista jurídico moçambicano especializado em contratos de trabalho e termos legais para organizações educacionais sem fins lucrativos. 
+    const systemPrompt = `É um especialista jurídico moçambicano especializado em contratos de trabalho e termos legais para organizações educacionais sem fins lucrativos.
 
 CONTEXTO:
 - Organização: ESCOLA REVIVA (escola sem fins lucrativos em Moçambique)

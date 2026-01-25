@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { LucideIcon, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { pt } from 'date-fns/locale';
 
 interface Activity {
   id: string;
@@ -19,7 +19,7 @@ interface ActivityFeedProps {
   maxItems?: number;
 }
 
-export function ActivityFeed({ title = 'Atividades Recentes', activities, maxItems = 5 }: ActivityFeedProps) {
+export function ActivityFeed({ title = 'Actividades Recentes', activities, maxItems = 5 }: ActivityFeedProps) {
   const displayActivities = activities.slice(0, maxItems);
 
   const colorClasses: Record<string, string> = {
@@ -40,7 +40,7 @@ export function ActivityFeed({ title = 'Atividades Recentes', activities, maxIte
         <div className="space-y-4">
           {displayActivities.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              Nenhuma atividade recente
+              Nenhuma actividade recente
             </p>
           ) : (
             displayActivities.map((activity, index) => (
@@ -66,7 +66,7 @@ export function ActivityFeed({ title = 'Atividades Recentes', activities, maxIte
                     <span>
                       {formatDistanceToNow(activity.timestamp, {
                         addSuffix: true,
-                        locale: ptBR,
+                        locale: pt,
                       })}
                     </span>
                   </div>

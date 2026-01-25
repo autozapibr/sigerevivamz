@@ -42,12 +42,12 @@ const DevSeed: React.FC = () => {
           role: u.role,
         }));
         setRows(mapped);
-        toast.success("Usuários de teste prontos!");
+        toast.success("Utilizadores de teste prontos!");
       } else {
-        throw new Error(data?.error || "Falha ao criar usuários");
+        throw new Error(data?.error || "Falha ao criar utilizadores");
       }
     } catch (e: any) {
-      toast.error(e?.message || "Erro ao criar usuários de teste");
+      toast.error(e?.message || "Erro ao criar utilizadores de teste");
     } finally {
       setLoadingUsers(false);
     }
@@ -95,10 +95,10 @@ const DevSeed: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" /> 
-              1. Usuários de Teste
+              1. Utilizadores de Teste
             </CardTitle>
             <CardDescription>
-              Cria 4 contas (DIRETORIA, SECRETARIA, FINANCEIRO, PROFESSOR) com senha 123456.
+              Cria 4 contas (DIRETORIA, SECRETARIA, FINANCEIRO, PROFESSOR) com palavra-passe 123456.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -111,7 +111,7 @@ const DevSeed: React.FC = () => {
                 ) : (
                   <>
                     <Users className="h-4 w-4 mr-2" />
-                    Criar Usuários
+                    Criar Utilizadores
                   </>
                 )}
               </Button>
@@ -123,7 +123,7 @@ const DevSeed: React.FC = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Email</TableHead>
-                    <TableHead>Senha</TableHead>
+                    <TableHead>Palavra-passe</TableHead>
                     <TableHead>Papel</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -199,7 +199,7 @@ const DevSeed: React.FC = () => {
                 <Link to="/matriculas">Matrículas</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/students">Estudantes</Link>
+                <Link to="/students">Educandos</Link>
               </Button>
               <Button variant="outline" asChild>
                 <Link to="/financeiro">Financeiro</Link>

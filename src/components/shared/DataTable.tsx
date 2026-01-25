@@ -81,7 +81,7 @@ export function DataTable<T extends Record<string, any>>({
       )}
       <CardContent>
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+          <div className="text-center py-8 text-muted-foreground">A carregar...</div>
         ) : paginatedData.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             {searchTerm ? 'Nenhum resultado encontrado' : 'Nenhum dado disponível'}
@@ -121,7 +121,7 @@ export function DataTable<T extends Record<string, any>>({
             {totalPages > 1 && (
               <div className="flex items-center justify-between mt-4">
                 <p className="text-sm text-muted-foreground">
-                  Mostrando {startIndex + 1} a {Math.min(endIndex, filteredData.length)} de{' '}
+                  A mostrar {startIndex + 1} a {Math.min(endIndex, filteredData.length)} de{' '}
                   {filteredData.length} resultados
                 </p>
                 <div className="flex gap-2">

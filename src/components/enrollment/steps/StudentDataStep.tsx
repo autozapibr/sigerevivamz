@@ -78,7 +78,7 @@ export function StudentDataStep({ form }: StudentDataStepProps) {
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
+                      <SelectValue placeholder="Seleccione" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -194,7 +194,7 @@ export function StudentDataStep({ form }: StudentDataStepProps) {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione a província" />
+                      <SelectValue placeholder="Seleccione a província" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -225,7 +225,7 @@ export function StudentDataStep({ form }: StudentDataStepProps) {
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder={
-                        selectedProvince ? "Selecione o distrito" : "Selecione primeiro a província"
+                        selectedProvince ? "Seleccione o distrito" : "Seleccione primeiro a província"
                       } />
                     </SelectTrigger>
                   </FormControl>

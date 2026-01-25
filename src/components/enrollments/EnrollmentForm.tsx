@@ -102,11 +102,11 @@ export function EnrollmentForm({ open, onOpenChange, onSubmit, isLoading }: Enro
               name="academic_year_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ano Letivo</FormLabel>
+                  <FormLabel>Ano Lectivo</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecionar ano letivo" />
+                        <SelectValue placeholder="Seleccionar ano lectivo" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
