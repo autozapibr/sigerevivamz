@@ -16,7 +16,9 @@ import {
   Calendar,
   TrendingUp,
   TrendingDown,
-  Receipt
+  Receipt,
+  FileText,
+  Loader2
 } from 'lucide-react';
 import { formatMZN } from '@/lib/validators/mozambique';
 import { format, parseISO } from 'date-fns';
@@ -25,6 +27,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { ReceiptGenerator } from './ReceiptGenerator';
+import { useToast } from '@/hooks/use-toast';
 
 interface StudentFinancialHistoryProps {
   open: boolean;
@@ -50,6 +53,8 @@ export function StudentFinancialHistory({
   studentName 
 }: StudentFinancialHistoryProps) {
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const { toast } = useToast();
 
   const { data: fees = [], isLoading } = useQuery({
     queryKey: ['student-financial-history', studentId],
@@ -101,6 +106,127 @@ export function StudentFinancialHistory({
       default:
         return <Badge variant="outline">{status || 'N/A'}</Badge>;
     }
+  };
+
+  // Print/export student financial history
+  const handlePrintHistory = () => {
+    setIsPrinting(true);
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({
+        title: 'Erro',
+        description: 'Por favor, permita popups para imprimir o relatório.',
+        variant: 'destructive',
+      });
+      setIsPrinting(false);
+      return;
+    }
+
+    const feesRows = fees.map(fee => `
+      <tr>
+        <td>${format(parseISO(`${fee.month}-01`), 'MMMM yyyy', { locale: pt })}</td>
+        <td class="amount">${formatMZN(fee.amount || 0)}</td>
+        <td>${fee.due_date ? format(parseISO(fee.due_date), 'dd/MM/yyyy') : 'N/A'}</td>
+        <td class="${fee.status === 'Pago' ? 'status-paid' : fee.status === 'Atrasado' ? 'status-overdue' : 'status-pending'}">${fee.status || 'N/A'}</td>
+      </tr>
+    `).join('');
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="pt-MZ">
+        <head>
+          <meta charset="UTF-8">
+          <title>Histórico Financeiro - ${studentName}</title>
+          <style>
+            body { font-family: 'Segoe UI', sans-serif; padding: 30px; color: #1a1a1a; }
+            .header { display: flex; justify-content: space-between; border-bottom: 3px solid #2D5F3F; padding-bottom: 15px; margin-bottom: 25px; }
+            .header h1 { color: #2D5F3F; font-size: 20pt; margin: 0; }
+            .header h2 { color: #666; font-size: 11pt; margin: 5px 0 0 0; font-weight: normal; }
+            .student-info { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+            .student-info h3 { margin: 0 0 10px 0; color: #2D5F3F; }
+            .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+            .summary-card { border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; text-align: center; }
+            .summary-card .label { font-size: 9pt; color: #666; text-transform: uppercase; }
+            .summary-card .value { font-size: 16pt; font-weight: bold; margin-top: 5px; }
+            .summary-card.paid .value { color: #22c55e; }
+            .summary-card.pending .value { color: #f59e0b; }
+            .summary-card.overdue .value { color: #ef4444; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th { background: #2D5F3F; color: white; padding: 12px; text-align: left; font-size: 9pt; text-transform: uppercase; }
+            td { padding: 10px; border-bottom: 1px solid #e8e8e8; }
+            tr:nth-child(even) { background: #f9fafb; }
+            .amount { font-family: monospace; text-align: right; }
+            .status-paid { color: #22c55e; font-weight: 600; }
+            .status-pending { color: #f59e0b; font-weight: 600; }
+            .status-overdue { color: #ef4444; font-weight: 600; }
+            .footer { margin-top: 30px; text-align: center; color: #999; font-size: 9pt; border-top: 1px solid #e0e0e0; padding-top: 15px; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h1>📊 Histórico Financeiro</h1>
+              <h2>SiGER - Sistema de Gestão Escolar REVIVA</h2>
+            </div>
+            <div style="text-align: right; font-size: 10pt; color: #666;">
+              Gerado em: ${format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: pt })}
+            </div>
+          </div>
+          
+          <div class="student-info">
+            <h3>👤 ${studentName}</h3>
+            <p style="margin: 0; color: #666;">ID do Educando: ${studentId}</p>
+          </div>
+          
+          <div class="summary">
+            <div class="summary-card paid">
+              <div class="label">Total Pago</div>
+              <div class="value">${formatMZN(summary.totalPaid)}</div>
+            </div>
+            <div class="summary-card pending">
+              <div class="label">Total Pendente</div>
+              <div class="value">${formatMZN(summary.totalPending)}</div>
+            </div>
+            <div class="summary-card ${summary.overdue > 0 ? 'overdue' : 'pending'}">
+              <div class="label">Em Atraso</div>
+              <div class="value">${summary.overdue} meses</div>
+            </div>
+          </div>
+          
+          <h4 style="color: #2D5F3F; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px;">Detalhe de Propinas</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th style="text-align: right;">Valor</th>
+                <th>Vencimento</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${feesRows || '<tr><td colspan="4" style="text-align:center;color:#999;">Nenhum registo encontrado</td></tr>'}
+            </tbody>
+          </table>
+          
+          <div class="footer">
+            Documento gerado pelo SiGER - Sistema de Gestão Escolar REVIVA | Maputo, Moçambique
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.print();
+      setIsPrinting(false);
+    };
+
+    toast({
+      title: 'Documento gerado',
+      description: 'Seleccione "Guardar como PDF" para salvar ou imprimir directamente.',
+    });
   };
 
   const handleViewReceipt = (fee: TuitionFeeWithDetails) => {
@@ -252,12 +378,30 @@ export function StudentFinancialHistory({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Fechar
             </Button>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={handlePrintHistory}
+              disabled={isPrinting || isLoading}
+            >
+              {isPrinting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileText className="h-4 w-4" />
+              )}
               Exportar PDF
             </Button>
-            <Button variant="outline" className="gap-2">
-              <Printer className="h-4 w-4" />
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={handlePrintHistory}
+              disabled={isPrinting || isLoading}
+            >
+              {isPrinting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Printer className="h-4 w-4" />
+              )}
               Imprimir
             </Button>
           </div>
