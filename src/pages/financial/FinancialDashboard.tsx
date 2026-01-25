@@ -225,6 +225,27 @@ function OverdueItem({ fee }: { fee: any }) {
   const daysOverdue = fee.due_date 
     ? Math.ceil((new Date().getTime() - new Date(fee.due_date).getTime()) / (1000 * 60 * 60 * 24))
     : 0;
+  
+  // Safe date formatting - handle invalid month values
+  const formatMonth = () => {
+    if (!fee.month || typeof fee.month !== 'string') {
+      return 'Data inválida';
+    }
+    try {
+      // Validate month format (should be YYYY-MM)
+      const monthRegex = /^\d{4}-\d{2}$/;
+      if (!monthRegex.test(fee.month)) {
+        return fee.month;
+      }
+      const date = parseISO(`${fee.month}-01`);
+      if (isNaN(date.getTime())) {
+        return fee.month;
+      }
+      return format(date, 'MMM yyyy', { locale: pt });
+    } catch {
+      return fee.month || 'N/A';
+    }
+  };
     
   return (
     <div className="flex items-center gap-3 py-2.5 border-b last:border-0">
@@ -234,9 +255,9 @@ function OverdueItem({ fee }: { fee: any }) {
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{fee.student?.name}</p>
+        <p className="text-sm font-medium truncate">{fee.student?.name || 'Educando'}</p>
         <p className="text-xs text-muted-foreground">
-          {format(parseISO(`${fee.month}-01`), 'MMM yyyy', { locale: pt })} • {daysOverdue}d atraso
+          {formatMonth()} • {daysOverdue}d atraso
         </p>
       </div>
       <p className="text-sm font-semibold text-destructive flex-shrink-0">
