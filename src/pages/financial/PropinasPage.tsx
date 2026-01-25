@@ -54,9 +54,9 @@ const MONTHS_2026 = [
 ];
 
 const PAYMENT_METHODS = [
-  { value: 'DINHEIRO', label: 'Dinheiro', icon: Banknote },
-  { value: 'M-PESA', label: 'M-Pesa', icon: Smartphone },
-  { value: 'TRANSFERENCIA', label: 'Transferência Bancária', icon: Building2 },
+  { value: 'NUMERARIO', label: 'Numerário', icon: Banknote },
+  { value: 'CONTA_BANCARIA', label: 'Conta Bancária', icon: Building2 },
+  { value: 'CARTEIRA_MOVEL', label: 'Carteira Móvel', icon: Smartphone },
 ];
 
 function getStatusBadge(status: string | null) {
@@ -131,7 +131,7 @@ export default function PropinasPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
-  const [paymentMethod, setPaymentMethod] = useState('DINHEIRO');
+  const [paymentMethod, setPaymentMethod] = useState('NUMERARIO');
   const [generateDialog, setGenerateDialog] = useState(false);
   const [defaultAmount, setDefaultAmount] = useState('2500');
 
@@ -153,7 +153,7 @@ export default function PropinasPage() {
       {
         onSuccess: () => {
           setPaymentDialog({ open: false, fee: null });
-          setPaymentMethod('DINHEIRO');
+          setPaymentMethod('NUMERARIO');
         },
       }
     );

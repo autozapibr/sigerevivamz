@@ -163,9 +163,13 @@ export function ReceiptGenerator({ open, onOpenChange, receipt }: ReceiptGenerat
   };
 
   const paymentMethodLabel = {
-    'DINHEIRO': 'Dinheiro',
-    'M-PESA': 'M-Pesa',
-    'TRANSFERENCIA': 'Transferência Bancária',
+    'NUMERARIO': 'Numerário',
+    'CONTA_BANCARIA': 'Conta Bancária',
+    'CARTEIRA_MOVEL': 'Carteira Móvel',
+    // Legacy support
+    'DINHEIRO': 'Numerário',
+    'M-PESA': 'Carteira Móvel (M-Pesa)',
+    'TRANSFERENCIA': 'Conta Bancária',
     'CHEQUE': 'Cheque',
   }[receipt.paymentMethod] || receipt.paymentMethod;
 

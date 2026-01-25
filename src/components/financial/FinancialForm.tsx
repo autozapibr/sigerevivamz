@@ -158,10 +158,9 @@ export function FinancialForm({ open, onOpenChange, onSubmit, isLoading }: Finan
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="DINHEIRO">Dinheiro</SelectItem>
+                        <SelectItem value="NUMERARIO">Numerário</SelectItem>
+                        <SelectItem value="CONTA_BANCARIA">Conta Bancária</SelectItem>
                         <SelectItem value="CARTEIRA_MOVEL">Carteira Móvel</SelectItem>
-                        <SelectItem value="TRANSFERENCIA">Transferência</SelectItem>
-                        <SelectItem value="CHEQUE">Cheque</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

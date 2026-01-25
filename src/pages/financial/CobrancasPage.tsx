@@ -37,9 +37,9 @@ import { BulkReminderDialog } from '@/components/financial/BulkReminderDialog';
 import { useToast } from '@/hooks/use-toast';
 
 const PAYMENT_METHODS = [
-  { value: 'DINHEIRO', label: 'Dinheiro', icon: Banknote },
-  { value: 'M-PESA', label: 'M-Pesa', icon: Smartphone },
-  { value: 'TRANSFERENCIA', label: 'Transferência', icon: Building2 },
+  { value: 'NUMERARIO', label: 'Numerário', icon: Banknote },
+  { value: 'CONTA_BANCARIA', label: 'Conta Bancária', icon: Building2 },
+  { value: 'CARTEIRA_MOVEL', label: 'Carteira Móvel', icon: Smartphone },
 ];
 
 type UrgencyFilter = 'all' | 'baixa' | 'media' | 'alta' | 'critica';
@@ -52,7 +52,7 @@ export default function CobrancasPage() {
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
   const [contactDialog, setContactDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
   const [bulkReminderOpen, setBulkReminderOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('DINHEIRO');
+  const [paymentMethod, setPaymentMethod] = useState('NUMERARIO');
   const { toast } = useToast();
 
   const { data: overdueFees = [], isLoading } = useOverdueFees();
@@ -103,7 +103,7 @@ export default function CobrancasPage() {
       {
         onSuccess: () => {
           setPaymentDialog({ open: false, fee: null });
-          setPaymentMethod('DINHEIRO');
+          setPaymentMethod('NUMERARIO');
         },
       }
     );
