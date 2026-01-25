@@ -27,11 +27,11 @@ import {
 } from 'lucide-react';
 import { useOverdueFees, usePayTuition, type TuitionFee } from '@/hooks/useFinancial';
 import { formatMZN } from '@/lib/validators/mozambique';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { DebtorCard, getDaysOverdue, getUrgencyLevel } from '@/components/financial/DebtorCard';
+import { DebtorCard, getDaysOverdue, getUrgencyLevel, formatMonthSafe } from '@/components/financial/DebtorCard';
 import { CollectionStatsCards } from '@/components/financial/CollectionStatsCards';
 import { BulkReminderDialog } from '@/components/financial/BulkReminderDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -347,7 +347,7 @@ export default function CobrancasPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Referência:</span>
-                  <span>{format(parseISO(`${paymentDialog.fee.month}-01`), 'MMMM yyyy', { locale: pt })}</span>
+                  <span>{formatMonthSafe(paymentDialog.fee.month)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Dias em atraso:</span>
@@ -445,8 +445,9 @@ export default function CobrancasPage() {
                   disabled={!contactDialog.fee.student?.phone}
                   onClick={() => {
                     const phone = contactDialog.fee?.student?.phone?.replace(/\D/g, '');
+                    const monthRef = formatMonthSafe(contactDialog.fee?.month || '');
                     const message = encodeURIComponent(
-                      `Prezado(a) Encarregado(a),\n\nIdentificámos que a propina de ${format(parseISO(`${contactDialog.fee?.month}-01`), 'MMMM yyyy', { locale: pt })} do(a) educando(a) ${contactDialog.fee?.student?.name} encontra-se em atraso.\n\nValor: ${formatMZN(contactDialog.fee?.amount || 0)}\n\nPor favor, regularize a situação o mais breve possível.\n\nAtenciosamente,\nSecretaria Escolar`
+                      `Prezado(a) Encarregado(a),\n\nIdentificámos que a propina de ${monthRef} do(a) educando(a) ${contactDialog.fee?.student?.name} encontra-se em atraso.\n\nValor: ${formatMZN(contactDialog.fee?.amount || 0)}\n\nPor favor, regularize a situação o mais breve possível.\n\nAtenciosamente,\nSecretaria Escolar`
                     );
                     window.open(`https://wa.me/${phone}?text=${message}`);
                   }}
@@ -462,7 +463,7 @@ export default function CobrancasPage() {
                   <span>Propina em atraso há {getDaysOverdue(contactDialog.fee.due_date)} dias</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Valor: {formatMZN(contactDialog.fee.amount || 0)} • Vencimento: {contactDialog.fee.due_date ? format(parseISO(contactDialog.fee.due_date), 'dd/MM/yyyy') : '-'}
+                  Valor: {formatMZN(contactDialog.fee.amount || 0)} • Vencimento: {contactDialog.fee.due_date && isValid(parseISO(contactDialog.fee.due_date)) ? format(parseISO(contactDialog.fee.due_date), 'dd/MM/yyyy') : '-'}
                 </p>
               </div>
             </div>
