@@ -1,4 +1,10 @@
 project_id = "ryaiyvsklusqmvudpujv"
 
+[functions.generate-contract]
+verify_jwt = false
+
+[functions.seed-data]
+verify_jwt = false
+
 [functions.seed-users]
 verify_jwt = false
