@@ -1,0 +1,43 @@
+-- =====================================================
+-- SEED DATA PARTE 2: ESTUDANTES E ENCARREGADOS
+-- =====================================================
+
+-- 7. ENCARREGADOS (Guardians)
+INSERT INTO public.guardians (full_name, relationship, phone, phone_alt, email, bi_number, nuit, occupation, workplace, address, province, district, is_primary) VALUES
+  ('António Machava', 'Pai', '+258861234567', '+258871234567', 'antonio.machava@email.mz', 'AAA111222333', '111222333', 'Engenheiro', 'EDM', 'Av. 24 de Julho, 123', 'Maputo', 'KaMpfumo', true),
+  ('Lurdes Tembe', 'Mãe', '+258862345678', NULL, 'lurdes.tembe@email.mz', 'BBB222333444', '222333444', 'Enfermeira', 'Hospital Central', 'Rua do Bagamoyo, 456', 'Maputo', 'Matola', true),
+  ('Fernando Sitoe', 'Pai', '+258863456789', '+258873456789', 'fernando.sitoe@email.mz', 'CCC333444555', '333444555', 'Professor', 'UEM', 'Av. Eduardo Mondlane, 789', 'Gaza', 'Xai-Xai', true),
+  ('Graça Cossa', 'Mãe', '+258864567890', NULL, 'graca.cossa@email.mz', 'DDD444555666', '444555666', 'Médica', 'Clínica Privada', 'Rua da Mesquita, 101', 'Maputo', 'Boane', true),
+  ('Manuel Langa', 'Avô', '+258865678901', '+258875678901', 'manuel.langa@email.mz', 'EEE555666777', '555666777', 'Reformado', NULL, 'Av. Acordos de Lusaka, 202', 'Inhambane', 'Maxixe', true),
+  ('Rosa Mondlane', 'Mãe', '+258866789012', NULL, 'rosa.mondlane@email.mz', 'FFF666777888', '666777888', 'Comerciante', 'Mercado Central', 'Rua 3 de Fevereiro, 303', 'Maputo', 'KaMubukwana', true),
+  ('José Chissano', 'Pai', '+258867890123', '+258877890123', 'jose.chissano@email.mz', 'GGG777888999', '777888999', 'Advogado', 'Escritório Próprio', 'Av. Julius Nyerere, 404', 'Sofala', 'Beira', true),
+  ('Maria Guebuza', 'Mãe', '+258868901234', NULL, 'maria.guebuza@email.mz', 'HHH888999000', '888999000', 'Empresária', 'MG Investimentos', 'Rua da Zambézia, 505', 'Nampula', 'Nampula', true),
+  ('Carlos Dhlakama', 'Tio', '+258869012345', '+258879012345', 'carlos.dhlakama@email.mz', 'III999000111', '999000111', 'Bancário', 'BCI', 'Av. Mao Tse Tung, 606', 'Maputo', 'KaMpfumo', true),
+  ('Helena Simango', 'Avó', '+258860123456', NULL, 'helena.simango@email.mz', 'JJJ000111222', '000111222', 'Reformada', NULL, 'Rua do Aeroporto, 707', 'Gaza', 'Xai-Xai', true),
+  ('Paulo Zucula', 'Pai', '+258861122334', '+258871122334', 'paulo.zucula@email.mz', 'KKK111222333', '111222334', 'Piloto', 'LAM', 'Av. Marginal, 808', 'Maputo', 'Matola', true),
+  ('Sofia Mutola', 'Mãe', '+258862233445', NULL, 'sofia.mutola@email.mz', 'LLL222333444', '222333445', 'Atleta', 'CON', 'Rua Robert Sobukwe, 909', 'Maputo', 'KaMpfumo', true)
+ON CONFLICT DO NOTHING;
+
+-- 8. ESTUDANTES (com nomes moçambicanos variados)
+INSERT INTO public.students (name, birth_date, gender, phone, email, bi_number, nuit, guardian, address, province, district, status, enrollment_status, class_id, nationality) VALUES
+  ('Amélia Fernanda Machava', '2010-03-15', 'FEMININO', '+258821234567', 'amelia.machava@estudante.mz', 'STU001001001', '001001001', 'António Machava', 'Av. 24 de Julho, 123', 'Maputo', 'KaMpfumo', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '8ª Classe A' LIMIT 1), 'Moçambicana'),
+  ('Bruno Carlos Tembe', '2009-07-22', 'MASCULINO', '+258822345678', 'bruno.tembe@estudante.mz', 'STU002002002', '002002002', 'Lurdes Tembe', 'Rua do Bagamoyo, 456', 'Maputo', 'Matola', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '8ª Classe A' LIMIT 1), 'Moçambicana'),
+  ('Carla Joana Sitoe', '2010-01-08', 'FEMININO', '+258823456789', 'carla.sitoe@estudante.mz', 'STU003003003', '003003003', 'Fernando Sitoe', 'Av. Eduardo Mondlane, 789', 'Gaza', 'Xai-Xai', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '8ª Classe B' LIMIT 1), 'Moçambicana'),
+  ('Daniel Augusto Cossa', '2009-11-30', 'MASCULINO', '+258824567890', 'daniel.cossa@estudante.mz', 'STU004004004', '004004004', 'Graça Cossa', 'Rua da Mesquita, 101', 'Maputo', 'Boane', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '8ª Classe B' LIMIT 1), 'Moçambicana'),
+  ('Elisa Maria Langa', '2008-05-17', 'FEMININO', '+258825678901', 'elisa.langa@estudante.mz', 'STU005005005', '005005005', 'Manuel Langa', 'Av. Acordos de Lusaka, 202', 'Inhambane', 'Maxixe', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '9ª Classe A' LIMIT 1), 'Moçambicana'),
+  ('Francisco José Mondlane', '2008-09-03', 'MASCULINO', '+258826789012', 'francisco.mondlane@estudante.mz', 'STU006006006', '006006006', 'Rosa Mondlane', 'Rua 3 de Fevereiro, 303', 'Maputo', 'KaMubukwana', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '9ª Classe A' LIMIT 1), 'Moçambicana'),
+  ('Gabriela Luísa Chissano', '2009-02-14', 'FEMININO', '+258827890123', 'gabriela.chissano@estudante.mz', 'STU007007007', '007007007', 'José Chissano', 'Av. Julius Nyerere, 404', 'Sofala', 'Beira', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '9ª Classe B' LIMIT 1), 'Moçambicana'),
+  ('Henrique Manuel Guebuza', '2008-12-25', 'MASCULINO', '+258828901234', 'henrique.guebuza@estudante.mz', 'STU008008008', '008008008', 'Maria Guebuza', 'Rua da Zambézia, 505', 'Nampula', 'Nampula', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '9ª Classe B' LIMIT 1), 'Moçambicana'),
+  ('Isabel Cristina Dhlakama', '2007-06-11', 'FEMININO', '+258829012345', 'isabel.dhlakama@estudante.mz', 'STU009009009', '009009009', 'Carlos Dhlakama', 'Av. Mao Tse Tung, 606', 'Maputo', 'KaMpfumo', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '10ª Classe A' LIMIT 1), 'Moçambicana'),
+  ('Joaquim Alberto Simango', '2007-04-28', 'MASCULINO', '+258820123456', 'joaquim.simango@estudante.mz', 'STU010010010', '010010010', 'Helena Simango', 'Rua do Aeroporto, 707', 'Gaza', 'Xai-Xai', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '10ª Classe A' LIMIT 1), 'Moçambicana'),
+  ('Kátia Fernanda Zucula', '2008-08-19', 'FEMININO', '+258821122334', 'katia.zucula@estudante.mz', 'STU011011011', '011011011', 'Paulo Zucula', 'Av. Marginal, 808', 'Maputo', 'Matola', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '10ª Classe B' LIMIT 1), 'Moçambicana'),
+  ('Leonardo Paulo Mutola', '2007-10-05', 'MASCULINO', '+258822233445', 'leonardo.mutola@estudante.mz', 'STU012012012', '012012012', 'Sofia Mutola', 'Rua Robert Sobukwe, 909', 'Maputo', 'KaMpfumo', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '10ª Classe B' LIMIT 1), 'Moçambicana'),
+  ('Margarida Rosa Machava', '2006-03-21', 'FEMININO', '+258823344556', NULL, 'STU013013013', '013013013', 'António Machava', 'Av. 24 de Julho, 123', 'Maputo', 'KaMpfumo', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '11ª Classe A' LIMIT 1), 'Moçambicana'),
+  ('Nelson Eduardo Tembe', '2006-07-09', 'MASCULINO', '+258824455667', NULL, 'STU014014014', '014014014', 'Lurdes Tembe', 'Rua do Bagamoyo, 456', 'Maputo', 'Matola', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '11ª Classe A' LIMIT 1), 'Moçambicana'),
+  ('Olívia Teresa Sitoe', '2005-11-12', 'FEMININO', '+258825566778', NULL, 'STU015015015', '015015015', 'Fernando Sitoe', 'Av. Eduardo Mondlane, 789', 'Gaza', 'Xai-Xai', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '12ª Classe A' LIMIT 1), 'Moçambicana'),
+  ('Pedro António Cossa', '2005-02-28', 'MASCULINO', '+258826677889', NULL, 'STU016016016', '016016016', 'Graça Cossa', 'Rua da Mesquita, 101', 'Maputo', 'Boane', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '12ª Classe A' LIMIT 1), 'Moçambicana'),
+  ('Raquel Sofia Langa', '2010-04-03', 'FEMININO', '+258827788990', NULL, 'STU017017017', '017017017', 'Manuel Langa', 'Av. Acordos de Lusaka, 202', 'Inhambane', 'Maxixe', 'Ativo', 'PENDENTE', NULL, 'Moçambicana'),
+  ('Samuel Jorge Mondlane', '2009-08-16', 'MASCULINO', '+258828899001', NULL, 'STU018018018', '018018018', 'Rosa Mondlane', 'Rua 3 de Fevereiro, 303', 'Maputo', 'KaMubukwana', 'Ativo', 'PENDENTE', NULL, 'Moçambicana'),
+  ('Teresa Maria Chissano', '2010-12-07', 'FEMININO', '+258829900112', NULL, 'STU019019019', '019019019', 'José Chissano', 'Av. Julius Nyerere, 404', 'Sofala', 'Beira', 'Inativo', 'REJEITADA', NULL, 'Moçambicana'),
+  ('Vitor Manuel Guebuza', '2008-01-24', 'MASCULINO', '+258820011223', NULL, 'STU020020020', '020020020', 'Maria Guebuza', 'Rua da Zambézia, 505', 'Nampula', 'Nampula', 'Ativo', 'APROVADA', (SELECT id FROM classes WHERE name = '8ª Classe A' LIMIT 1), 'Moçambicana')
+ON CONFLICT DO NOTHING;
