@@ -48,17 +48,17 @@ export function RegisterForm() {
     if (password !== confirmPassword) {
       toast({
         title: "Erro",
-        description: "As senhas não coincidem.",
+        description: "As palavras-passe não coincidem.",
         variant: "destructive",
       });
       return;
     }
 
-    // Requisitos fortes de senha para proteção de dados escolares
+    // Requisitos fortes de palavra-passe para protecção de dados escolares
     if (password.length < 10) {
       toast({
-        title: "Senha muito curta",
-        description: "A senha deve ter pelo menos 10 caracteres.",
+        title: "Palavra-passe muito curta",
+        description: "A palavra-passe deve ter pelo menos 10 caracteres.",
         variant: "destructive",
       });
       return;
@@ -66,8 +66,8 @@ export function RegisterForm() {
 
     if (!/[A-Z]/.test(password)) {
       toast({
-        title: "Senha fraca",
-        description: "A senha deve conter pelo menos uma letra maiúscula.",
+        title: "Palavra-passe fraca",
+        description: "A palavra-passe deve conter pelo menos uma letra maiúscula.",
         variant: "destructive",
       });
       return;
@@ -75,8 +75,8 @@ export function RegisterForm() {
 
     if (!/[a-z]/.test(password)) {
       toast({
-        title: "Senha fraca",
-        description: "A senha deve conter pelo menos uma letra minúscula.",
+        title: "Palavra-passe fraca",
+        description: "A palavra-passe deve conter pelo menos uma letra minúscula.",
         variant: "destructive",
       });
       return;
@@ -84,8 +84,8 @@ export function RegisterForm() {
 
     if (!/[0-9]/.test(password)) {
       toast({
-        title: "Senha fraca",
-        description: "A senha deve conter pelo menos um número.",
+        title: "Palavra-passe fraca",
+        description: "A palavra-passe deve conter pelo menos um número.",
         variant: "destructive",
       });
       return;
@@ -93,8 +93,8 @@ export function RegisterForm() {
 
     if (!/[^A-Za-z0-9]/.test(password)) {
       toast({
-        title: "Senha fraca",
-        description: "A senha deve conter pelo menos um caractere especial (!@#$%^&*).",
+        title: "Palavra-passe fraca",
+        description: "A palavra-passe deve conter pelo menos um caractere especial (!@#$%^&*).",
         variant: "destructive",
       });
       return;
@@ -106,7 +106,7 @@ export function RegisterForm() {
       setCooldownUntil(null);
       toast({
         title: "Conta criada com sucesso!",
-        description: "Verifique seu email para confirmar a conta.",
+        description: "Verifique o seu email para confirmar a conta.",
         variant: "default",
       });
     } catch (error: any) {
@@ -121,7 +121,7 @@ export function RegisterForm() {
       }
       
       toast({
-        title: "Erro no cadastro",
+        title: "Erro no registo",
         description: error.message || "Erro ao criar conta. Tente novamente.",
         variant: "destructive",
       });
@@ -170,7 +170,7 @@ export function RegisterForm() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Seu nome completo"
+                    placeholder="O seu nome completo"
                     className="pl-10"
                     disabled={isLoading}
                   />
@@ -203,7 +203,7 @@ export function RegisterForm() {
                   <UserCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
                   <Select value={role} onValueChange={(value: UserRole) => setRole(value)}>
                     <SelectTrigger className="pl-10">
-                      <SelectValue placeholder="Selecione sua função" />
+                      <SelectValue placeholder="Seleccione a sua função" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="DIRETORIA">Diretoria</SelectItem>
@@ -217,7 +217,7 @@ export function RegisterForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-foreground">
-                  Senha
+                  Palavra-passe
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -226,7 +226,7 @@ export function RegisterForm() {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Min. 10 caracteres, maiúsculas, números e especiais"
+                    placeholder="Mín. 10 caracteres, maiúsculas, números e especiais"
                     className="pl-10 pr-10"
                     disabled={isLoading}
                   />
@@ -248,7 +248,7 @@ export function RegisterForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-foreground">
-                  Confirmar Senha
+                  Confirmar Palavra-passe
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -257,7 +257,7 @@ export function RegisterForm() {
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirme sua senha"
+                    placeholder="Confirme a sua palavra-passe"
                     className="pl-10 pr-10"
                     disabled={isLoading}
                   />

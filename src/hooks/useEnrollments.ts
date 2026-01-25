@@ -322,13 +322,13 @@ export function useUpdateEnrollmentStatus() {
       queryClient.invalidateQueries({ queryKey: ['student-enrollments'] });
       queryClient.invalidateQueries({ queryKey: ['students'] });
       toast({
-        title: 'Status atualizado',
+        title: 'Estado actualizado',
         description: 'O estado da matrícula foi alterado com sucesso.',
       });
     },
     onError: (error) => {
       toast({
-        title: 'Erro ao atualizar',
+        title: 'Erro ao actualizar',
         description: error.message,
         variant: 'destructive',
       });

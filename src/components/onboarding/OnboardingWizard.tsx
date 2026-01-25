@@ -27,7 +27,7 @@ export function OnboardingWizard() {
     },
     {
       id: 'teachers',
-      title: 'Cadastrar Professores',
+      title: 'Registar Professores',
       description: 'Adicione o corpo docente',
       icon: <Users className="h-5 w-5" />,
       completed: false,
@@ -35,8 +35,8 @@ export function OnboardingWizard() {
     },
     {
       id: 'students',
-      title: 'Cadastrar Educandos',
-      description: 'Registre os alunos da escola',
+      title: 'Registar Educandos',
+      description: 'Inscreva os alunos da escola',
       icon: <GraduationCap className="h-5 w-5" />,
       completed: false,
       route: '/students',
@@ -98,7 +98,7 @@ export function OnboardingWizard() {
           <h4 className="font-medium mb-2">💡 Dica Rápida</h4>
           <p className="text-sm text-muted-foreground">
             Use a página <Link to="/dev-seed" className="text-primary underline">Dev Seed</Link> para criar 
-            usuários de teste e começar a explorar o sistema rapidamente.
+            utilizadores de teste e começar a explorar o sistema rapidamente.
           </p>
         </div>
       </CardContent>

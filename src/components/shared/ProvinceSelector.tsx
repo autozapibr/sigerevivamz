@@ -38,7 +38,7 @@ export function ProvinceSelector({
         </Label>
         <Select value={selectedProvince} onValueChange={handleProvinceChange}>
           <SelectTrigger>
-            <SelectValue placeholder="Selecionar província" />
+            <SelectValue placeholder="Seleccionar província" />
           </SelectTrigger>
           <SelectContent>
             {PROVINCES.map((province) => (
@@ -61,7 +61,7 @@ export function ProvinceSelector({
           disabled={!selectedProvince}
         >
           <SelectTrigger>
-            <SelectValue placeholder={selectedProvince ? "Selecionar distrito" : "Primeiro selecione a província"} />
+            <SelectValue placeholder={selectedProvince ? "Seleccionar distrito" : "Primeiro seleccione a província"} />
           </SelectTrigger>
           <SelectContent>
             {districts.map((district) => (

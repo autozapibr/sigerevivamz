@@ -61,7 +61,7 @@ export function GuardianDataStep({ form }: GuardianDataStepProps) {
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
+                      <SelectValue placeholder="Seleccione" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -212,7 +212,7 @@ export function GuardianDataStep({ form }: GuardianDataStepProps) {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione a província" />
+                      <SelectValue placeholder="Seleccione a província" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -242,7 +242,7 @@ export function GuardianDataStep({ form }: GuardianDataStepProps) {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione o distrito" />
+                      <SelectValue placeholder="Seleccione o distrito" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
