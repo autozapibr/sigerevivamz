@@ -231,13 +231,13 @@ serve(async (req) => {
     
     if (enrolledStudents && enrolledStudents.length > 0 && 
         (!existingFees || existingFees.length < 50)) {
-      const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho'];
+      const months = ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06'];
       const fees = enrolledStudents.flatMap(student => 
         months.map((month, idx) => ({
           student_id: student.student_id,
           month: month,
           amount: student.monthly_fee,
-          due_date: `2025-${String(idx + 1).padStart(2, '0')}-10`,
+          due_date: `${month}-10`,
           status: idx < 3 ? randomItem(['Pago', 'Pago', 'Pendente']) : 'Pendente',
         }))
       );
@@ -298,12 +298,12 @@ serve(async (req) => {
     
     if (!existingTransactions || existingTransactions.length < 20) {
       const transactions = Array.from({ length: 30 }, (_, i) => ({
-        type: i < 20 ? 'Entrada' : 'Saída',
+        type: i < 20 ? 'Receita' : 'Despesa',
         amount: randomInt(1000, 50000),
         description: i < 20 
           ? randomItem(['Propina Janeiro', 'Propina Fevereiro', 'Taxa de Matrícula', 'Material Escolar'])
           : randomItem(['Salários', 'Material Didáctico', 'Manutenção', 'Electricidade', 'Água']),
-        date: `2025-${String(randomInt(1, 6)).padStart(2, '0')}-${String(randomInt(1, 28)).padStart(2, '0')}`,
+        date: `2026-${String(randomInt(1, 1)).padStart(2, '0')}-${String(randomInt(1, 25)).padStart(2, '0')}`,
       }));
       
       const { data, error } = await supabase
