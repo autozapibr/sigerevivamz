@@ -91,76 +91,104 @@ export function useDashboardStats() {
 }
 
 export function useFinancialDashboard() {
-  const currentYear = new Date().getFullYear();
-  
   return useQuery({
-    queryKey: ['dashboard-financial', currentYear],
+    queryKey: ['dashboard-financial-v2'],
     queryFn: async () => {
+      // Fetch all transactions and tuition fees at once for efficiency
+      const [transactionsRes, tuitionRes] = await Promise.all([
+        supabase.from('transactions').select('type, amount, date'),
+        supabase.from('tuition_fees').select('status, month, amount'),
+      ]);
+
+      const transactions = transactionsRes.data || [];
+      const tuitions = tuitionRes.data || [];
+
+      // Group transactions by month
+      const transactionsByMonth: Record<string, { receitas: number; despesas: number }> = {};
+      transactions.forEach(t => {
+        if (t.date) {
+          const monthKey = t.date.substring(0, 7); // YYYY-MM
+          if (!transactionsByMonth[monthKey]) {
+            transactionsByMonth[monthKey] = { receitas: 0, despesas: 0 };
+          }
+          if (t.type === 'Receita') {
+            transactionsByMonth[monthKey].receitas += t.amount || 0;
+          } else {
+            transactionsByMonth[monthKey].despesas += t.amount || 0;
+          }
+        }
+      });
+
+      // Group tuitions by month
+      const tuitionsByMonth: Record<string, { pago: number; pendente: number; atrasado: number }> = {};
+      tuitions.forEach(t => {
+        if (t.month) {
+          if (!tuitionsByMonth[t.month]) {
+            tuitionsByMonth[t.month] = { pago: 0, pendente: 0, atrasado: 0 };
+          }
+          if (t.status === 'Pago') tuitionsByMonth[t.month].pago++;
+          else if (t.status === 'Pendente') tuitionsByMonth[t.month].pendente++;
+          else if (t.status === 'Atrasado') tuitionsByMonth[t.month].atrasado++;
+        }
+      });
+
+      // Get last 6 months including current
       const months: { month: string; receitas: number; despesas: number; saldo: number }[] = [];
       const tuitionTrend: { month: string; pago: number; pendente: number; atrasado: number }[] = [];
       
-      // Get last 6 months of data
       for (let i = 5; i >= 0; i--) {
         const date = subMonths(new Date(), i);
         const monthStr = format(date, 'yyyy-MM');
-        const startDate = format(startOfMonth(date), 'yyyy-MM-dd');
-        const endDate = format(endOfMonth(date), 'yyyy-MM-dd');
-
-        const [transactionsRes, tuitionRes] = await Promise.all([
-          supabase
-            .from('transactions')
-            .select('type, amount')
-            .gte('date', startDate)
-            .lte('date', endDate),
-          supabase
-            .from('tuition_fees')
-            .select('status')
-            .eq('month', monthStr),
-        ]);
-
-        const transactions = transactionsRes.data || [];
-        const tuitions = tuitionRes.data || [];
-
-        const receitas = transactions
-          .filter(t => t.type === 'Receita')
-          .reduce((sum, t) => sum + (t.amount || 0), 0);
-
-        const despesas = transactions
-          .filter(t => t.type === 'Despesa')
-          .reduce((sum, t) => sum + (t.amount || 0), 0);
-
+        
+        const txData = transactionsByMonth[monthStr] || { receitas: 0, despesas: 0 };
         months.push({
           month: monthStr,
-          receitas,
-          despesas,
-          saldo: receitas - despesas,
+          receitas: txData.receitas,
+          despesas: txData.despesas,
+          saldo: txData.receitas - txData.despesas,
         });
 
+        const tuitionData = tuitionsByMonth[monthStr] || { pago: 0, pendente: 0, atrasado: 0 };
         tuitionTrend.push({
           month: monthStr,
-          pago: tuitions.filter(t => t.status === 'Pago').length,
-          pendente: tuitions.filter(t => t.status === 'Pendente').length,
-          atrasado: tuitions.filter(t => t.status === 'Atrasado').length,
+          ...tuitionData,
         });
       }
 
       // Current month summary
       const currentMonth = format(new Date(), 'yyyy-MM');
-      const currentData = months.find(m => m.month === currentMonth) || { receitas: 0, despesas: 0, saldo: 0 };
-      const currentTuition = tuitionTrend.find(t => t.month === currentMonth) || { pago: 0, pendente: 0, atrasado: 0 };
+      const currentTxData = transactionsByMonth[currentMonth] || { receitas: 0, despesas: 0 };
+      const currentTuitionData = tuitionsByMonth[currentMonth] || { pago: 0, pendente: 0, atrasado: 0 };
       
-      const totalTuitions = currentTuition.pago + currentTuition.pendente + currentTuition.atrasado;
-      const taxaAdimplencia = totalTuitions > 0 ? Math.round((currentTuition.pago / totalTuitions) * 100) : 0;
+      const totalTuitions = currentTuitionData.pago + currentTuitionData.pendente + currentTuitionData.atrasado;
+      const taxaAdimplencia = totalTuitions > 0 ? Math.round((currentTuitionData.pago / totalTuitions) * 100) : 0;
+
+      // Also calculate total stats for display
+      const totalReceitas = transactions.filter(t => t.type === 'Receita').reduce((sum, t) => sum + (t.amount || 0), 0);
+      const totalDespesas = transactions.filter(t => t.type === 'Despesa').reduce((sum, t) => sum + (t.amount || 0), 0);
+      const totalPago = tuitions.filter(t => t.status === 'Pago').length;
+      const totalPendente = tuitions.filter(t => t.status === 'Pendente').length;
+      const totalAtrasado = tuitions.filter(t => t.status === 'Atrasado').length;
+      const totalTuitionCount = totalPago + totalPendente + totalAtrasado;
+      const overallTaxaAdimplencia = totalTuitionCount > 0 ? Math.round((totalPago / totalTuitionCount) * 100) : 0;
 
       return {
         monthlyData: months,
         tuitionTrend,
         currentSummary: {
-          receitas: currentData.receitas,
-          despesas: currentData.despesas,
-          saldo: currentData.saldo,
-          taxaAdimplencia,
+          receitas: currentTxData.receitas || totalReceitas,
+          despesas: currentTxData.despesas || totalDespesas,
+          saldo: (currentTxData.receitas || totalReceitas) - (currentTxData.despesas || totalDespesas),
+          taxaAdimplencia: taxaAdimplencia || overallTaxaAdimplencia,
         },
+        totals: {
+          receitas: totalReceitas,
+          despesas: totalDespesas,
+          saldo: totalReceitas - totalDespesas,
+          taxaAdimplencia: overallTaxaAdimplencia,
+          propinasTotal: totalTuitionCount,
+          propinasPagas: totalPago,
+        }
       };
     },
   });
