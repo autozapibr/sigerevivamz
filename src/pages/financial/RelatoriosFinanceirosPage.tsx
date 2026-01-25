@@ -53,7 +53,7 @@ const COLORS = {
 const PIE_COLORS = ['hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--destructive))'];
 
 export default function RelatoriosFinanceirosPage() {
-  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedYear, setSelectedYear] = useState(2026);
   const currentMonth = format(new Date(), 'yyyy-MM');
 
   const { data: monthlyData = [], isLoading: loadingMonthly } = useMonthlyReport(selectedYear);

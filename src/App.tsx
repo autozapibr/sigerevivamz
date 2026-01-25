@@ -27,6 +27,7 @@ import CaixaPage from "./pages/financial/CaixaPage";
 import PropinasPage from "./pages/financial/PropinasPage";
 import CobrancasPage from "./pages/financial/CobrancasPage";
 import RelatoriosFinanceirosPage from "./pages/financial/RelatoriosFinanceirosPage";
+import FinancialDashboard from "./pages/financial/FinancialDashboard";
 import CalendarioPage from "./pages/CalendarioPage";
 import BibliotecaPage from "./pages/BibliotecaPage";
 import CalendarioProvasPage from "./pages/pedagogico/CalendarioProvasPage";
@@ -184,6 +185,14 @@ const AppRoutes = () => {
         }
       />
       {/* Rotas de Gestão Financeira */}
+      <Route
+        path="/financeiro/dashboard"
+        element={
+          <ProtectedRoute>
+            <FinancialDashboard />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/financeiro/caixa"
         element={

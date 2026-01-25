@@ -34,18 +34,18 @@ import type { Database } from '@/integrations/supabase/types';
 type TransactionType = Database['public']['Enums']['transaction_type'];
 
 const MONTHS = [
-  { value: '2025-01', label: 'Janeiro 2025' },
-  { value: '2025-02', label: 'Fevereiro 2025' },
-  { value: '2025-03', label: 'Março 2025' },
-  { value: '2025-04', label: 'Abril 2025' },
-  { value: '2025-05', label: 'Maio 2025' },
-  { value: '2025-06', label: 'Junho 2025' },
-  { value: '2025-07', label: 'Julho 2025' },
-  { value: '2025-08', label: 'Agosto 2025' },
-  { value: '2025-09', label: 'Setembro 2025' },
-  { value: '2025-10', label: 'Outubro 2025' },
-  { value: '2025-11', label: 'Novembro 2025' },
-  { value: '2025-12', label: 'Dezembro 2025' },
+  { value: '2026-01', label: 'Janeiro 2026' },
+  { value: '2026-02', label: 'Fevereiro 2026' },
+  { value: '2026-03', label: 'Março 2026' },
+  { value: '2026-04', label: 'Abril 2026' },
+  { value: '2026-05', label: 'Maio 2026' },
+  { value: '2026-06', label: 'Junho 2026' },
+  { value: '2026-07', label: 'Julho 2026' },
+  { value: '2026-08', label: 'Agosto 2026' },
+  { value: '2026-09', label: 'Setembro 2026' },
+  { value: '2026-10', label: 'Outubro 2026' },
+  { value: '2026-11', label: 'Novembro 2026' },
+  { value: '2026-12', label: 'Dezembro 2026' },
 ];
 
 export default function CaixaPage() {
