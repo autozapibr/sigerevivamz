@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, GraduationCap, Mail, Lock, Zap, ArrowRight, Sparkles, Shield, BookOpen, Users, Wallet } from 'lucide-react';
+import { Eye, EyeOff, GraduationCap, Mail, Lock, Zap, ArrowRight, Sparkles, Shield, BookOpen, Users, Wallet, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserRole } from '@/types/auth';
+import { useTheme } from '@/hooks/useTheme';
 
 // Dev quick access profiles - bypass login for development
 const DEV_PROFILES = [
@@ -27,6 +28,7 @@ export function LoginForm() {
   const [isHovered, setIsHovered] = useState<string | null>(null);
   const { login, isLoading, devBypassLogin } = useAuth();
   const navigate = useNavigate();
+  const { toggleTheme, isDark } = useTheme();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,11 +170,27 @@ export function LoginForm() {
 
       {/* Right Panel - Login Form */}
       <motion.div 
-        className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-background"
+        className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-background relative"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
+        {/* Theme Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          className="absolute top-4 right-4 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
+        >
+          <motion.div
+            initial={false}
+            animate={{ rotate: isDark ? 180 : 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+          </motion.div>
+        </Button>
+
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <motion.div 
