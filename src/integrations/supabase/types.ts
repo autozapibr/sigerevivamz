@@ -1366,6 +1366,36 @@ export type Database = {
       }
     }
     Views: {
+      contract_signatures_signing: {
+        Row: {
+          contract_html: string | null
+          contract_type: string | null
+          id: number | null
+          signature_token: string | null
+          staff_name: string | null
+          status: string | null
+          token_expires_at: string | null
+        }
+        Insert: {
+          contract_html?: string | null
+          contract_type?: string | null
+          id?: number | null
+          signature_token?: string | null
+          staff_name?: string | null
+          status?: string | null
+          token_expires_at?: string | null
+        }
+        Update: {
+          contract_html?: string | null
+          contract_type?: string | null
+          id?: number | null
+          signature_token?: string | null
+          staff_name?: string | null
+          status?: string | null
+          token_expires_at?: string | null
+        }
+        Relationships: []
+      }
       employees_public_info: {
         Row: {
           contract_type: string | null
@@ -1446,6 +1476,16 @@ export type Database = {
         Returns: number
       }
       classify_grade: { Args: { _grade: number }; Returns: string }
+      get_contract_for_signing: {
+        Args: { _token: string }
+        Returns: {
+          contract_html: string
+          contract_type: string
+          id: number
+          staff_name: string
+          status: string
+        }[]
+      }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
