@@ -348,6 +348,75 @@ export type Database = {
           },
         ]
       }
+      contract_signatures: {
+        Row: {
+          contract_html: string
+          contract_number: string | null
+          contract_type: string
+          created_at: string | null
+          created_by: string | null
+          id: number
+          sent_at: string | null
+          sent_to: string | null
+          sent_via: string | null
+          signature_data: string | null
+          signature_ip: string | null
+          signature_token: string | null
+          signature_user_agent: string | null
+          signed_at: string | null
+          staff_id: number
+          staff_name: string
+          staff_type: string
+          status: string
+          token_expires_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          contract_html: string
+          contract_number?: string | null
+          contract_type: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: never
+          sent_at?: string | null
+          sent_to?: string | null
+          sent_via?: string | null
+          signature_data?: string | null
+          signature_ip?: string | null
+          signature_token?: string | null
+          signature_user_agent?: string | null
+          signed_at?: string | null
+          staff_id: number
+          staff_name: string
+          staff_type: string
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          contract_html?: string
+          contract_number?: string | null
+          contract_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: never
+          sent_at?: string | null
+          sent_to?: string | null
+          sent_via?: string | null
+          signature_data?: string | null
+          signature_ip?: string | null
+          signature_token?: string | null
+          signature_user_agent?: string | null
+          signed_at?: string | null
+          staff_id?: number
+          staff_name?: string
+          staff_type?: string
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           address: string | null

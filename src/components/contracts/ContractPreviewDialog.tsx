@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
-  Printer, Mail, MessageCircle, Download, X, 
-  PenTool, Share2, FileText 
+  Printer, Mail, MessageCircle, Download, 
+  PenTool, FileText 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { StaffContractData, generateContractHTML, CONTRACT_TEMPLATES } from './ContractTemplates';
+import { SignatureDialog } from './SignatureDialog';
 
 interface ContractPreviewDialogProps {
   open: boolean;
@@ -28,6 +29,7 @@ export function ContractPreviewDialog({
 }: ContractPreviewDialogProps) {
   const { toast } = useToast();
   const printRef = useRef<HTMLDivElement>(null);
+  const [showSignatureDialog, setShowSignatureDialog] = useState(false);
   const template = CONTRACT_TEMPLATES.find(t => t.id === templateId);
 
   if (!staffData || !template) return null;
@@ -82,7 +84,6 @@ export function ContractPreviewDialog({
   };
 
   const handleDownloadPDF = async () => {
-    // For PDF, we'll use the print dialog with "Save as PDF" option
     handlePrint();
     toast({
       title: 'Dica',
@@ -149,58 +150,74 @@ export function ContractPreviewDialog({
     });
   };
 
-  const handleDigitalSign = () => {
+  const handleSignatureComplete = () => {
     toast({
-      title: 'Assinatura Digital',
-      description: 'Funcionalidade de assinatura digital será implementada em breve. Por enquanto, imprima o contrato para assinatura manual.',
+      title: 'Contrato assinado',
+      description: 'O contrato foi assinado digitalmente com sucesso.',
     });
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            {template.name} - {staffData.name}
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              {template.name} - {staffData.name}
+            </DialogTitle>
+          </DialogHeader>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-2 py-3 border-b">
-          <Button onClick={handlePrint} variant="outline" size="sm">
-            <Printer className="w-4 h-4 mr-2" />
-            Imprimir
-          </Button>
-          <Button onClick={handleDownloadPDF} variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Guardar PDF
-          </Button>
-          <Button onClick={handleDigitalSign} variant="outline" size="sm">
-            <PenTool className="w-4 h-4 mr-2" />
-            Assinar Digital
-          </Button>
-          <div className="h-6 w-px bg-border mx-1" />
-          <Button onClick={handleSendWhatsApp} variant="outline" size="sm" className="text-emerald-600 dark:text-emerald-400">
-            <MessageCircle className="w-4 h-4 mr-2" />
-            WhatsApp
-          </Button>
-          <Button onClick={handleSendEmail} variant="outline" size="sm" className="text-primary">
-            <Mail className="w-4 h-4 mr-2" />
-            E-mail
-          </Button>
-        </div>
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2 py-3 border-b">
+            <Button onClick={handlePrint} variant="outline" size="sm">
+              <Printer className="w-4 h-4 mr-2" />
+              Imprimir
+            </Button>
+            <Button onClick={handleDownloadPDF} variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Guardar PDF
+            </Button>
+            <Button 
+              onClick={() => setShowSignatureDialog(true)} 
+              variant="default" 
+              size="sm"
+            >
+              <PenTool className="w-4 h-4 mr-2" />
+              Assinar Digital
+            </Button>
+            <div className="h-6 w-px bg-border mx-1" />
+            <Button onClick={handleSendWhatsApp} variant="outline" size="sm" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400">
+              <MessageCircle className="w-4 h-4 mr-2" />
+              WhatsApp
+            </Button>
+            <Button onClick={handleSendEmail} variant="outline" size="sm" className="text-primary">
+              <Mail className="w-4 h-4 mr-2" />
+              E-mail
+            </Button>
+          </div>
 
-        {/* Contract Preview */}
-        <div className="flex-1 overflow-y-auto bg-white rounded-lg border shadow-inner">
-          <div 
-            ref={printRef}
-            className="p-8 min-h-full text-black"
-            style={{ fontFamily: "'Times New Roman', Times, serif" }}
-            dangerouslySetInnerHTML={{ __html: contractHTML }}
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
+          {/* Contract Preview */}
+          <div className="flex-1 overflow-y-auto bg-background rounded-lg border shadow-inner">
+            <div 
+              ref={printRef}
+              className="p-8 min-h-full bg-white text-foreground dark:bg-white dark:text-black"
+              style={{ fontFamily: "'Times New Roman', Times, serif" }}
+              dangerouslySetInnerHTML={{ __html: contractHTML }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Signature Dialog */}
+      <SignatureDialog
+        open={showSignatureDialog}
+        onOpenChange={setShowSignatureDialog}
+        staffData={staffData}
+        templateId={templateId}
+        contractHTML={contractHTML}
+        onSignatureComplete={handleSignatureComplete}
+      />
+    </>
   );
 }
