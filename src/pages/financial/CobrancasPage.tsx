@@ -1,13 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   AlertTriangle, 
@@ -23,9 +22,11 @@ import {
   Filter,
   LayoutGrid,
   List,
-  Loader2
+  Loader2,
+  Zap,
 } from 'lucide-react';
 import { useOverdueFees, usePayTuition, type TuitionFee } from '@/hooks/useFinancial';
+import { useSendNotification } from '@/hooks/useCollections';
 import { formatMZN } from '@/lib/validators/mozambique';
 import { format, parseISO, isValid } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -33,8 +34,12 @@ import { AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { DebtorCard, getDaysOverdue, getUrgencyLevel, formatMonthSafe } from '@/components/financial/DebtorCard';
 import { CollectionStatsCards } from '@/components/financial/CollectionStatsCards';
-import { BulkReminderDialog } from '@/components/financial/BulkReminderDialog';
+import { MobileActionSheet } from '@/components/financial/MobileActionSheet';
+import { NegotiationDialog } from '@/components/financial/NegotiationDialog';
+import { SmartReminderDialog } from '@/components/financial/SmartReminderDialog';
+import { CommunicationHistorySheet } from '@/components/financial/CommunicationHistorySheet';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const PAYMENT_METHODS = [
   { value: 'NUMERARIO', label: 'Numerário', icon: Banknote },
@@ -50,13 +55,23 @@ export default function CobrancasPage() {
   const [urgencyFilter, setUrgencyFilter] = useState<UrgencyFilter>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('kanban');
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
-  const [contactDialog, setContactDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
-  const [bulkReminderOpen, setBulkReminderOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('NUMERARIO');
+  
+  // New state for enhanced features
+  const [mobileActionSheet, setMobileActionSheet] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
+  const [negotiationDialog, setNegotiationDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
+  const [smartReminderOpen, setSmartReminderOpen] = useState(false);
+  const [historySheet, setHistorySheet] = useState<{ open: boolean; studentId: number | null; studentName?: string }>({ 
+    open: false, 
+    studentId: null 
+  });
+
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const { data: overdueFees = [], isLoading } = useOverdueFees();
   const payTuition = usePayTuition();
+  const sendNotification = useSendNotification();
 
   // Filter and group fees
   const { feesByUrgency, filteredFees, stats } = useMemo(() => {
@@ -104,9 +119,79 @@ export default function CobrancasPage() {
         onSuccess: () => {
           setPaymentDialog({ open: false, fee: null });
           setPaymentMethod('NUMERARIO');
+          setMobileActionSheet({ open: false, fee: null });
         },
       }
     );
+  };
+
+  const handleSendWhatsApp = async (fee: TuitionFee) => {
+    if (!fee.student?.phone) {
+      toast({
+        title: 'Sem telefone',
+        description: 'Este educando não tem telefone registado.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const daysOverdue = getDaysOverdue(fee.due_date);
+    let monthFormatted = formatMonthSafe(fee.month);
+
+    const message = `Prezado(a) Encarregado(a),
+
+Identificámos que a propina de ${monthFormatted} do(a) educando(a) ${fee.student?.name} encontra-se em atraso há ${daysOverdue} dias.
+
+📌 Valor: ${formatMZN(fee.amount || 0)}
+
+Por favor, regularize a situação o mais breve possível.
+
+Atenciosamente,
+Secretaria Escolar`;
+
+    sendNotification.mutate({
+      type: 'whatsapp',
+      phone: fee.student.phone,
+      message,
+      studentId: fee.student_id,
+      tuitionFeeId: fee.id,
+      recipientName: fee.student.guardian || fee.student.name,
+    });
+  };
+
+  const handleSendSMS = async (fee: TuitionFee) => {
+    if (!fee.student?.phone) {
+      toast({
+        title: 'Sem telefone',
+        description: 'Este educando não tem telefone registado.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const message = `Propina ${formatMonthSafe(fee.month, 'MMM/yy')} de ${fee.student?.name}: ${formatMZN(fee.amount || 0)} em atraso. Regularize.`;
+
+    sendNotification.mutate({
+      type: 'sms',
+      phone: fee.student.phone,
+      message,
+      studentId: fee.student_id,
+      tuitionFeeId: fee.id,
+      recipientName: fee.student.guardian || fee.student.name,
+    });
+  };
+
+  const handleCall = (fee: TuitionFee) => {
+    if (fee.student?.phone) {
+      window.open(`tel:${fee.student.phone}`);
+    }
+  };
+
+  // Mobile: handle tap on card
+  const handleCardTap = (fee: TuitionFee) => {
+    if (isMobile) {
+      setMobileActionSheet({ open: true, fee });
+    }
   };
 
   const handleGenerateReport = () => {
@@ -138,7 +223,7 @@ export default function CobrancasPage() {
                   key={fee.id}
                   fee={fee}
                   onPay={(f) => setPaymentDialog({ open: true, fee: f })}
-                  onContact={(f) => setContactDialog({ open: true, fee: f })}
+                  onContact={(f) => setMobileActionSheet({ open: true, fee: f })}
                 />
               ))}
           </AnimatePresence>
@@ -150,7 +235,7 @@ export default function CobrancasPage() {
   return (
     <MainLayout 
       title="Cobranças" 
-      subtitle="Gestão de inadimplência e cobranças"
+      subtitle="Sistema Inteligente de Gestão de Inadimplência"
     >
       <div className="space-y-4 md:space-y-6">
         {/* Stats Cards */}
@@ -192,13 +277,6 @@ export default function CobrancasPage() {
                       <SelectItem value="critica">Crítica (&gt;60d)</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setViewMode(viewMode === 'kanban' ? 'list' : 'kanban')}
-                  >
-                    {viewMode === 'kanban' ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
-                  </Button>
                 </div>
               </div>
 
@@ -245,15 +323,14 @@ export default function CobrancasPage() {
                     <span className="hidden sm:inline">Relatório</span>
                   </Button>
                   <Button 
-                    variant="outline" 
-                    className="gap-2" 
+                    className="gap-2 bg-primary" 
                     size="sm"
-                    onClick={() => setBulkReminderOpen(true)}
+                    onClick={() => setSmartReminderOpen(true)}
                     disabled={overdueFees.length === 0}
                   >
-                    <Send className="h-4 w-4" />
-                    <span className="hidden sm:inline">Enviar Lembretes</span>
-                    <span className="sm:hidden">Lembretes</span>
+                    <Zap className="h-4 w-4" />
+                    <span className="hidden sm:inline">Envio Inteligente</span>
+                    <span className="sm:hidden">Enviar</span>
                   </Button>
                 </div>
               </div>
@@ -279,13 +356,14 @@ export default function CobrancasPage() {
                 <div className="md:hidden space-y-2">
                   <AnimatePresence>
                     {filteredFees.map(fee => (
-                      <DebtorCard
-                        key={fee.id}
-                        fee={fee}
-                        compact
-                        onPay={(f) => setPaymentDialog({ open: true, fee: f })}
-                        onContact={(f) => setContactDialog({ open: true, fee: f })}
-                      />
+                      <div key={fee.id} onClick={() => handleCardTap(fee)}>
+                        <DebtorCard
+                          fee={fee}
+                          compact
+                          onPay={(f) => setPaymentDialog({ open: true, fee: f })}
+                          onContact={(f) => setMobileActionSheet({ open: true, fee: f })}
+                        />
+                      </div>
                     ))}
                   </AnimatePresence>
                   {filteredFees.length === 0 && (
@@ -312,7 +390,7 @@ export default function CobrancasPage() {
                             key={fee.id}
                             fee={fee}
                             onPay={(f) => setPaymentDialog({ open: true, fee: f })}
-                            onContact={(f) => setContactDialog({ open: true, fee: f })}
+                            onContact={(f) => setMobileActionSheet({ open: true, fee: f })}
                           />
                         ))}
                       </AnimatePresence>
@@ -398,90 +476,59 @@ export default function CobrancasPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Contact Dialog */}
-      <Dialog open={contactDialog.open} onOpenChange={(open) => setContactDialog({ open, fee: open ? contactDialog.fee : null })}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Contactar Encarregado
-            </DialogTitle>
-            <DialogDescription>
-              Informações de contacto do encarregado de educação
-            </DialogDescription>
-          </DialogHeader>
+      {/* Mobile Action Sheet (Bottom Sheet) */}
+      <MobileActionSheet
+        open={mobileActionSheet.open}
+        onOpenChange={(open) => setMobileActionSheet({ open, fee: open ? mobileActionSheet.fee : null })}
+        fee={mobileActionSheet.fee}
+        onPay={() => {
+          setPaymentDialog({ open: true, fee: mobileActionSheet.fee });
+        }}
+        onNegotiate={() => {
+          setNegotiationDialog({ open: true, fee: mobileActionSheet.fee });
+          setMobileActionSheet({ open: false, fee: null });
+        }}
+        onWhatsApp={() => {
+          if (mobileActionSheet.fee) handleSendWhatsApp(mobileActionSheet.fee);
+        }}
+        onSMS={() => {
+          if (mobileActionSheet.fee) handleSendSMS(mobileActionSheet.fee);
+        }}
+        onCall={() => {
+          if (mobileActionSheet.fee) handleCall(mobileActionSheet.fee);
+        }}
+        onViewHistory={() => {
+          if (mobileActionSheet.fee) {
+            setHistorySheet({
+              open: true,
+              studentId: mobileActionSheet.fee.student_id,
+              studentName: mobileActionSheet.fee.student?.name,
+            });
+            setMobileActionSheet({ open: false, fee: null });
+          }
+        }}
+      />
 
-          {contactDialog.fee && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-                <Avatar className="h-12 w-12">
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    {contactDialog.fee.student?.name?.split(' ').map(n => n[0]).slice(0, 2).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="font-medium truncate">{contactDialog.fee.student?.name}</p>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {contactDialog.fee.student?.guardian || 'Sem encarregado registado'}
-                  </p>
-                </div>
-              </div>
+      {/* Negotiation Dialog */}
+      <NegotiationDialog
+        open={negotiationDialog.open}
+        onOpenChange={(open) => setNegotiationDialog({ open, fee: open ? negotiationDialog.fee : null })}
+        fee={negotiationDialog.fee}
+      />
 
-              <div className="space-y-3">
-                {contactDialog.fee.student?.phone && (
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start gap-3"
-                    onClick={() => window.open(`tel:${contactDialog.fee?.student?.phone}`)}
-                  >
-                    <Phone className="h-4 w-4" />
-                    {contactDialog.fee.student.phone}
-                  </Button>
-                )}
-
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start gap-3"
-                  disabled={!contactDialog.fee.student?.phone}
-                  onClick={() => {
-                    const phone = contactDialog.fee?.student?.phone?.replace(/\D/g, '');
-                    const monthRef = formatMonthSafe(contactDialog.fee?.month || '');
-                    const message = encodeURIComponent(
-                      `Prezado(a) Encarregado(a),\n\nIdentificámos que a propina de ${monthRef} do(a) educando(a) ${contactDialog.fee?.student?.name} encontra-se em atraso.\n\nValor: ${formatMZN(contactDialog.fee?.amount || 0)}\n\nPor favor, regularize a situação o mais breve possível.\n\nAtenciosamente,\nSecretaria Escolar`
-                    );
-                    window.open(`https://wa.me/${phone}?text=${message}`);
-                  }}
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  Enviar WhatsApp
-                </Button>
-              </div>
-
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                <div className="flex items-center gap-2 text-destructive text-sm">
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
-                  <span>Propina em atraso há {getDaysOverdue(contactDialog.fee.due_date)} dias</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Valor: {formatMZN(contactDialog.fee.amount || 0)} • Vencimento: {contactDialog.fee.due_date && isValid(parseISO(contactDialog.fee.due_date)) ? format(parseISO(contactDialog.fee.due_date), 'dd/MM/yyyy') : '-'}
-                </p>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setContactDialog({ open: false, fee: null })}>
-              Fechar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Bulk Reminder Dialog */}
-      <BulkReminderDialog
-        open={bulkReminderOpen}
-        onOpenChange={setBulkReminderOpen}
+      {/* Smart Reminder Dialog */}
+      <SmartReminderDialog
+        open={smartReminderOpen}
+        onOpenChange={setSmartReminderOpen}
         fees={overdueFees}
+      />
+
+      {/* Communication History Sheet */}
+      <CommunicationHistorySheet
+        open={historySheet.open}
+        onOpenChange={(open) => setHistorySheet({ open, studentId: open ? historySheet.studentId : null })}
+        studentId={historySheet.studentId}
+        studentName={historySheet.studentName}
       />
     </MainLayout>
   );
