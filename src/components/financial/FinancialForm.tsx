@@ -16,6 +16,7 @@ const financialSchema = z.object({
   amount: z.coerce.number().positive('Valor deve ser maior que zero'),
   due_date: z.string().optional(),
   payment_method: z.string().optional(),
+  mobile_provider: z.string().optional(),
   status: z.enum(['PAGO', 'PENDENTE', 'VENCIDO', 'CANCELADO']).default('PENDENTE'),
   notes: z.string().optional(),
 });
@@ -158,7 +159,7 @@ export function FinancialForm({ open, onOpenChange, onSubmit, isLoading }: Finan
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="DINHEIRO">Dinheiro</SelectItem>
-                        <SelectItem value="M-PESA">M-Pesa</SelectItem>
+                        <SelectItem value="CARTEIRA_MOVEL">Carteira Móvel</SelectItem>
                         <SelectItem value="TRANSFERENCIA">Transferência</SelectItem>
                         <SelectItem value="CHEQUE">Cheque</SelectItem>
                       </SelectContent>
@@ -167,6 +168,32 @@ export function FinancialForm({ open, onOpenChange, onSubmit, isLoading }: Finan
                   </FormItem>
                 )}
               />
+
+              {form.watch('payment_method') === 'CARTEIRA_MOVEL' && (
+                <FormField
+                  control={form.control}
+                  name="mobile_provider"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Provedor</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecionar provedor" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="M-PESA">M-Pesa</SelectItem>
+                          <SelectItem value="E-MOLA">E-mola</SelectItem>
+                          <SelectItem value="MKESH">mKesh</SelectItem>
+                          <SelectItem value="OUTRO">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}
