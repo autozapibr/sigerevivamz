@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -20,18 +19,16 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Calendar,
-  Receipt,
   BarChart3,
-  Banknote,
   FileText,
   RefreshCw,
-  Users,
   PieChart,
   ArrowUpCircle,
   ArrowDownCircle,
-  Percent,
   Target,
-  ChevronRight
+  ChevronRight,
+  Banknote,
+  Receipt
 } from 'lucide-react';
 import { 
   useFinancialSummary, 
@@ -41,7 +38,6 @@ import {
   useOverdueFees,
   useCategoryStats
 } from '@/hooks/useFinancial';
-import { useStudents } from '@/hooks/useStudents';
 import { formatMZN } from '@/lib/validators/mozambique';
 import { format, startOfMonth, endOfMonth, parseISO, subMonths } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -50,8 +46,6 @@ import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   XAxis,
@@ -61,6 +55,8 @@ import {
   PieChart as RechartsPie,
   Pie,
   Cell,
+  AreaChart,
+  Area,
 } from 'recharts';
 
 const CURRENT_YEAR = 2026;
@@ -321,7 +317,6 @@ export default function FinancialDashboard() {
   const { data: monthlyData = [], isLoading: loadingMonthly } = useMonthlyReport(CURRENT_YEAR);
   const { data: overdueFees = [] } = useOverdueFees();
   const { data: allFees = [] } = useTuitionFees({ month: selectedMonth });
-  const { data: students = [] } = useStudents();
 
   const startDate = format(startOfMonth(parseISO(`${selectedMonth}-01`)), 'yyyy-MM-dd');
   const endDate = format(endOfMonth(parseISO(`${selectedMonth}-01`)), 'yyyy-MM-dd');
