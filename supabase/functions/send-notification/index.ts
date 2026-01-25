@@ -27,23 +27,32 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL");
-    const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY) {
-      console.error("Evolution API credentials not configured");
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Fetch Evolution API credentials from integration_settings table
+    const { data: integrationData, error: integrationError } = await supabase
+      .from("integration_settings")
+      .select("api_url, api_key, instance_name")
+      .eq("integration_name", "evolution_api")
+      .single();
+
+    if (integrationError || !integrationData?.api_url || !integrationData?.api_key) {
+      console.error("Evolution API credentials not configured:", integrationError);
       return new Response(
         JSON.stringify({ 
           error: "Configuração da API de mensagens não encontrada",
-          details: "Configure EVOLUTION_API_URL e EVOLUTION_API_KEY nos secrets do Supabase"
+          details: "Configure a Evolution API nas Configurações > Integrações"
         }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const EVOLUTION_API_URL = integrationData.api_url;
+    const EVOLUTION_API_KEY = integrationData.api_key;
+    const EVOLUTION_INSTANCE = integrationData.instance_name || "SGE-REVIVA";
     const body = await req.json();
 
     // Handle single or bulk notifications
@@ -68,7 +77,7 @@ serve(async (req: Request): Promise<Response> => {
 
         if (type === "whatsapp") {
           // Send via Evolution API
-          const evolutionResponse = await fetch(`${EVOLUTION_API_URL}/message/sendText/SGE-REVIVA`, {
+          const evolutionResponse = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
