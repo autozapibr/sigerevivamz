@@ -41,6 +41,7 @@ import { useTeachers } from '@/hooks/useTeachers';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeForReact } from '@/lib/sanitize';
 
 interface ContractEditorDialogProps {
   open: boolean;
@@ -705,9 +706,9 @@ export function ContractEditorDialog({
                   lineHeight: '1.6',
                   color: '#000'
                 }}
-              >
+                >
                 {contractHtml ? (
-                  <div dangerouslySetInnerHTML={{ __html: contractHtml }} />
+                  <div dangerouslySetInnerHTML={sanitizeForReact(contractHtml)} />
                 ) : (
                   <div className="flex items-center justify-center h-full text-muted-foreground">
                     <div className="text-center">
