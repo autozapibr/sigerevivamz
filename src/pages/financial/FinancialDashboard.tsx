@@ -38,7 +38,8 @@ import {
   useTuitionFees, 
   useTransactions, 
   useMonthlyReport,
-  useOverdueFees 
+  useOverdueFees,
+  useCategoryStats
 } from '@/hooks/useFinancial';
 import { useStudents } from '@/hooks/useStudents';
 import { formatMZN } from '@/lib/validators/mozambique';
@@ -72,6 +73,18 @@ const MONTHS_OPTIONS = Array.from({ length: 12 }, (_, i) => {
 });
 
 const PIE_COLORS = ['hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--destructive))'];
+
+// Colors for category charts
+const CATEGORY_COLORS = [
+  'hsl(var(--primary))',
+  'hsl(var(--secondary))',
+  'hsl(145, 37%, 28%)',
+  'hsl(200, 50%, 45%)',
+  'hsl(280, 40%, 50%)',
+  'hsl(30, 60%, 50%)',
+  'hsl(350, 50%, 55%)',
+  'hsl(180, 45%, 40%)',
+];
 
 // Animated KPI Card
 function KPICard({ 
@@ -313,6 +326,10 @@ export default function FinancialDashboard() {
   const startDate = format(startOfMonth(parseISO(`${selectedMonth}-01`)), 'yyyy-MM-dd');
   const endDate = format(endOfMonth(parseISO(`${selectedMonth}-01`)), 'yyyy-MM-dd');
   const { data: transactions = [] } = useTransactions({ startDate, endDate });
+  
+  // Category statistics for charts
+  const { data: revenueByCategory = [] } = useCategoryStats({ startDate, endDate, type: 'Receita' });
+  const { data: expenseByCategory = [] } = useCategoryStats({ startDate, endDate, type: 'Despesa' });
 
   // Calculate trends
   const revenueChange = prevSummary?.totalReceitas 
@@ -566,6 +583,153 @@ export default function FinancialDashboard() {
                           </Link>
                         )}
                       </ScrollArea>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+
+            {/* Category Distribution Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Revenue by Category */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-success" />
+                      Receitas por Categoria
+                    </CardTitle>
+                    <CardDescription className="text-xs">Distribuição do mês</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {revenueByCategory.length === 0 ? (
+                      <div className="h-[180px] flex items-center justify-center">
+                        <p className="text-sm text-muted-foreground">Sem dados de receitas</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="h-[180px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RechartsPie>
+                              <Pie
+                                data={revenueByCategory.slice(0, 6)}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={40}
+                                outerRadius={70}
+                                paddingAngle={2}
+                                dataKey="total"
+                              >
+                                {revenueByCategory.slice(0, 6).map((_, index) => (
+                                  <Cell key={`rev-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                content={({ active, payload }) => {
+                                  if (active && payload?.length) {
+                                    const data = payload[0].payload;
+                                    return (
+                                      <div className="rounded-lg border bg-background p-2 shadow-md text-xs">
+                                        <p className="font-medium">{data.name}</p>
+                                        <p className="text-success">{formatMZN(data.total)}</p>
+                                        <p className="text-muted-foreground">{data.count} movimentos</p>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                }}
+                              />
+                            </RechartsPie>
+                          </ResponsiveContainer>
+                        </div>
+                        <div className="flex flex-wrap gap-2 justify-center mt-2">
+                          {revenueByCategory.slice(0, 4).map((cat, i) => (
+                            <div key={i} className="flex items-center gap-1.5 text-xs">
+                              <div 
+                                className="w-2.5 h-2.5 rounded-full" 
+                                style={{ backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }} 
+                              />
+                              <span className="text-muted-foreground truncate max-w-[80px]">{cat.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Expenses by Category */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+              >
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <TrendingDown className="h-4 w-4 text-destructive" />
+                      Despesas por Categoria
+                    </CardTitle>
+                    <CardDescription className="text-xs">Distribuição do mês</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {expenseByCategory.length === 0 ? (
+                      <div className="h-[180px] flex items-center justify-center">
+                        <p className="text-sm text-muted-foreground">Sem dados de despesas</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="h-[180px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RechartsPie>
+                              <Pie
+                                data={expenseByCategory.slice(0, 6)}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={40}
+                                outerRadius={70}
+                                paddingAngle={2}
+                                dataKey="total"
+                              >
+                                {expenseByCategory.slice(0, 6).map((_, index) => (
+                                  <Cell key={`exp-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                content={({ active, payload }) => {
+                                  if (active && payload?.length) {
+                                    const data = payload[0].payload;
+                                    return (
+                                      <div className="rounded-lg border bg-background p-2 shadow-md text-xs">
+                                        <p className="font-medium">{data.name}</p>
+                                        <p className="text-destructive">{formatMZN(data.total)}</p>
+                                        <p className="text-muted-foreground">{data.count} movimentos</p>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                }}
+                              />
+                            </RechartsPie>
+                          </ResponsiveContainer>
+                        </div>
+                        <div className="flex flex-wrap gap-2 justify-center mt-2">
+                          {expenseByCategory.slice(0, 4).map((cat, i) => (
+                            <div key={i} className="flex items-center gap-1.5 text-xs">
+                              <div 
+                                className="w-2.5 h-2.5 rounded-full" 
+                                style={{ backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }} 
+                              />
+                              <span className="text-muted-foreground truncate max-w-[80px]">{cat.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
                     )}
                   </CardContent>
                 </Card>

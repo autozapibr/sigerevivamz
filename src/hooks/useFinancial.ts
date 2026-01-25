@@ -522,3 +522,65 @@ export function useCreateCategory() {
     },
   });
 }
+
+// Category statistics for charts and reports
+export function useCategoryStats(filters?: {
+  startDate?: string;
+  endDate?: string;
+  type?: TransactionType;
+}) {
+  return useQuery({
+    queryKey: ['category-stats', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('transactions')
+        .select(`
+          type,
+          amount,
+          category:financial_categories(id, name, type)
+        `);
+
+      if (filters?.type) {
+        query = query.eq('type', filters.type);
+      }
+      if (filters?.startDate) {
+        query = query.gte('date', filters.startDate);
+      }
+      if (filters?.endDate) {
+        query = query.lte('date', filters.endDate);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      // Group by category
+      const categoryTotals: Record<string, { 
+        id: number; 
+        name: string; 
+        type: TransactionType; 
+        total: number; 
+        count: number;
+      }> = {};
+
+      (data || []).forEach((tx: any) => {
+        const catName = tx.category?.name || 'Sem categoria';
+        const catId = tx.category?.id || 0;
+        const catType = tx.category?.type || tx.type;
+        
+        if (!categoryTotals[catName]) {
+          categoryTotals[catName] = {
+            id: catId,
+            name: catName,
+            type: catType,
+            total: 0,
+            count: 0,
+          };
+        }
+        categoryTotals[catName].total += tx.amount || 0;
+        categoryTotals[catName].count += 1;
+      });
+
+      return Object.values(categoryTotals).sort((a, b) => b.total - a.total);
+    },
+  });
+}

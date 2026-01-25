@@ -26,7 +26,8 @@ import {
   ArrowLeft,
   RefreshCw
 } from 'lucide-react';
-import { useTransactions, useFinancialCategories, useCreateTransaction, useDeleteTransaction, useFinancialSummary } from '@/hooks/useFinancial';
+import { useTransactions, useCreateTransaction, useDeleteTransaction, useFinancialSummary } from '@/hooks/useFinancial';
+import { CategorySelect } from '@/components/financial/CategorySelect';
 import { formatMZN } from '@/lib/validators/mozambique';
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -131,7 +132,7 @@ export default function CaixaPage() {
     endDate,
   });
 
-  const { data: categories = [] } = useFinancialCategories();
+  // Categories are now managed by CategorySelect component
   const { data: summary } = useFinancialSummary(selectedMonth);
   const createTransaction = useCreateTransaction();
   const deleteTransaction = useDeleteTransaction();
@@ -169,7 +170,7 @@ export default function CaixaPage() {
     );
   };
 
-  const filteredCategories = categories.filter(c => c.type === movementType);
+  // Categories filtering is now handled in CategorySelect component
 
   return (
     <MainLayout 
@@ -526,21 +527,13 @@ export default function CaixaPage() {
 
               <div className="col-span-2">
                 <Label htmlFor="category">Categoria</Label>
-                <Select 
-                  value={formData.category_id} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
-                >
-                  <SelectTrigger className="mt-1.5">
-                    <SelectValue placeholder="Seleccione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredCategories.map(cat => (
-                      <SelectItem key={cat.id} value={cat.id.toString()}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CategorySelect
+                  value={formData.category_id}
+                  onChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
+                  type={movementType}
+                  placeholder="Seleccione categoria..."
+                  className="mt-1.5"
+                />
               </div>
 
               <div className="col-span-2">
