@@ -385,7 +385,7 @@ export default function Dashboard() {
           <motion.div variants={itemVariants}>
             <Card className="h-full">
               <CardHeader>
-                <CardTitle>Ano Lectivo 2025</CardTitle>
+                <CardTitle>Ano Lectivo 2026</CardTitle>
                 <CardDescription>Progresso do ano escolar</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
