@@ -216,13 +216,13 @@ Secretaria Escolar`;
     colorClass: string,
     borderClass: string
   ) => (
-    <div className="space-y-3 min-w-[280px] flex-1">
+    <div className="space-y-3 min-w-[240px] w-full md:w-auto md:flex-1">
       <div className={`flex items-center gap-2 pb-2 border-b ${borderClass}`}>
         <div className={`h-2 w-2 rounded-full ${colorClass}`} />
         <h3 className="font-medium text-sm truncate">{title}</h3>
         <Badge variant="outline" className="ml-auto shrink-0">{fees.length}</Badge>
       </div>
-      <ScrollArea className="h-[calc(100vh-450px)] min-h-[300px] pr-2">
+      <ScrollArea className="h-[calc(100vh-450px)] min-h-[250px] pr-2">
         <div className="space-y-3">
           <AnimatePresence>
             {fees
@@ -251,7 +251,7 @@ Secretaria Escolar`;
       title="Cobranças" 
       subtitle="Sistema Inteligente de Gestão de Inadimplência"
     >
-      <div className="space-y-4 md:space-y-6">
+      <div className="space-y-4 md:space-y-6 w-full max-w-full overflow-x-hidden">
         {/* Stats Cards */}
         <CollectionStatsCards
           totalDebtors={stats.total}

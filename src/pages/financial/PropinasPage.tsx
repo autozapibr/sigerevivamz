@@ -186,7 +186,7 @@ export default function PropinasPage() {
       title="Gestão de Propinas" 
       subtitle="Controlo de mensalidades escolares"
     >
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
