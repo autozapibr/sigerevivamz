@@ -368,7 +368,7 @@ export default function FinancialDashboard() {
       title="Financeiro" 
       subtitle={format(parseISO(`${selectedMonth}-01`), 'MMMM yyyy', { locale: pt })}
     >
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
         {/* Header with Month Selector */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>

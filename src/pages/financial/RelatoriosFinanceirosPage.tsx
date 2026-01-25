@@ -354,9 +354,9 @@ export default function RelatoriosFinanceirosPage() {
       title="Relatórios Financeiros" 
       subtitle="Análises e demonstrativos financeiros"
     >
-      <div className="space-y-4 md:space-y-6">
+      <div className="space-y-4 md:space-y-6 w-full max-w-full overflow-x-hidden">
         {/* Header Actions */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-between">
+        <div className="flex flex-col gap-3">
           <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
             <SelectTrigger className="w-full sm:w-[140px]">
               <Calendar className="w-4 h-4 mr-2" />
@@ -369,10 +369,10 @@ export default function RelatoriosFinanceirosPage() {
             </SelectContent>
           </Select>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full">
             <Button 
               variant="outline" 
-              className="flex-1 sm:flex-none gap-2"
+              className="flex-1 gap-2"
               onClick={handleExportPDF}
               disabled={isExporting || loadingMonthly}
               size="sm"
@@ -382,11 +382,11 @@ export default function RelatoriosFinanceirosPage() {
               ) : (
                 <FileText className="h-4 w-4" />
               )}
-              <span className="hidden sm:inline">Gerar</span> PDF
+              PDF
             </Button>
             <Button 
               variant="outline" 
-              className="flex-1 sm:flex-none gap-2"
+              className="flex-1 gap-2"
               onClick={handleExportExcel}
               disabled={isExporting || loadingMonthly}
               size="sm"
@@ -396,7 +396,7 @@ export default function RelatoriosFinanceirosPage() {
               ) : (
                 <FileSpreadsheet className="h-4 w-4" />
               )}
-              <span className="hidden sm:inline">Exportar</span> Excel
+              Excel
             </Button>
           </div>
         </div>
@@ -460,7 +460,7 @@ export default function RelatoriosFinanceirosPage() {
           <TabsContent value="overview" className="space-y-4 md:space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
               {/* Monthly Bar Chart */}
-              <Card className="lg:col-span-2">
+              <Card className="lg:col-span-2 overflow-hidden">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                     <BarChart3 className="h-5 w-5" />
@@ -470,46 +470,48 @@ export default function RelatoriosFinanceirosPage() {
                     Comparativo de receitas e despesas por mês em {selectedYear}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-2 sm:p-4">
                   {loadingMonthly ? (
-                    <div className="h-[250px] md:h-[300px] flex items-center justify-center">
+                    <div className="h-[200px] sm:h-[250px] md:h-[300px] flex items-center justify-center">
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
                   ) : (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis 
-                          dataKey="month" 
-                          className="text-xs"
-                          tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                          interval={0}
-                          angle={-45}
-                          textAnchor="end"
-                          height={60}
-                        />
-                        <YAxis 
-                          className="text-xs"
-                          tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                          tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                          width={45}
-                        />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} />
-                        <Bar 
-                          dataKey="receitas" 
-                          name="Receitas" 
-                          fill={COLORS.receitas}
-                          radius={[4, 4, 0, 0]}
-                        />
-                        <Bar 
-                          dataKey="despesas" 
-                          name="Despesas" 
-                          fill={COLORS.despesas}
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <div className="w-full h-[200px] sm:h-[250px] md:h-[300px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={monthlyData} margin={{ top: 10, right: 5, left: 0, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis 
+                            dataKey="month" 
+                            className="text-xs"
+                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9 }}
+                            interval="preserveStartEnd"
+                            angle={-45}
+                            textAnchor="end"
+                            height={50}
+                          />
+                          <YAxis 
+                            className="text-xs"
+                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9 }}
+                            tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                            width={35}
+                          />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Legend wrapperStyle={{ fontSize: '10px' }} />
+                          <Bar 
+                            dataKey="receitas" 
+                            name="Receitas" 
+                            fill={COLORS.receitas}
+                            radius={[4, 4, 0, 0]}
+                          />
+                          <Bar 
+                            dataKey="despesas" 
+                            name="Despesas" 
+                            fill={COLORS.despesas}
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   )}
                 </CardContent>
               </Card>

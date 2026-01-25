@@ -177,7 +177,7 @@ export default function CaixaPage() {
       title="Livro Caixa" 
       subtitle="Controlo de entradas e saídas financeiras"
     >
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
