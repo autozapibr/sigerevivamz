@@ -177,13 +177,6 @@ export default function CaixaPage() {
       subtitle="Controlo de entradas e saídas financeiras"
     >
       <div className="space-y-4 sm:space-y-6">
-        {/* Back navigation */}
-        <Button variant="ghost" size="sm" asChild className="gap-2 -ml-2">
-          <Link to="/financeiro/dashboard">
-            <ArrowLeft className="h-4 w-4" />
-            Voltar ao Dashboard
-          </Link>
-        </Button>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
