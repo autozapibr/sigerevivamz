@@ -82,9 +82,9 @@ const systemModules = {
 };
 
 const systemItems = [
-  { title: 'Notificações', url: '/notificacoes', icon: Bell },
-  { title: 'Relatórios', url: '/relatorios', icon: BarChart3 },
-  { title: 'Configurações', url: '/configuracoes', icon: Settings },
+  { title: 'Notificações', url: '/notificacoes', icon: Bell, restricted: false },
+  { title: 'Relatórios', url: '/relatorios', icon: BarChart3, restricted: false },
+  { title: 'Configurações', url: '/configuracoes', icon: Settings, restricted: true }, // Apenas ADMIN e DIRETORIA
 ];
 
 export function AppSidebar() {
@@ -251,24 +251,32 @@ export function AppSidebar() {
               {!collapsed && 'Sistema'}
             </p>
             <div className="space-y-1">
-              {systemItems.map((item) => {
-                const ItemIcon = item.icon;
-                return (
-                  <NavLink
-                    key={item.url}
-                    to={item.url}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200",
-                      isActive(item.url)
-                        ? "bg-primary text-primary-foreground font-medium shadow-sm"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                    )}
-                  >
-                    <ItemIcon className="w-5 h-5 flex-shrink-0" />
-                    {!collapsed && <span>{item.title}</span>}
-                  </NavLink>
-                );
-              })}
+              {systemItems
+                .filter(item => {
+                  // Se é item restrito, verificar se utilizador é ADMIN ou DIRETORIA
+                  if (item.restricted) {
+                    return user?.role === 'ADMIN' || user?.role === 'DIRETORIA';
+                  }
+                  return true;
+                })
+                .map((item) => {
+                  const ItemIcon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.url}
+                      to={item.url}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200",
+                        isActive(item.url)
+                          ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                      )}
+                    >
+                      <ItemIcon className="w-5 h-5 flex-shrink-0" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  );
+                })}
             </div>
           </div>
         </ScrollArea>

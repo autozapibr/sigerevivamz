@@ -131,9 +131,12 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate('/configuracoes')}>
-                Configurações
-              </DropdownMenuItem>
+              {/* Configurações apenas para ADMIN e DIRETORIA */}
+              {(user.role === 'ADMIN' || user.role === 'DIRETORIA') && (
+                <DropdownMenuItem onClick={() => navigate('/configuracoes')}>
+                  Configurações
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => navigate('/notificacoes')}>
                 Notificações
               </DropdownMenuItem>

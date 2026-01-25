@@ -247,7 +247,13 @@ export default function Settings() {
               </div>
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Última Actualização</Label>
-                <p className="font-medium">24 Jan 2025</p>
+                <p className="font-medium">
+                  {new Date().toLocaleDateString('pt-MZ', { 
+                    day: '2-digit', 
+                    month: 'short', 
+                    year: 'numeric' 
+                  })}
+                </p>
               </div>
             </div>
           </CardContent>
