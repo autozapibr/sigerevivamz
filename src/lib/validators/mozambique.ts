@@ -40,7 +40,7 @@ export const MASKS = {
       numbers = '258' + numbers;
     }
     
-    numbers = numbers.slice(0, 11); // 258 + 8 digits
+    numbers = numbers.slice(0, 12); // 258 + 9 digits (telemóvel moçambicano)
     
     if (numbers.length <= 3) return `+${numbers}`;
     if (numbers.length <= 5) return `+${numbers.slice(0, 3)} ${numbers.slice(3)}`;
