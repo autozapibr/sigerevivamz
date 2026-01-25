@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
+import { IntegrationsSection } from '@/components/settings/IntegrationsSection';
 
 export default function Settings() {
   const { theme, setTheme, isDark } = useTheme();
@@ -219,6 +220,11 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Integrations - Only for Admin/Diretoria */}
+        {(user?.role === 'ADMIN' || user?.role === 'DIRETORIA') && (
+          <IntegrationsSection />
+        )}
 
         {/* System Info */}
         <Card>
