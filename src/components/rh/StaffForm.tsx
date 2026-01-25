@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProvinceSelector } from '@/components/shared/ProvinceSelector';
+import { MozambiqueInput } from '@/components/shared/MozambiqueInput';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
@@ -342,11 +343,11 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Telefone</Label>
-            <Input
+            <MozambiqueInput
               id="phone"
-              placeholder="+258 84 000 0000"
+              mask="PHONE"
               value={formData.phone}
-              onChange={(e) => onChange({ ...formData, phone: e.target.value })}
+              onChange={(value) => onChange({ ...formData, phone: value })}
             />
           </div>
         </div>
@@ -384,11 +385,11 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
           </div>
           <div className="space-y-2">
             <Label htmlFor="emergency_phone">Telefone de Emergência</Label>
-            <Input
+            <MozambiqueInput
               id="emergency_phone"
-              placeholder="+258 84 000 0000"
+              mask="PHONE"
               value={formData.emergency_phone}
-              onChange={(e) => onChange({ ...formData, emergency_phone: e.target.value })}
+              onChange={(value) => onChange({ ...formData, emergency_phone: value })}
             />
           </div>
         </div>
@@ -620,11 +621,11 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
             </div>
             <div className="space-y-2">
               <Label htmlFor="mobile_money_number">Número do Telemóvel</Label>
-              <Input
+              <MozambiqueInput
                 id="mobile_money_number"
-                placeholder="+258 84 000 0000"
+                mask="PHONE"
                 value={formData.mobile_money_number}
-                onChange={(e) => onChange({ ...formData, mobile_money_number: e.target.value })}
+                onChange={(value) => onChange({ ...formData, mobile_money_number: value })}
               />
               {formData.mobile_money_provider && (
                 <p className="text-xs text-muted-foreground">

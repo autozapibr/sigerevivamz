@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { SignaturePad } from './SignaturePad';
 import { StaffContractData } from './ContractTemplates';
+import { MozambiqueInput } from '@/components/shared/MozambiqueInput';
 import { 
   PenTool, 
   Send, 
@@ -364,12 +365,11 @@ export function SignatureDialog({
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Telefone (WhatsApp)</Label>
-                    <Input
+                    <MozambiqueInput
                       id="phone"
-                      type="tel"
+                      mask="PHONE"
                       value={recipientPhone}
-                      onChange={(e) => setRecipientPhone(e.target.value)}
-                      placeholder="84 123 4567"
+                      onChange={(value) => setRecipientPhone(value)}
                     />
                   </div>
                 </div>
