@@ -22,6 +22,7 @@ import {
   Clock,
   Send,
   X,
+  User,
 } from 'lucide-react';
 import { formatMZN } from '@/lib/validators/mozambique';
 import { getDaysOverdue, getUrgencyLevel, formatMonthSafe } from './DebtorCard';
@@ -39,6 +40,7 @@ interface MobileActionSheetProps {
   onSMS: () => void;
   onCall: () => void;
   onViewHistory: () => void;
+  onViewProfile?: () => void;
 }
 
 export function MobileActionSheet({
@@ -51,6 +53,7 @@ export function MobileActionSheet({
   onSMS,
   onCall,
   onViewHistory,
+  onViewProfile,
 }: MobileActionSheetProps) {
   if (!fee) return null;
 
@@ -106,6 +109,14 @@ export function MobileActionSheet({
       color: 'bg-muted text-foreground',
       onClick: onViewHistory,
     },
+    ...(onViewProfile ? [{
+      id: 'profile',
+      icon: User,
+      label: 'Perfil Completo',
+      description: 'Ver ficha financeira',
+      color: 'bg-secondary text-secondary-foreground',
+      onClick: onViewProfile,
+    }] : []),
   ];
 
   return (

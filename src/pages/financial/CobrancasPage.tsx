@@ -24,6 +24,8 @@ import {
   List,
   Loader2,
   Zap,
+  HelpCircle,
+  User,
 } from 'lucide-react';
 import { useOverdueFees, usePayTuition, type TuitionFee } from '@/hooks/useFinancial';
 import { useSendNotification } from '@/hooks/useCollections';
@@ -38,6 +40,8 @@ import { MobileActionSheet } from '@/components/financial/MobileActionSheet';
 import { NegotiationDialog } from '@/components/financial/NegotiationDialog';
 import { SmartReminderDialog } from '@/components/financial/SmartReminderDialog';
 import { CommunicationHistorySheet } from '@/components/financial/CommunicationHistorySheet';
+import { CollectionHelpDialog } from '@/components/financial/CollectionHelpDialog';
+import { StudentCollectionProfile } from '@/components/financial/StudentCollectionProfile';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -61,6 +65,11 @@ export default function CobrancasPage() {
   const [mobileActionSheet, setMobileActionSheet] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
   const [negotiationDialog, setNegotiationDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
   const [smartReminderOpen, setSmartReminderOpen] = useState(false);
+  const [helpDialogOpen, setHelpDialogOpen] = useState(false);
+  const [studentProfile, setStudentProfile] = useState<{ open: boolean; studentId: number | null; studentName?: string }>({
+    open: false,
+    studentId: null,
+  });
   const [historySheet, setHistorySheet] = useState<{ open: boolean; studentId: number | null; studentName?: string }>({ 
     open: false, 
     studentId: null 
@@ -224,6 +233,11 @@ Secretaria Escolar`;
                   fee={fee}
                   onPay={(f) => setPaymentDialog({ open: true, fee: f })}
                   onContact={(f) => setMobileActionSheet({ open: true, fee: f })}
+                  onViewProfile={(f) => setStudentProfile({ 
+                    open: true, 
+                    studentId: f.student_id, 
+                    studentName: f.student?.name 
+                  })}
                 />
               ))}
           </AnimatePresence>
@@ -318,6 +332,15 @@ Secretaria Escolar`;
                 </div>
 
                 <div className="flex gap-2 flex-wrap">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="gap-2"
+                    onClick={() => setHelpDialogOpen(true)}
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                    <span className="hidden sm:inline">Ajuda</span>
+                  </Button>
                   <Button variant="outline" className="gap-2" size="sm" onClick={handleGenerateReport}>
                     <FileText className="h-4 w-4" />
                     <span className="hidden sm:inline">Relatório</span>
@@ -391,6 +414,11 @@ Secretaria Escolar`;
                             fee={fee}
                             onPay={(f) => setPaymentDialog({ open: true, fee: f })}
                             onContact={(f) => setMobileActionSheet({ open: true, fee: f })}
+                            onViewProfile={(f) => setStudentProfile({ 
+                              open: true, 
+                              studentId: f.student_id, 
+                              studentName: f.student?.name 
+                            })}
                           />
                         ))}
                       </AnimatePresence>
@@ -507,6 +535,16 @@ Secretaria Escolar`;
             setMobileActionSheet({ open: false, fee: null });
           }
         }}
+        onViewProfile={() => {
+          if (mobileActionSheet.fee) {
+            setStudentProfile({
+              open: true,
+              studentId: mobileActionSheet.fee.student_id,
+              studentName: mobileActionSheet.fee.student?.name,
+            });
+            setMobileActionSheet({ open: false, fee: null });
+          }
+        }}
       />
 
       {/* Negotiation Dialog */}
@@ -529,6 +567,20 @@ Secretaria Escolar`;
         onOpenChange={(open) => setHistorySheet({ open, studentId: open ? historySheet.studentId : null })}
         studentId={historySheet.studentId}
         studentName={historySheet.studentName}
+      />
+
+      {/* Help Dialog */}
+      <CollectionHelpDialog
+        open={helpDialogOpen}
+        onOpenChange={setHelpDialogOpen}
+      />
+
+      {/* Student Collection Profile */}
+      <StudentCollectionProfile
+        open={studentProfile.open}
+        onOpenChange={(open) => setStudentProfile({ open, studentId: open ? studentProfile.studentId : null })}
+        studentId={studentProfile.studentId || 0}
+        studentName={studentProfile.studentName || ''}
       />
     </MainLayout>
   );
