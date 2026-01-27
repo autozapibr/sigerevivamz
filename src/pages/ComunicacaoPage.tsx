@@ -39,7 +39,7 @@ const statusFilters: { value: TicketStatus | 'all'; label: string; icon: React.E
   { value: 'RESOLVIDO', label: 'Resolvidos', icon: CheckCircle2 },
 ];
 
-const categoryFilters: TicketCategory[] = ['RECLAMACAO', 'INFORMACAO', 'SUGESTAO', 'SUPORTE', 'FINANCEIRO', 'PEDAGOGICO', 'RH', 'OUTRO'];
+const categoryFilters: TicketCategory[] = ['SECRETARIA', 'RECLAMACAO', 'INFORMACAO', 'SUGESTAO', 'SUPORTE', 'FINANCEIRO', 'PEDAGOGICO', 'RH', 'OUTRO'];
 
 export default function ComunicacaoPage() {
   const [statusFilter, setStatusFilter] = React.useState<TicketStatus | 'all'>('all');
