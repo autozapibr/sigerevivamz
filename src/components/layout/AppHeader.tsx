@@ -4,7 +4,6 @@ import { Bell, Search, Sun, Moon, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -17,6 +16,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useNavigate } from 'react-router-dom';
+import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 
 interface AppHeaderProps {
   title?: string;
@@ -27,6 +27,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
   const { user, logout } = useAuth();
   const { toggleTheme, isDark } = useTheme();
   const navigate = useNavigate();
+  const unreadCount = useUnreadNotificationCount();
 
   const getInitials = (name: string) => {
     return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
@@ -92,12 +93,16 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
           onClick={() => navigate('/notificacoes')}
         >
           <Bell className="w-5 h-5" />
-          <motion.span 
-            className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 500 }}
-          />
+          {unreadCount > 0 && (
+            <motion.span 
+              className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 500 }}
+            >
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </motion.span>
+          )}
         </Button>
 
         {/* User Menu */}
