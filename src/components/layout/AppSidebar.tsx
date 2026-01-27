@@ -6,7 +6,7 @@ import {
   DollarSign, BarChart3, Settings, UserCheck, Building2, FileText,
   Bell, LogOut, Wallet, TrendingUp, CreditCard, UsersRound, LibraryBig,
   CalendarDays, ChartBar, BookMarked, NotebookPen, FileSpreadsheet,
-  FileCheck, Briefcase, ChevronRight
+  FileCheck, Briefcase, ChevronRight, MessageSquare
 } from 'lucide-react';
 
 import {
@@ -82,6 +82,7 @@ const systemModules = {
 };
 
 const systemItems = [
+  { title: 'Comunicação', url: '/comunicacao', icon: MessageSquare, restricted: false },
   { title: 'Notificações', url: '/notificacoes', icon: Bell, restricted: false },
   { title: 'Relatórios', url: '/relatorios', icon: BarChart3, restricted: false },
   { title: 'Configurações', url: '/configuracoes', icon: Settings, restricted: true }, // Apenas ADMIN e DIRETORIA
