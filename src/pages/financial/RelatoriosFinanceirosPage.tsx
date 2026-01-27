@@ -578,12 +578,12 @@ export default function RelatoriosFinanceirosPage() {
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Mês</Label>
-                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                <Select value={selectedMonth || 'all'} onValueChange={(v) => setSelectedMonth(v === 'all' ? '' : v)}>
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Todos os meses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos os meses</SelectItem>
+                    <SelectItem value="all">Todos os meses</SelectItem>
                     {months.map(m => (
                       <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                     ))}
