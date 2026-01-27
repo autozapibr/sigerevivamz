@@ -23,6 +23,7 @@ import {
   ClassDistributionChart,
 } from '@/components/dashboard/DashboardCharts';
 import { UserRole } from '@/types/auth';
+import StudentDashboard from '@/pages/dashboard/StudentDashboard';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -175,6 +176,10 @@ function getAvailableTabs(role: UserRole | undefined): { value: string; label: s
       return [
         { value: 'encarregado', label: 'Portal' },
       ];
+    case 'ALUNO':
+      return [
+        { value: 'aluno', label: 'Portal do Aluno' },
+      ];
     default:
       return [
         { value: 'geral', label: 'Geral' },
@@ -196,6 +201,8 @@ function getDashboardTitle(role: UserRole | undefined): { title: string; subtitl
       return { title: 'Dashboard Pedagógico', subtitle: 'Suas turmas e avaliações' };
     case 'ENCARREGADO':
       return { title: 'Portal do Encarregado', subtitle: 'Acompanhamento do educando' };
+    case 'ALUNO':
+      return { title: 'Portal do Aluno', subtitle: 'Calendário e provas' };
     default:
       return { title: 'Dashboard', subtitle: 'Bem-vindo ao sistema' };
   }
@@ -215,6 +222,8 @@ function getWelcomeMessage(role: UserRole | undefined): string {
       return 'Bem-vindo ao SiGER. Aceda às suas turmas, lance notas e registe presenças.';
     case 'ENCARREGADO':
       return 'Bem-vindo ao Portal do Encarregado. Acompanhe o progresso do seu educando.';
+    case 'ALUNO':
+      return 'Bem-vindo ao Portal do Aluno. Acompanha aqui o calendário escolar e as tuas provas.';
     default:
       return 'Bem-vindo ao SiGER - Sistema de Gestão Escolar Reviva.';
   }
@@ -1053,6 +1062,11 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             </motion.div>
+          </TabsContent>
+
+          {/* === TAB: ALUNO (Student Portal) === */}
+          <TabsContent value="aluno" className="space-y-4 mt-4">
+            <StudentDashboard />
           </TabsContent>
         </Tabs>
       </motion.div>
