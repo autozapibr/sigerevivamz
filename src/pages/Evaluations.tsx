@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   BookOpen, Save, Calculator, Filter, FileSpreadsheet,
-  TrendingUp, TrendingDown, Minus
+  TrendingUp, TrendingDown, Download, BarChart3, Users, 
+  GraduationCap, ClipboardList
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -37,6 +39,9 @@ import {
   GradeInsert
 } from '@/hooks/useGrades';
 import { useStudentsByClass } from '@/hooks/useAttendance';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend
+} from 'recharts';
 
 const TRIMESTRES = [
   { value: '1', label: '1º Trimestre' },
@@ -53,19 +58,30 @@ interface StudentGrade {
   media: number | null;
 }
 
-export default function Evaluations() {
-  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
-  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
-  const [selectedTrimestre, setSelectedTrimestre] = useState<number>(1);
+// Componente de Lançamento de Notas
+function GradeEntry({ 
+  classId, 
+  subjectId, 
+  trimestre,
+  students,
+  existingGrades,
+  studentsLoading,
+  classes,
+  subjects
+}: {
+  classId: number | null;
+  subjectId: number | null;
+  trimestre: number;
+  students: any[];
+  existingGrades: any[];
+  studentsLoading: boolean;
+  classes: any[];
+  subjects: any[];
+}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [gradesData, setGradesData] = useState<Map<number, StudentGrade>>(new Map());
   const [hasChanges, setHasChanges] = useState(false);
-
   const { toast } = useToast();
-  const { data: classes = [], isLoading: classesLoading } = useClasses();
-  const { data: subjects = [] } = useSubjects();
-  const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
-  const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
   const saveGrades = useSaveGrades();
 
   // Initialize grades from existing data
@@ -132,7 +148,7 @@ export default function Evaluations() {
   };
 
   const handleSave = async () => {
-    if (!selectedClassId || !selectedSubjectId) {
+    if (!classId || !subjectId) {
       toast({
         title: 'Atenção',
         description: 'Seleccione uma turma e disciplina',
@@ -145,12 +161,12 @@ export default function Evaluations() {
       .filter(g => g.acs !== null || g.acp !== null || g.acf !== null)
       .map(g => ({
         student_id: g.student_id,
-        subject_id: selectedSubjectId,
-        trimestre: selectedTrimestre,
+        subject_id: subjectId,
+        trimestre: trimestre,
         acs: g.acs,
         acp: g.acp,
         acf: g.acf,
-        class_id: selectedClassId,
+        class_id: classId,
       }));
 
     if (grades.length === 0) {
@@ -196,10 +212,501 @@ export default function Evaluations() {
     );
   };
 
+  if (!classId || !subjectId) {
+    return (
+      <Card>
+        <CardContent className="py-12">
+          <div className="text-center">
+            <FileSpreadsheet className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">Seleccione a Turma e Disciplina</h3>
+            <p className="text-muted-foreground">
+              Escolha uma turma e disciplina acima para lançar as notas
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <MainLayout title="Pauta Digital" subtitle="Lançamento de notas ACS, ACP e ACF">
+    <div className="space-y-6">
+      {/* Estatísticas */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="grid grid-cols-2 md:grid-cols-5 gap-4"
+      >
+        <Card>
+          <CardContent className="pt-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+              <p className="text-xs text-muted-foreground">Total Educandos</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-blue-600">{stats.avaliados}</p>
+              <p className="text-xs text-blue-600">Avaliados</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-green-200 bg-green-50/50 dark:bg-green-950/20">
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-600">{stats.aprovados}</p>
+                <p className="text-xs text-green-600">Aprovados (≥10)</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/20">
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-center gap-2">
+              <TrendingDown className="h-5 w-5 text-red-600" />
+              <div className="text-center">
+                <p className="text-2xl font-bold text-red-600">{stats.reprovados}</p>
+                <p className="text-xs text-red-600">Reprovados (&lt;10)</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-center gap-2">
+              <Calculator className="h-5 w-5 text-primary" />
+              <div className="text-center">
+                <p className="text-2xl font-bold text-primary">{stats.mediaGeral}</p>
+                <p className="text-xs text-primary">Média Geral</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Tabela de Notas */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <FileSpreadsheet className="h-5 w-5" />
+                Pauta - {TRIMESTRES.find(t => t.value === trimestre.toString())?.label}
+              </CardTitle>
+              <CardDescription>
+                {classes.find((c: any) => c.id === classId)?.name} - {subjects.find((s: any) => s.id === subjectId)?.name}
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Pesquisar..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 w-48"
+                />
+              </div>
+              <Button 
+                onClick={handleSave} 
+                disabled={saveGrades.isPending || !hasChanges}
+              >
+                <Save className="mr-2 h-4 w-4" />
+                {saveGrades.isPending ? 'Guardando...' : 'Guardar'}
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Legenda MINEDH */}
+          <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+            <p className="text-sm font-medium mb-2">Sistema de Avaliação MINEDH (0-20):</p>
+            <div className="flex flex-wrap gap-4 text-xs">
+              <span><strong>ACS</strong> - Avaliação Contínua Sistemática (30%)</span>
+              <span><strong>ACP</strong> - Avaliação Contínua Parcial (30%)</span>
+              <span><strong>ACF</strong> - Avaliação Contínua Final (40%)</span>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <Badge className="grade-excelente">18-20 Excelente</Badge>
+              <Badge className="grade-bom">14-17 Bom</Badge>
+              <Badge className="grade-suficiente">10-13 Suficiente</Badge>
+              <Badge className="grade-insuficiente">5-9 Insuficiente</Badge>
+              <Badge className="grade-mau">0-4 Mau</Badge>
+            </div>
+          </div>
+
+          {studentsLoading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          ) : filteredStudents.length === 0 ? (
+            <div className="text-center py-12">
+              <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">
+                {gradesData.size === 0 
+                  ? 'Nenhum educando nesta turma'
+                  : 'Nenhum educando encontrado'}
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">#</TableHead>
+                    <TableHead className="min-w-[200px]">Educando</TableHead>
+                    <TableHead className="text-center w-20">ACS (30%)</TableHead>
+                    <TableHead className="text-center w-20">ACP (30%)</TableHead>
+                    <TableHead className="text-center w-20">ACF (40%)</TableHead>
+                    <TableHead className="text-center w-32">Média</TableHead>
+                    <TableHead className="text-center w-28">Classificação</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredStudents.map((grade, index) => (
+                    <motion.tr
+                      key={grade.student_id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.02 }}
+                    >
+                      <TableCell className="font-medium text-muted-foreground">
+                        {index + 1}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {grade.student_name}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <GradeInput
+                          value={grade.acs}
+                          onChange={(v) => handleGradeChange(grade.student_id, 'acs', v)}
+                          placeholder="0-20"
+                        />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <GradeInput
+                          value={grade.acp}
+                          onChange={(v) => handleGradeChange(grade.student_id, 'acp', v)}
+                          placeholder="0-20"
+                        />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <GradeInput
+                          value={grade.acf}
+                          onChange={(v) => handleGradeChange(grade.student_id, 'acf', v)}
+                          placeholder="0-20"
+                        />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className={`text-lg font-bold ${classifyGrade(grade.media).className}`}>
+                          {grade.media !== null ? grade.media.toFixed(1) : '-'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <MediaBadge media={grade.media} />
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Componente de Resumo Anual
+function AnnualSummary({ classId, subjects, classes }: { classId: number | null; subjects: any[]; classes: any[] }) {
+  const { data: students = [] } = useStudentsByClass(classId);
+  const { data: allGrades = [] } = useGradesByClass(classId, null, null);
+
+  // Calcular médias anuais por educando e disciplina
+  const annualData = useMemo(() => {
+    if (!students.length || !allGrades.length) return [];
+
+    return students.map(student => {
+      const studentGrades = allGrades.filter(g => g.student_id === student.id);
+      const subjectAverages: Record<number, { t1: number | null; t2: number | null; t3: number | null; annual: number | null }> = {};
+
+      subjects.forEach(subject => {
+        const subjectGrades = studentGrades.filter(g => g.subject_id === subject.id);
+        const t1 = subjectGrades.find(g => g.trimestre === 1)?.media_trimestral || null;
+        const t2 = subjectGrades.find(g => g.trimestre === 2)?.media_trimestral || null;
+        const t3 = subjectGrades.find(g => g.trimestre === 3)?.media_trimestral || null;
+
+        const validGrades = [t1, t2, t3].filter(g => g !== null) as number[];
+        const annual = validGrades.length > 0 ? validGrades.reduce((a, b) => a + b, 0) / validGrades.length : null;
+
+        subjectAverages[subject.id] = { t1, t2, t3, annual: annual ? Math.round(annual * 100) / 100 : null };
+      });
+
+      // Média geral do educando
+      const allAnnuals = Object.values(subjectAverages).map(s => s.annual).filter(a => a !== null) as number[];
+      const overallAverage = allAnnuals.length > 0 ? allAnnuals.reduce((a, b) => a + b, 0) / allAnnuals.length : null;
+
+      return {
+        student,
+        subjectAverages,
+        overallAverage: overallAverage ? Math.round(overallAverage * 100) / 100 : null,
+      };
+    });
+  }, [students, allGrades, subjects]);
+
+  if (!classId) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <GraduationCap className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">Seleccione uma Turma</h3>
+          <p className="text-muted-foreground">Escolha uma turma acima para ver o resumo anual</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <GraduationCap className="h-5 w-5" />
+              Resumo Anual - {classes.find((c: any) => c.id === classId)?.name}
+            </CardTitle>
+            <CardDescription>Médias trimestrais e anuais por educando</CardDescription>
+          </div>
+          <Button variant="outline" size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Exportar Pauta
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {annualData.length === 0 ? (
+          <div className="text-center py-12">
+            <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">Nenhuma nota lançada ainda</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="sticky left-0 bg-background">#</TableHead>
+                  <TableHead className="sticky left-8 bg-background min-w-[180px]">Educando</TableHead>
+                  {subjects.slice(0, 5).map(subject => (
+                    <TableHead key={subject.id} className="text-center min-w-[80px]">
+                      {subject.code || subject.name.substring(0, 4)}
+                    </TableHead>
+                  ))}
+                  <TableHead className="text-center font-bold">Média Geral</TableHead>
+                  <TableHead className="text-center">Resultado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {annualData.map((row, index) => (
+                  <TableRow key={row.student.id}>
+                    <TableCell className="sticky left-0 bg-background">{index + 1}</TableCell>
+                    <TableCell className="sticky left-8 bg-background font-medium">{row.student.name}</TableCell>
+                    {subjects.slice(0, 5).map(subject => {
+                      const avg = row.subjectAverages[subject.id]?.annual;
+                      const { className } = classifyGrade(avg);
+                      return (
+                        <TableCell key={subject.id} className={`text-center ${className}`}>
+                          {avg !== null ? avg.toFixed(1) : '-'}
+                        </TableCell>
+                      );
+                    })}
+                    <TableCell className={`text-center font-bold ${classifyGrade(row.overallAverage).className}`}>
+                      {row.overallAverage !== null ? row.overallAverage.toFixed(1) : '-'}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {row.overallAverage !== null && (
+                        <Badge variant={row.overallAverage >= 10 ? 'default' : 'destructive'}>
+                          {row.overallAverage >= 10 ? 'Aprovado' : 'Reprovado'}
+                        </Badge>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Componente de Estatísticas/Gráficos
+function GradeStatistics({ classId, subjectId }: { classId: number | null; subjectId: number | null }) {
+  const { data: grades = [] } = useGradesByClass(classId, subjectId, null);
+
+  const chartData = useMemo(() => {
+    const distribution = { excelente: 0, bom: 0, suficiente: 0, insuficiente: 0, mau: 0 };
+    
+    grades.forEach(grade => {
+      const media = grade.media_trimestral;
+      if (media === null) return;
+      if (media >= 18) distribution.excelente++;
+      else if (media >= 14) distribution.bom++;
+      else if (media >= 10) distribution.suficiente++;
+      else if (media >= 5) distribution.insuficiente++;
+      else distribution.mau++;
+    });
+
+    return [
+      { name: 'Excelente (18-20)', value: distribution.excelente, color: '#059669' },
+      { name: 'Bom (14-17)', value: distribution.bom, color: '#0284c7' },
+      { name: 'Suficiente (10-13)', value: distribution.suficiente, color: '#ca8a04' },
+      { name: 'Insuficiente (5-9)', value: distribution.insuficiente, color: '#ea580c' },
+      { name: 'Mau (0-4)', value: distribution.mau, color: '#dc2626' },
+    ].filter(d => d.value > 0);
+  }, [grades]);
+
+  const trimestreData = useMemo(() => {
+    const data = [1, 2, 3].map(t => {
+      const tGrades = grades.filter(g => g.trimestre === t && g.media_trimestral !== null);
+      const avg = tGrades.length > 0 
+        ? tGrades.reduce((sum, g) => sum + (g.media_trimestral || 0), 0) / tGrades.length 
+        : 0;
+      return {
+        name: `${t}º Trim`,
+        media: Math.round(avg * 100) / 100,
+        total: tGrades.length,
+      };
+    });
+    return data;
+  }, [grades]);
+
+  if (!classId) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <BarChart3 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">Seleccione uma Turma</h3>
+          <p className="text-muted-foreground">Escolha uma turma para ver as estatísticas</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Distribuição por Classificação */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Distribuição por Classificação</CardTitle>
+          <CardDescription>Quantidade de educandos por faixa de nota</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {chartData.length === 0 ? (
+            <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              Nenhuma nota lançada
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  label={({ name, value }) => `${value}`}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Média por Trimestre */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Média por Trimestre</CardTitle>
+          <CardDescription>Evolução da média da turma ao longo do ano</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={trimestreData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis domain={[0, 20]} />
+              <Tooltip 
+                formatter={(value: number) => [value.toFixed(1), 'Média']}
+              />
+              <Bar dataKey="media" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function Evaluations() {
+  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
+  const [selectedTrimestre, setSelectedTrimestre] = useState<number>(1);
+  const [activeTab, setActiveTab] = useState('lancamento');
+
+  const { data: classes = [], isLoading: classesLoading } = useClasses();
+  const { data: subjects = [] } = useSubjects();
+  const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
+  const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
+
+  return (
+    <MainLayout title="Pauta Digital" subtitle="Sistema de avaliação e lançamento de notas">
       <div className="space-y-6">
-        {/* Filtros */}
+        {/* Header com Explicação */}
+        <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-primary/20 rounded-xl">
+                <ClipboardList className="h-8 w-8 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold mb-2">O que é a Pauta Digital?</h2>
+                <p className="text-muted-foreground">
+                  A <strong>Pauta Digital</strong> é o sistema de lançamento e gestão de notas dos educandos, 
+                  seguindo o modelo de avaliação do <strong>MINEDH</strong> (Ministério da Educação e Desenvolvimento Humano de Moçambique). 
+                  As notas são lançadas numa escala de <strong>0 a 20</strong>, com três componentes de avaliação por trimestre:
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                  <div className="p-3 bg-background rounded-lg">
+                    <p className="font-semibold text-sm">ACS (30%)</p>
+                    <p className="text-xs text-muted-foreground">Avaliação Contínua Sistemática - trabalhos, participação, testes curtos</p>
+                  </div>
+                  <div className="p-3 bg-background rounded-lg">
+                    <p className="font-semibold text-sm">ACP (30%)</p>
+                    <p className="text-xs text-muted-foreground">Avaliação Contínua Parcial - provas parciais do trimestre</p>
+                  </div>
+                  <div className="p-3 bg-background rounded-lg">
+                    <p className="font-semibold text-sm">ACF (40%)</p>
+                    <p className="text-xs text-muted-foreground">Avaliação Contínua Final - prova final do trimestre</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Filtros Principais */}
         <Card>
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -210,7 +717,6 @@ export default function Evaluations() {
                   value={selectedClassId?.toString() || ''} 
                   onValueChange={(v) => {
                     setSelectedClassId(Number(v));
-                    setGradesData(new Map());
                   }}
                 >
                   <SelectTrigger>
@@ -266,211 +772,60 @@ export default function Evaluations() {
                 </Select>
               </div>
 
-              {/* Pesquisa */}
+              {/* Info da Turma */}
               <div className="space-y-2">
-                <Label>Pesquisar</Label>
-                <div className="relative">
-                  <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Nome do educando..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
+                <Label>Educandos na Turma</Label>
+                <div className="h-10 flex items-center px-3 bg-muted rounded-md">
+                  <Users className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">{students.length}</span>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Estatísticas */}
-        {selectedClassId && selectedSubjectId && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="grid grid-cols-2 md:grid-cols-5 gap-4"
-          >
-            <Card>
-              <CardContent className="pt-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-                  <p className="text-xs text-muted-foreground">Total Educandos</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">{stats.avaliados}</p>
-                  <p className="text-xs text-blue-600">Avaliados</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-green-200 bg-green-50/50">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">{stats.aprovados}</p>
-                    <p className="text-xs text-green-600">Aprovados (≥10)</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-red-200 bg-red-50/50">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-center gap-2">
-                  <TrendingDown className="h-5 w-5 text-red-600" />
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-red-600">{stats.reprovados}</p>
-                    <p className="text-xs text-red-600">Reprovados (&lt;10)</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-primary/20 bg-primary/5">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-center gap-2">
-                  <Calculator className="h-5 w-5 text-primary" />
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-primary">{stats.mediaGeral}</p>
-                    <p className="text-xs text-primary">Média Geral</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+        {/* Tabs de Funcionalidades */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="lancamento" className="gap-2">
+              <FileSpreadsheet className="h-4 w-4" />
+              Lançamento de Notas
+            </TabsTrigger>
+            <TabsTrigger value="resumo" className="gap-2">
+              <GraduationCap className="h-4 w-4" />
+              Resumo Anual
+            </TabsTrigger>
+            <TabsTrigger value="estatisticas" className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Estatísticas
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Tabela de Notas */}
-        {selectedClassId && selectedSubjectId ? (
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileSpreadsheet className="h-5 w-5" />
-                    Pauta - {TRIMESTRES.find(t => t.value === selectedTrimestre.toString())?.label}
-                  </CardTitle>
-                  <CardDescription>
-                    {classes.find(c => c.id === selectedClassId)?.name} - {subjects.find(s => s.id === selectedSubjectId)?.name}
-                  </CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={handleSave} 
-                    disabled={saveGrades.isPending || !hasChanges}
-                  >
-                    <Save className="mr-2 h-4 w-4" />
-                    {saveGrades.isPending ? 'Guardando...' : 'Guardar Notas'}
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {/* Legenda MINEDH */}
-              <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-                <p className="text-sm font-medium mb-2">Sistema de Avaliação MINEDH (0-20):</p>
-                <div className="flex flex-wrap gap-4 text-xs">
-                  <span><strong>ACS</strong> - Avaliação Contínua Sistemática (30%)</span>
-                  <span><strong>ACP</strong> - Avaliação Contínua Parcial (30%)</span>
-                  <span><strong>ACF</strong> - Avaliação Contínua Final (40%)</span>
-                </div>
-              </div>
+          <TabsContent value="lancamento" className="mt-6">
+            <GradeEntry 
+              classId={selectedClassId}
+              subjectId={selectedSubjectId}
+              trimestre={selectedTrimestre}
+              students={students}
+              existingGrades={existingGrades}
+              studentsLoading={studentsLoading}
+              classes={classes}
+              subjects={subjects}
+            />
+          </TabsContent>
 
-              {studentsLoading ? (
-                <div className="space-y-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Skeleton key={i} className="h-12 w-full" />
-                  ))}
-                </div>
-              ) : filteredStudents.length === 0 ? (
-                <div className="text-center py-12">
-                  <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">
-                    {gradesData.size === 0 
-                      ? 'Nenhum educando nesta turma'
-                      : 'Nenhum educando encontrado'}
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">#</TableHead>
-                        <TableHead className="min-w-[200px]">Educando</TableHead>
-                        <TableHead className="text-center w-20">ACS (30%)</TableHead>
-                        <TableHead className="text-center w-20">ACP (30%)</TableHead>
-                        <TableHead className="text-center w-20">ACF (40%)</TableHead>
-                        <TableHead className="text-center w-32">Média Trimestral</TableHead>
-                        <TableHead className="text-center w-28">Classificação</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredStudents.map((grade, index) => (
-                        <motion.tr
-                          key={grade.student_id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.02 }}
-                        >
-                          <TableCell className="font-medium text-muted-foreground">
-                            {index + 1}
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {grade.student_name}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <GradeInput
-                              value={grade.acs}
-                              onChange={(v) => handleGradeChange(grade.student_id, 'acs', v)}
-                              placeholder="0-20"
-                            />
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <GradeInput
-                              value={grade.acp}
-                              onChange={(v) => handleGradeChange(grade.student_id, 'acp', v)}
-                              placeholder="0-20"
-                            />
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <GradeInput
-                              value={grade.acf}
-                              onChange={(v) => handleGradeChange(grade.student_id, 'acf', v)}
-                              placeholder="0-20"
-                            />
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <span className={`text-lg font-bold ${classifyGrade(grade.media).className}`}>
-                              {grade.media !== null ? grade.media.toFixed(1) : '-'}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <MediaBadge media={grade.media} />
-                          </TableCell>
-                        </motion.tr>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardContent className="py-12">
-              <div className="text-center">
-                <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Seleccione turma e disciplina</h3>
-                <p className="text-muted-foreground">
-                  Escolha uma turma, disciplina e trimestre para lançar notas
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          <TabsContent value="resumo" className="mt-6">
+            <AnnualSummary 
+              classId={selectedClassId} 
+              subjects={subjects}
+              classes={classes}
+            />
+          </TabsContent>
+
+          <TabsContent value="estatisticas" className="mt-6">
+            <GradeStatistics classId={selectedClassId} subjectId={selectedSubjectId} />
+          </TabsContent>
+        </Tabs>
       </div>
     </MainLayout>
   );

@@ -280,6 +280,27 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+/* === Grade Classification Colors (MINEDH) === */
+.grade-excelente {
+  @apply text-emerald-600 dark:text-emerald-400;
+}
+
+.grade-bom {
+  @apply text-sky-600 dark:text-sky-400;
+}
+
+.grade-suficiente {
+  @apply text-amber-600 dark:text-amber-400;
+}
+
+.grade-insuficiente {
+  @apply text-orange-600 dark:text-orange-400;
+}
+
+.grade-mau {
+  @apply text-red-600 dark:text-red-400;
+}
+
 /* === Print Styles === */
 @media print {
   .no-print { display: none !important; }
