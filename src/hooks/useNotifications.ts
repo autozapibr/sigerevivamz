@@ -33,6 +33,7 @@ const ROLE_DEPARTMENT_ACCESS: Record<UserRole, string[]> = {
   PROFESSOR: ['PEDAGOGICO'],
   PEDAGOGICO: ['PEDAGOGICO'],
   ENCARREGADO: [], // Only sees own tickets
+  ALUNO: [], // Only sees own tickets
 };
 
 // Map priority to notification type

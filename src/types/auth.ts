@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'DIRETORIA' | 'SECRETARIA' | 'FINANCEIRO' | 'PROFESSOR' | 'PEDAGOGICO' | 'ENCARREGADO';
+export type UserRole = 'ADMIN' | 'DIRETORIA' | 'SECRETARIA' | 'FINANCEIRO' | 'PROFESSOR' | 'PEDAGOGICO' | 'ENCARREGADO' | 'ALUNO';
 
 export interface User {
   id: string;
@@ -42,7 +42,8 @@ export const ROLE_PERMISSIONS = {
   FINANCEIRO: ['gestao_financeira'] as const,
   PROFESSOR: ['gestao_pedagogica'] as const,
   PEDAGOGICO: ['gestao_pedagogica'] as const,
-  ENCARREGADO: ['portal_encarregado'] as const
+  ENCARREGADO: ['portal_encarregado'] as const,
+  ALUNO: ['portal_aluno'] as const
 };
 
 export type Permission = 
@@ -52,4 +53,5 @@ export type Permission =
   | 'gestao_rh'
   | 'configuracoes'
   | 'portal_encarregado'
+  | 'portal_aluno'
   | '*';

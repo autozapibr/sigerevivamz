@@ -682,6 +682,73 @@ export type Database = {
         }
         Relationships: []
       }
+      exam_notifications: {
+        Row: {
+          calendar_event_id: number
+          created_at: string | null
+          id: number
+          is_read: boolean | null
+          message: string
+          notification_type: string
+          read_at: string | null
+          recipient_class_id: number | null
+          recipient_role: Database["public"]["Enums"]["app_role"] | null
+          recipient_user_id: string | null
+          sent_via_whatsapp: boolean | null
+          whatsapp_sent_at: string | null
+        }
+        Insert: {
+          calendar_event_id: number
+          created_at?: string | null
+          id?: never
+          is_read?: boolean | null
+          message: string
+          notification_type?: string
+          read_at?: string | null
+          recipient_class_id?: number | null
+          recipient_role?: Database["public"]["Enums"]["app_role"] | null
+          recipient_user_id?: string | null
+          sent_via_whatsapp?: boolean | null
+          whatsapp_sent_at?: string | null
+        }
+        Update: {
+          calendar_event_id?: number
+          created_at?: string | null
+          id?: never
+          is_read?: boolean | null
+          message?: string
+          notification_type?: string
+          read_at?: string | null
+          recipient_class_id?: number | null
+          recipient_role?: Database["public"]["Enums"]["app_role"] | null
+          recipient_user_id?: string | null
+          sent_via_whatsapp?: boolean | null
+          whatsapp_sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_notifications_calendar_event_id_fkey"
+            columns: ["calendar_event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_notifications_recipient_class_id_fkey"
+            columns: ["recipient_class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_notifications_recipient_class_id_fkey"
+            columns: ["recipient_class_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["class_id"]
+          },
+        ]
+      }
       financial_categories: {
         Row: {
           id: number
