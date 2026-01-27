@@ -190,24 +190,30 @@ function generatePDF(
 
   const totalPages = Math.ceil(data.length / 25);
 
+  const graduationCapSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2D5F3F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>`;
+
   const html = `
     <!DOCTYPE html>
     <html lang="pt-MZ">
       <head>
         <meta charset="UTF-8">
         <title>${title} - SiGER</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           @page { size: A4 landscape; margin: 10mm; }
-          body { font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 10pt; color: #1a1a1a; }
+          body { font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; font-size: 10pt; color: #1a1a1a; }
           .container { max-width: 297mm; margin: 0 auto; padding: 15px; }
           .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #2D5F3F; padding-bottom: 12px; margin-bottom: 15px; }
-          .logo h1 { color: #2D5F3F; font-size: 18pt; }
-          .logo h2 { color: #4A7C59; font-size: 9pt; margin-top: 2px; }
+          .logo { display: flex; align-items: center; gap: 10px; }
+          .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #2D5F3F 0%, #4A7C59 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(45, 95, 63, 0.25); }
+          .logo-icon svg { stroke: white; }
+          .logo-text h1 { color: #2D5F3F; font-size: 18pt; font-weight: 700; letter-spacing: -0.5px; }
+          .logo-text h2 { color: #4A7C59; font-size: 8pt; margin-top: 1px; font-weight: 500; }
           .institution { text-align: right; font-size: 9pt; color: #666; }
           .institution strong { color: #1a1a1a; display: block; font-size: 10pt; margin-bottom: 2px; }
           .doc-title { text-align: center; margin: 15px 0; }
-          .doc-title h2 { font-size: 14pt; color: #2D5F3F; text-transform: uppercase; letter-spacing: 1px; }
+          .doc-title h2 { font-size: 14pt; color: #2D5F3F; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
           .doc-title .meta { font-size: 9pt; color: #666; margin-top: 3px; }
           .totals-grid { margin: 15px 0; }
           table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 9pt; }
@@ -227,8 +233,11 @@ function generatePDF(
         <div class="container">
           <div class="header">
             <div class="logo">
-              <h1>📊 SiGER</h1>
-              <h2>Sistema de Gestão Escolar REVIVA</h2>
+              <div class="logo-icon">${graduationCapSvg}</div>
+              <div class="logo-text">
+                <h1>SiGER</h1>
+                <h2>Sistema de Gestão Escolar Reviva</h2>
+              </div>
             </div>
             <div class="institution">
               <strong>Escola REVIVA</strong>

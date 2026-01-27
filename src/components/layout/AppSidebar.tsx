@@ -147,8 +147,8 @@ export function AppSidebar() {
                   exit={{ opacity: 0, width: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <h1 className="text-lg font-bold text-foreground">SiGER</h1>
-                  <p className="text-[10px] text-muted-foreground leading-none">Gestão Escolar</p>
+                  <h1 className="text-lg font-bold text-foreground font-inter tracking-tight">SiGER</h1>
+                  <p className="text-[10px] text-muted-foreground leading-none">Sistema de Gestão Escolar Reviva</p>
                 </motion.div>
               )}
             </AnimatePresence>
