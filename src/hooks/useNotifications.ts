@@ -1,6 +1,15 @@
 import { useSupabaseQuery, useSupabaseMutation } from './useSupabaseQuery';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { UserRole } from '@/types/auth';
+import { 
+  TicketCategory, 
+  TicketStatus, 
+  TicketPriority, 
+  getCategoryLabel, 
+  getStatusLabel,
+  CATEGORY_DEPARTMENT_ROUTING 
+} from './useTickets';
 
 export interface Notification {
   id: string;
@@ -11,81 +20,135 @@ export interface Notification {
   read: boolean;
   created_at: string;
   link?: string;
+  ticket_id?: number;
+  category?: TicketCategory;
 }
 
-// Hook para buscar notificações do usuário
+// Map user roles to departments they can see
+const ROLE_DEPARTMENT_ACCESS: Record<UserRole, string[]> = {
+  ADMIN: ['ADMIN', 'SECRETARIA', 'FINANCEIRO', 'PEDAGOGICO'], // Can see all
+  DIRETORIA: ['ADMIN', 'SECRETARIA', 'FINANCEIRO', 'PEDAGOGICO'], // Can see all
+  SECRETARIA: ['SECRETARIA'],
+  FINANCEIRO: ['FINANCEIRO'],
+  PROFESSOR: ['PEDAGOGICO'],
+  PEDAGOGICO: ['PEDAGOGICO'],
+  ENCARREGADO: [], // Only sees own tickets
+};
+
+// Map priority to notification type
+const PRIORITY_TO_TYPE: Record<TicketPriority, Notification['type']> = {
+  BAIXA: 'info',
+  NORMAL: 'info',
+  ALTA: 'warning',
+  URGENTE: 'error',
+};
+
+// Hook para buscar notificações do usuário (baseado em tickets)
 export function useNotifications() {
   const { user } = useAuth();
   
   return useSupabaseQuery<Notification[]>(
-    ['notifications', user?.id],
+    ['notifications', user?.id, user?.role],
     async () => {
       if (!user) {
         return { data: [], error: null };
       }
 
-      // Simular notificações (já que não temos tabela ainda)
-      const mockNotifications: Notification[] = [
-        {
-          id: '1',
-          user_id: user.id,
-          title: 'Novo Educando Matriculado',
-          message: 'João Silva foi matriculado na 10ª A.',
-          type: 'success',
-          read: false,
-          created_at: new Date().toISOString(),
-          link: '/students',
-        },
-        {
-          id: '2',
-          user_id: user.id,
-          title: 'Pagamento Vencido',
-          message: 'Maria Costa tem pagamento vencido há 5 dias.',
-          type: 'warning',
-          read: false,
-          created_at: new Date(Date.now() - 86400000).toISOString(),
-          link: '/financeiro',
-        },
-        {
-          id: '3',
-          user_id: user.id,
-          title: 'Relatório Mensal Disponível',
-          message: 'O relatório de desempenho de Novembro está pronto.',
-          type: 'info',
-          read: true,
-          created_at: new Date(Date.now() - 172800000).toISOString(),
-          link: '/relatorios',
-        },
-      ];
+      // Build query based on user role
+      let query = supabase
+        .from('tickets')
+        .select('*')
+        .in('status', ['ABERTO', 'EM_ANDAMENTO', 'AGUARDANDO'])
+        .order('created_at', { ascending: false })
+        .limit(50);
 
-      return { data: mockNotifications, error: null };
+      const allowedDepartments = ROLE_DEPARTMENT_ACCESS[user.role] || [];
+
+      // If user is ENCARREGADO, only show their own tickets
+      if (user.role === 'ENCARREGADO') {
+        query = query.eq('created_by', user.id);
+      } else if (allowedDepartments.length > 0) {
+        // Filter by departments the user can access
+        query = query.in('assigned_department', allowedDepartments);
+      }
+
+      const { data: tickets, error } = await query;
+
+      if (error) {
+        console.error('Error fetching ticket notifications:', error);
+        return { data: [], error };
+      }
+
+      // Transform tickets to notifications
+      const notifications: Notification[] = (tickets || []).map((ticket: any) => ({
+        id: ticket.id.toString(),
+        user_id: user.id,
+        title: `${ticket.ticket_number || 'Ticket'}: ${ticket.title}`,
+        message: `${getCategoryLabel(ticket.category)} • ${getStatusLabel(ticket.status)} • Por: ${ticket.created_by_name}`,
+        type: PRIORITY_TO_TYPE[ticket.priority as TicketPriority] || 'info',
+        read: ticket.status !== 'ABERTO', // Consider "read" if not in ABERTO status
+        created_at: ticket.created_at,
+        link: '/comunicacao',
+        ticket_id: ticket.id,
+        category: ticket.category,
+      }));
+
+      return { data: notifications, error: null };
     },
     { enabled: !!user }
   );
 }
 
-// Hook para marcar notificação como lida
+// Hook para contar notificações não lidas
+export function useUnreadNotificationCount() {
+  const { data: notifications = [] } = useNotifications();
+  return notifications.filter(n => !n.read).length;
+}
+
+// Hook para marcar notificação como lida (atualiza status do ticket)
 export function useMarkAsRead() {
   return useSupabaseMutation<Notification, string>(
     async (id) => {
-      // Simular marcação como lida
+      // Update ticket status to EM_ANDAMENTO when marked as read
+      const { error } = await supabase
+        .from('tickets')
+        .update({ status: 'EM_ANDAMENTO' })
+        .eq('id', parseInt(id))
+        .eq('status', 'ABERTO');
+
+      if (error) {
+        return { data: null as any, error };
+      }
+      
       return { data: null as any, error: null };
     },
     {
-      invalidateQueries: [['notifications']],
+      invalidateQueries: [['notifications'], ['tickets']],
     }
   );
 }
 
-// Hook para deletar notificação
+// Hook para deletar notificação (fecha o ticket)
 export function useDeleteNotification() {
   return useSupabaseMutation<void, string>(
     async (id) => {
-      // Simular deleção
+      // Close the ticket when notification is deleted
+      const { error } = await supabase
+        .from('tickets')
+        .update({ 
+          status: 'FECHADO',
+          closed_at: new Date().toISOString()
+        })
+        .eq('id', parseInt(id));
+
+      if (error) {
+        return { data: null as any, error };
+      }
+      
       return { data: null as any, error: null };
     },
     {
-      invalidateQueries: [['notifications']],
+      invalidateQueries: [['notifications'], ['tickets']],
     }
   );
 }
