@@ -50,15 +50,21 @@ export function useExamNotifications() {
         .order('created_at', { ascending: false })
         .limit(50);
       
-      // Filter by role or user
+      // Filter by role - professors see all exam notifications for their role
       if (user.role === 'PROFESSOR' || user.role === 'PEDAGOGICO') {
         query = query.eq('recipient_role', 'PROFESSOR');
       } else if (user.role === 'ENCARREGADO') {
+        // Parents see notifications for their students' classes
+        // The recipient_role filter ensures they only see ENCARREGADO-targeted notifications
         query = query.eq('recipient_role', 'ENCARREGADO');
-        // TODO: Filter by student's class_id when we have the link
+        // TODO: Further filter by student's class_id when student-guardian link is established
       } else if (user.role === 'ALUNO') {
+        // Students see notifications for their class
         query = query.eq('recipient_role', 'ALUNO');
-        // TODO: Filter by student's class_id
+        // TODO: Filter by student's class_id when student-user link is established
+      } else if (user.role === 'ADMIN' || user.role === 'DIRETORIA' || user.role === 'SECRETARIA') {
+        // Staff can see all exam notifications
+        query = query.in('recipient_role', ['PROFESSOR', 'ENCARREGADO', 'ALUNO']);
       }
       
       const { data, error } = await query;
