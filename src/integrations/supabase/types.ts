@@ -1794,6 +1794,7 @@ export type Database = {
           due_date: string | null
           id: number
           month: string
+          paid_at: string | null
           status: Database["public"]["Enums"]["tuition_status"] | null
           student_id: number
         }
@@ -1802,6 +1803,7 @@ export type Database = {
           due_date?: string | null
           id?: number
           month: string
+          paid_at?: string | null
           status?: Database["public"]["Enums"]["tuition_status"] | null
           student_id: number
         }
@@ -1810,6 +1812,7 @@ export type Database = {
           due_date?: string | null
           id?: number
           month?: string
+          paid_at?: string | null
           status?: Database["public"]["Enums"]["tuition_status"] | null
           student_id?: number
         }
