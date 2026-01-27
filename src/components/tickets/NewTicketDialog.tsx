@@ -42,13 +42,13 @@ import {
 const ticketSchema = z.object({
   title: z.string().min(5, 'O assunto deve ter pelo menos 5 caracteres').max(200),
   description: z.string().min(20, 'A descrição deve ter pelo menos 20 caracteres').max(2000),
-  category: z.enum(['RECLAMACAO', 'INFORMACAO', 'SUGESTAO', 'SUPORTE', 'FINANCEIRO', 'PEDAGOGICO', 'RH', 'OUTRO']),
+  category: z.enum(['SECRETARIA', 'RECLAMACAO', 'INFORMACAO', 'SUGESTAO', 'SUPORTE', 'FINANCEIRO', 'PEDAGOGICO', 'RH', 'OUTRO']),
   priority: z.enum(['BAIXA', 'NORMAL', 'ALTA', 'URGENTE']),
 });
 
 type TicketFormData = z.infer<typeof ticketSchema>;
 
-const categories: TicketCategory[] = ['RECLAMACAO', 'INFORMACAO', 'SUGESTAO', 'SUPORTE', 'FINANCEIRO', 'PEDAGOGICO', 'RH', 'OUTRO'];
+const categories: TicketCategory[] = ['SECRETARIA', 'RECLAMACAO', 'INFORMACAO', 'SUGESTAO', 'SUPORTE', 'FINANCEIRO', 'PEDAGOGICO', 'RH', 'OUTRO'];
 const priorities: TicketPriority[] = ['BAIXA', 'NORMAL', 'ALTA', 'URGENTE'];
 
 interface NewTicketDialogProps {

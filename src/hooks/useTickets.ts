@@ -4,7 +4,24 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export type TicketStatus = 'ABERTO' | 'EM_ANDAMENTO' | 'AGUARDANDO' | 'RESOLVIDO' | 'FECHADO';
 export type TicketPriority = 'BAIXA' | 'NORMAL' | 'ALTA' | 'URGENTE';
-export type TicketCategory = 'RECLAMACAO' | 'INFORMACAO' | 'SUGESTAO' | 'SUPORTE' | 'FINANCEIRO' | 'PEDAGOGICO' | 'RH' | 'OUTRO';
+export type TicketCategory = 'SECRETARIA' | 'RECLAMACAO' | 'INFORMACAO' | 'SUGESTAO' | 'SUPORTE' | 'FINANCEIRO' | 'PEDAGOGICO' | 'RH' | 'OUTRO';
+
+// Routing configuration: category -> department
+export const CATEGORY_DEPARTMENT_ROUTING: Record<TicketCategory, string> = {
+  SECRETARIA: 'SECRETARIA',
+  SUGESTAO: 'SECRETARIA',
+  RECLAMACAO: 'SECRETARIA',
+  RH: 'SECRETARIA',
+  INFORMACAO: 'SECRETARIA',
+  FINANCEIRO: 'FINANCEIRO',
+  SUPORTE: 'ADMIN',
+  PEDAGOGICO: 'PEDAGOGICO',
+  OUTRO: 'SECRETARIA', // Default to secretaria
+};
+
+export const getDepartmentForCategory = (category: TicketCategory): string => {
+  return CATEGORY_DEPARTMENT_ROUTING[category] || 'SECRETARIA';
+};
 
 export interface Ticket {
   id: number;
@@ -281,6 +298,7 @@ export function useMarkNotificationsRead() {
 // Helper functions
 export const getCategoryLabel = (category: TicketCategory): string => {
   const labels: Record<TicketCategory, string> = {
+    SECRETARIA: 'Secretaria',
     RECLAMACAO: 'Reclamação',
     INFORMACAO: 'Pedido de Informação',
     SUGESTAO: 'Sugestão',
@@ -337,6 +355,7 @@ export const getPriorityColor = (priority: TicketPriority): string => {
 
 export const getCategoryColor = (category: TicketCategory): string => {
   const colors: Record<TicketCategory, string> = {
+    SECRETARIA: 'bg-cyan-500/10 text-cyan-500',
     RECLAMACAO: 'bg-red-500/10 text-red-500',
     INFORMACAO: 'bg-blue-500/10 text-blue-500',
     SUGESTAO: 'bg-green-500/10 text-green-500',

@@ -2054,6 +2054,7 @@ export type Database = {
         | "PEDAGOGICO"
         | "RH"
         | "OUTRO"
+        | "SECRETARIA"
       ticket_priority: "BAIXA" | "NORMAL" | "ALTA" | "URGENTE"
       ticket_status:
         | "ABERTO"
@@ -2261,6 +2262,7 @@ export const Constants = {
         "PEDAGOGICO",
         "RH",
         "OUTRO",
+        "SECRETARIA",
       ],
       ticket_priority: ["BAIXA", "NORMAL", "ALTA", "URGENTE"],
       ticket_status: [
