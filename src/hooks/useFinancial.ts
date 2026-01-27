@@ -182,13 +182,14 @@ export function useFinancialSummary(month?: string) {
       const transactions = transactionsRes.data || [];
       const tuitions = tuitionRes.data || [];
 
+      // Use Number() to ensure proper numeric addition (Supabase returns numbers as strings sometimes)
       const totalReceitas = transactions
         .filter(t => t.type === 'Receita')
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
+        .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
       const totalDespesas = transactions
         .filter(t => t.type === 'Despesa')
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
+        .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
       const propinasPagas = tuitions.filter(t => t.status === 'Pago').length;
       const propinasPendentes = tuitions.filter(t => t.status === 'Pendente').length;
@@ -271,17 +272,18 @@ export function useMonthlyReport(year: number) {
         const transactions = transactionsRes.data || [];
         const tuitions = tuitionRes.data || [];
 
+        // Use Number() to ensure proper numeric addition
         const receitas = transactions
           .filter(t => t.type === 'Receita')
-          .reduce((sum, t) => sum + (t.amount || 0), 0);
+          .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
         const despesas = transactions
           .filter(t => t.type === 'Despesa')
-          .reduce((sum, t) => sum + (t.amount || 0), 0);
+          .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
         const propinasPagas = tuitions
           .filter(t => t.status === 'Pago')
-          .reduce((sum, t) => sum + (t.amount || 0), 0);
+          .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
         months.push({
           month: format(new Date(year, month - 1, 1), 'MMM', { locale: pt }),
@@ -600,7 +602,7 @@ export function useCategoryStats(filters?: {
             count: 0,
           };
         }
-        categoryTotals[catName].total += tx.amount || 0;
+        categoryTotals[catName].total += Number(tx.amount) || 0;
         categoryTotals[catName].count += 1;
       });
 

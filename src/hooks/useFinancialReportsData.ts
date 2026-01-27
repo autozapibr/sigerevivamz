@@ -12,36 +12,43 @@ export function useCashBookReport(filters: {
   return useQuery({
     queryKey: ['report-cash-book', filters],
     queryFn: async () => {
-      let query = supabase
+      // Calculate date range
+      const startDate = filters.month 
+        ? format(startOfMonth(parseISO(`${filters.month}-01`)), 'yyyy-MM-dd')
+        : `${filters.year}-01-01`;
+      
+      const endDate = filters.month
+        ? format(endOfMonth(parseISO(`${filters.month}-01`)), 'yyyy-MM-dd')
+        : `${filters.year}-12-31`;
+
+      // ALWAYS fetch ALL transactions for accurate running balance and totals
+      const { data: allData, error } = await supabase
         .from('transactions')
         .select(`
           id, date, description, amount, type,
           financial_categories (name)
         `)
-        .order('date', { ascending: false });
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: true }); // Ascending for proper balance calculation
 
-      // Apply date filters
-      if (filters.month) {
-        const monthDate = parseISO(`${filters.month}-01`);
-        const startDate = format(startOfMonth(monthDate), 'yyyy-MM-dd');
-        const endDate = format(endOfMonth(monthDate), 'yyyy-MM-dd');
-        query = query.gte('date', startDate).lte('date', endDate);
-      } else {
-        const startDate = `${filters.year}-01-01`;
-        const endDate = `${filters.year}-12-31`;
-        query = query.gte('date', startDate).lte('date', endDate);
-      }
-
-      if (filters.type && filters.type !== 'all') {
-        query = query.eq('type', filters.type);
-      }
-
-      const { data, error } = await query;
       if (error) throw error;
 
+      const transactions = allData || [];
+
+      // Calculate totals from ALL transactions (regardless of type filter)
+      const totalReceitas = transactions
+        .filter((t: any) => t.type === 'Receita')
+        .reduce((acc: number, t: any) => acc + (Number(t.amount) || 0), 0);
+      
+      const totalDespesas = transactions
+        .filter((t: any) => t.type === 'Despesa')
+        .reduce((acc: number, t: any) => acc + (Number(t.amount) || 0), 0);
+
+      // Calculate running balance considering ALL transactions in order
       let runningBalance = 0;
-      const dataWithBalance = (data || []).reverse().map((t: any) => {
-        const amount = t.amount || 0;
+      const dataWithBalance = transactions.map((t: any) => {
+        const amount = Number(t.amount) || 0;
         if (t.type === 'Receita') {
           runningBalance += amount;
         } else {
@@ -49,22 +56,24 @@ export function useCashBookReport(filters: {
         }
         return {
           ...t,
+          amount: amount,
           category: t.financial_categories?.name || 'Sem categoria',
           formatted_date: t.date ? format(parseISO(t.date), 'dd/MM/yyyy') : '-',
           balance: runningBalance,
         };
-      }).reverse();
+      });
 
-      // Calculate totals
-      const totalReceitas = (data || [])
-        .filter((t: any) => t.type === 'Receita')
-        .reduce((acc: number, t: any) => acc + (t.amount || 0), 0);
-      const totalDespesas = (data || [])
-        .filter((t: any) => t.type === 'Despesa')
-        .reduce((acc: number, t: any) => acc + (t.amount || 0), 0);
+      // Apply type filter AFTER balance calculation (for display only)
+      let filteredData = dataWithBalance;
+      if (filters.type && filters.type !== 'all') {
+        filteredData = dataWithBalance.filter((t: any) => t.type === filters.type);
+      }
+
+      // Reverse for display (most recent first)
+      filteredData = [...filteredData].reverse();
 
       return {
-        data: dataWithBalance,
+        data: filteredData,
         totals: {
           receitas: totalReceitas,
           despesas: totalDespesas,
@@ -385,19 +394,20 @@ export function useMonthlyFinancialSummary(year: number) {
         const transactions = transactionsRes.data || [];
         const tuitions = tuitionRes.data || [];
 
+        // Use Number() to ensure proper numeric addition
         const receitas = transactions
           .filter(t => t.type === 'Receita')
-          .reduce((sum, t) => sum + (t.amount || 0), 0);
+          .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
         const despesas = transactions
           .filter(t => t.type === 'Despesa')
-          .reduce((sum, t) => sum + (t.amount || 0), 0);
+          .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
         const propinasPagas = tuitions
           .filter(t => t.status === 'Pago')
-          .reduce((sum, t) => sum + (t.amount || 0), 0);
+          .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
-        const propinasTotal = tuitions.reduce((sum, t) => sum + (t.amount || 0), 0);
+        const propinasTotal = tuitions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
         months.push({
           month: format(monthDate, 'MMM', { locale: pt }),
