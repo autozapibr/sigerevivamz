@@ -37,6 +37,7 @@ import ColaboradoresPage from "./pages/rh/ColaboradoresPage";
 import DocumentacaoPage from "./pages/rh/DocumentacaoPage";
 import ContratosPage from "./pages/rh/ContratosPage";
 import SignContract from "./pages/SignContract";
+import ComunicacaoPage from "./pages/ComunicacaoPage";
 
 const queryClient = new QueryClient();
 
@@ -294,6 +295,15 @@ const AppRoutes = () => {
       />
       {/* Rota pública para assinatura de contratos */}
       <Route path="/assinar/:token" element={<SignContract />} />
+      {/* Central de Comunicação */}
+      <Route
+        path="/comunicacao"
+        element={
+          <ProtectedRoute>
+            <ComunicacaoPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/dev/seed" element={<DevSeed />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
