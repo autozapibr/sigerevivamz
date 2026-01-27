@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   BarChart3, 
   TrendingUp,
@@ -18,8 +17,12 @@ import {
   FileText,
   FileSpreadsheet,
   Loader2,
-  Table,
-  LineChart as LineChartIcon
+  AlertTriangle,
+  Users,
+  CreditCard,
+  MessageSquare,
+  GraduationCap,
+  Building
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -39,9 +42,19 @@ import {
   Line
 } from 'recharts';
 import { useMonthlyReport, useFinancialSummary, useTuitionFees } from '@/hooks/useFinancial';
+import { 
+  useDefaultersReport, 
+  useTuitionStatusReport, 
+  usePaymentAgreementsReport,
+  useExpensesByCategoryReport,
+  useRevenuesByCategoryReport,
+  useCommunicationsReport,
+  useEnrollmentFeesReport,
+  useClassFinancialReport
+} from '@/hooks/useFinancialReports';
+import { FinancialReportCard, type ReportColumn } from '@/components/financial/reports/FinancialReportCard';
 import { formatMZN } from '@/lib/validators/mozambique';
 import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { exportSimpleFinancialExcel } from '@/lib/exporters/financial-excel';
@@ -153,144 +166,27 @@ function StatCard({
   );
 }
 
-// Mobile-friendly table component
-function MonthlyTable({ data, totals }: { data: any[]; totals: any }) {
-  return (
-    <>
-      {/* Mobile Cards */}
-      <div className="md:hidden space-y-3">
-        {data.map((month, index) => (
-          <Card key={index} className="overflow-hidden">
-            <CardHeader className="py-2 px-3 bg-muted/50">
-              <CardTitle className="text-sm capitalize">{month.month}</CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Receitas:</span>
-                <span className="font-medium text-success">{formatMZN(month.receitas)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Despesas:</span>
-                <span className="font-medium text-destructive">{formatMZN(month.despesas)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Propinas:</span>
-                <span className="font-medium">{formatMZN(month.propinas)}</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t">
-                <span className="font-medium">Saldo:</span>
-                <span className={cn(
-                  "font-bold",
-                  month.saldo >= 0 ? "text-primary" : "text-destructive"
-                )}>
-                  {formatMZN(month.saldo)}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        
-        {/* Totals Card */}
-        <Card className="bg-primary/5 border-primary/30">
-          <CardHeader className="py-2 px-3 bg-primary/10">
-            <CardTitle className="text-sm">Total Anual</CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Receitas:</span>
-              <span className="font-bold text-success">{formatMZN(totals.receitas)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Despesas:</span>
-              <span className="font-bold text-destructive">{formatMZN(totals.despesas)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Propinas:</span>
-              <span className="font-bold">{formatMZN(totals.propinas)}</span>
-            </div>
-            <div className="flex justify-between pt-2 border-t">
-              <span className="font-bold">Saldo:</span>
-              <span className={cn(
-                "font-bold",
-                totals.saldo >= 0 ? "text-primary" : "text-destructive"
-              )}>
-                {formatMZN(totals.saldo)}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Desktop Table */}
-      <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left py-3 px-4 font-medium">Mês</th>
-              <th className="text-right py-3 px-4 font-medium">Receitas</th>
-              <th className="text-right py-3 px-4 font-medium">Despesas</th>
-              <th className="text-right py-3 px-4 font-medium">Propinas</th>
-              <th className="text-right py-3 px-4 font-medium">Saldo</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((month, index) => (
-              <tr key={index} className="border-b hover:bg-muted/50">
-                <td className="py-3 px-4 font-medium capitalize">{month.month}</td>
-                <td className="text-right py-3 px-4 text-success">
-                  {formatMZN(month.receitas)}
-                </td>
-                <td className="text-right py-3 px-4 text-destructive">
-                  {formatMZN(month.despesas)}
-                </td>
-                <td className="text-right py-3 px-4">
-                  {formatMZN(month.propinas)}
-                </td>
-                <td className={cn(
-                  "text-right py-3 px-4 font-medium",
-                  month.saldo >= 0 ? "text-primary" : "text-destructive"
-                )}>
-                  {formatMZN(month.saldo)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="bg-muted/50 font-bold">
-              <td className="py-3 px-4">Total</td>
-              <td className="text-right py-3 px-4 text-success">
-                {formatMZN(totals.receitas)}
-              </td>
-              <td className="text-right py-3 px-4 text-destructive">
-                {formatMZN(totals.despesas)}
-              </td>
-              <td className="text-right py-3 px-4">
-                {formatMZN(totals.propinas)}
-              </td>
-              <td className={cn(
-                "text-right py-3 px-4",
-                totals.saldo >= 0 ? "text-primary" : "text-destructive"
-              )}>
-                {formatMZN(totals.saldo)}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </>
-  );
-}
-
 export default function RelatoriosFinanceirosPage() {
   const [selectedYear, setSelectedYear] = useState(2026);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('visao-geral');
   const [isExporting, setIsExporting] = useState(false);
   const currentMonth = format(new Date(), 'yyyy-MM');
   const { toast } = useToast();
 
+  // Data hooks
   const { data: monthlyData = [], isLoading: loadingMonthly } = useMonthlyReport(selectedYear);
   const { data: summary } = useFinancialSummary(currentMonth);
   const { data: allFees = [] } = useTuitionFees();
+  
+  // Report hooks
+  const { data: defaultersData = [], isLoading: loadingDefaulters } = useDefaultersReport();
+  const { data: tuitionStatusData = [], isLoading: loadingTuition } = useTuitionStatusReport();
+  const { data: agreementsData = [], isLoading: loadingAgreements } = usePaymentAgreementsReport();
+  const { data: expensesData = [], isLoading: loadingExpenses } = useExpensesByCategoryReport(selectedYear);
+  const { data: revenuesData = [], isLoading: loadingRevenues } = useRevenuesByCategoryReport(selectedYear);
+  const { data: commsData = [], isLoading: loadingComms } = useCommunicationsReport();
+  const { data: enrollmentsData = [], isLoading: loadingEnrollments } = useEnrollmentFeesReport(selectedYear);
+  const { data: classData = [], isLoading: loadingClass } = useClassFinancialReport();
 
   // Calculate totals
   const yearlyTotals = monthlyData.reduce(
@@ -349,6 +245,78 @@ export default function RelatoriosFinanceirosPage() {
     }
   };
 
+  // Column definitions for reports
+  const defaultersColumns: ReportColumn[] = [
+    { key: 'student_name', header: 'Educando' },
+    { key: 'class_name', header: 'Turma' },
+    { key: 'month', header: 'Mês' },
+    { key: 'amount', header: 'Valor', format: 'currency' },
+    { key: 'days_overdue', header: 'Dias Atraso' },
+    { key: 'urgency', header: 'Urgência' },
+  ];
+
+  const tuitionColumns: ReportColumn[] = [
+    { key: 'student_name', header: 'Educando' },
+    { key: 'class_name', header: 'Turma' },
+    { key: 'month', header: 'Mês' },
+    { key: 'amount', header: 'Valor', format: 'currency' },
+    { key: 'status', header: 'Estado' },
+  ];
+
+  const agreementsColumns: ReportColumn[] = [
+    { key: 'student_name', header: 'Educando' },
+    { key: 'original_amount', header: 'Valor Original', format: 'currency' },
+    { key: 'agreed_amount', header: 'Valor Acordado', format: 'currency' },
+    { key: 'discount_percent', header: 'Desconto', format: 'percent' },
+    { key: 'installments', header: 'Parcelas' },
+    { key: 'status', header: 'Estado' },
+  ];
+
+  const expenseColumns: ReportColumn[] = [
+    { key: 'date', header: 'Data' },
+    { key: 'description', header: 'Descrição' },
+    { key: 'category', header: 'Categoria' },
+    { key: 'amount', header: 'Valor', format: 'currency' },
+  ];
+
+  const revenueColumns: ReportColumn[] = [
+    { key: 'date', header: 'Data' },
+    { key: 'description', header: 'Descrição' },
+    { key: 'category', header: 'Categoria' },
+    { key: 'amount', header: 'Valor', format: 'currency' },
+  ];
+
+  const commsColumns: ReportColumn[] = [
+    { key: 'recipient_name', header: 'Destinatário' },
+    { key: 'type', header: 'Canal' },
+    { key: 'template', header: 'Modelo' },
+    { key: 'status', header: 'Estado' },
+    { key: 'sent_at', header: 'Enviado Em' },
+  ];
+
+  const enrollmentColumns: ReportColumn[] = [
+    { key: 'student_name', header: 'Educando' },
+    { key: 'class_name', header: 'Turma' },
+    { key: 'enrollment_fee', header: 'Taxa Matrícula', format: 'currency' },
+    { key: 'monthly_fee', header: 'Mensalidade', format: 'currency' },
+    { key: 'discount', header: 'Desconto', format: 'percent' },
+    { key: 'status', header: 'Estado' },
+  ];
+
+  const classColumns: ReportColumn[] = [
+    { key: 'class_name', header: 'Turma' },
+    { key: 'total_expected', header: 'Total Esperado', format: 'currency' },
+    { key: 'total_paid', header: 'Total Pago', format: 'currency' },
+    { key: 'total_overdue', header: 'Em Atraso', format: 'currency' },
+    { key: 'collection_rate', header: 'Taxa Cobrança', format: 'percent' },
+  ];
+
+  // Summary calculations
+  const totalOverdue = defaultersData.reduce((acc, d) => acc + (d.amount || 0), 0);
+  const totalAgreements = agreementsData.reduce((acc, a) => acc + (a.agreed_amount || 0), 0);
+  const totalExpenses = expensesData.reduce((acc, e) => acc + (e.amount || 0), 0);
+  const totalRevenues = revenuesData.reduce((acc, r) => acc + (r.amount || 0), 0);
+
   return (
     <MainLayout 
       title="Relatórios Financeiros" 
@@ -356,7 +324,7 @@ export default function RelatoriosFinanceirosPage() {
     >
       <div className="space-y-4 md:space-y-6 w-full max-w-full overflow-x-hidden">
         {/* Header Actions */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
           <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
             <SelectTrigger className="w-full sm:w-[140px]">
               <Calendar className="w-4 h-4 mr-2" />
@@ -369,33 +337,25 @@ export default function RelatoriosFinanceirosPage() {
             </SelectContent>
           </Select>
 
-          <div className="flex gap-2 w-full">
+          <div className="flex gap-2 w-full sm:w-auto">
             <Button 
               variant="outline" 
-              className="flex-1 gap-2"
+              className="flex-1 sm:flex-none gap-2"
               onClick={handleExportPDF}
               disabled={isExporting || loadingMonthly}
               size="sm"
             >
-              {isExporting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <FileText className="h-4 w-4" />
-              )}
-              PDF
+              {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+              PDF Geral
             </Button>
             <Button 
               variant="outline" 
-              className="flex-1 gap-2"
+              className="flex-1 sm:flex-none gap-2"
               onClick={handleExportExcel}
               disabled={isExporting || loadingMonthly}
               size="sm"
             >
-              {isExporting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <FileSpreadsheet className="h-4 w-4" />
-              )}
+              {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4" />}
               Excel
             </Button>
           </div>
@@ -439,50 +399,53 @@ export default function RelatoriosFinanceirosPage() {
           />
         </div>
 
-        {/* Tabs for different views */}
+        {/* Tabs for different report categories */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full grid grid-cols-3 mb-4">
-            <TabsTrigger value="overview" className="gap-2">
-              <BarChart3 className="h-4 w-4 hidden sm:block" />
-              Gráficos
+          <TabsList className="w-full grid grid-cols-4 mb-4 h-auto">
+            <TabsTrigger value="visao-geral" className="text-xs sm:text-sm py-2">
+              <BarChart3 className="h-4 w-4 mr-1 hidden sm:block" />
+              Visão Geral
             </TabsTrigger>
-            <TabsTrigger value="table" className="gap-2">
-              <Table className="h-4 w-4 hidden sm:block" />
-              Tabela
+            <TabsTrigger value="cobrancas" className="text-xs sm:text-sm py-2">
+              <AlertTriangle className="h-4 w-4 mr-1 hidden sm:block" />
+              Cobranças
             </TabsTrigger>
-            <TabsTrigger value="trends" className="gap-2">
-              <LineChartIcon className="h-4 w-4 hidden sm:block" />
-              Tendências
+            <TabsTrigger value="movimentacoes" className="text-xs sm:text-sm py-2">
+              <CreditCard className="h-4 w-4 mr-1 hidden sm:block" />
+              Movimentações
+            </TabsTrigger>
+            <TabsTrigger value="academico" className="text-xs sm:text-sm py-2">
+              <GraduationCap className="h-4 w-4 mr-1 hidden sm:block" />
+              Académico
             </TabsTrigger>
           </TabsList>
 
-          {/* Overview Tab - Charts */}
-          <TabsContent value="overview" className="space-y-4 md:space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          {/* VISÃO GERAL TAB */}
+          <TabsContent value="visao-geral" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Monthly Bar Chart */}
               <Card className="lg:col-span-2 overflow-hidden">
                 <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                  <CardTitle className="flex items-center gap-2 text-base">
                     <BarChart3 className="h-5 w-5" />
                     Fluxo de Caixa Mensal
                   </CardTitle>
-                  <CardDescription className="text-xs md:text-sm">
+                  <CardDescription className="text-xs">
                     Comparativo de receitas e despesas por mês em {selectedYear}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-2 sm:p-4">
                   {loadingMonthly ? (
-                    <div className="h-[200px] sm:h-[250px] md:h-[300px] flex items-center justify-center">
+                    <div className="h-[200px] sm:h-[250px] flex items-center justify-center">
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
                   ) : (
-                    <div className="w-full h-[200px] sm:h-[250px] md:h-[300px]">
+                    <div className="w-full h-[200px] sm:h-[250px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={monthlyData} margin={{ top: 10, right: 5, left: 0, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                           <XAxis 
                             dataKey="month" 
-                            className="text-xs"
                             tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9 }}
                             interval="preserveStartEnd"
                             angle={-45}
@@ -490,25 +453,14 @@ export default function RelatoriosFinanceirosPage() {
                             height={50}
                           />
                           <YAxis 
-                            className="text-xs"
                             tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9 }}
                             tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                             width={35}
                           />
                           <Tooltip content={<CustomTooltip />} />
                           <Legend wrapperStyle={{ fontSize: '10px' }} />
-                          <Bar 
-                            dataKey="receitas" 
-                            name="Receitas" 
-                            fill={COLORS.receitas}
-                            radius={[4, 4, 0, 0]}
-                          />
-                          <Bar 
-                            dataKey="despesas" 
-                            name="Despesas" 
-                            fill={COLORS.despesas}
-                            radius={[4, 4, 0, 0]}
-                          />
+                          <Bar dataKey="receitas" name="Receitas" fill={COLORS.receitas} radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="despesas" name="Despesas" fill={COLORS.despesas} radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -519,26 +471,23 @@ export default function RelatoriosFinanceirosPage() {
               {/* Tuition Status Pie Chart */}
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                  <CardTitle className="flex items-center gap-2 text-base">
                     <PieChart className="h-5 w-5" />
                     Estado das Propinas
                   </CardTitle>
-                  <CardDescription className="text-xs md:text-sm">
-                    Distribuição por estado de pagamento
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={200}>
+                  <ResponsiveContainer width="100%" height={180}>
                     <RechartsPie>
                       <Pie
                         data={tuitionByStatus}
                         cx="50%"
                         cy="50%"
-                        innerRadius={40}
-                        outerRadius={70}
+                        innerRadius={35}
+                        outerRadius={60}
                         paddingAngle={5}
                         dataKey="value"
-                        label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                        label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                         labelLine={false}
                       >
                         {tuitionByStatus.map((entry, index) => (
@@ -548,14 +497,10 @@ export default function RelatoriosFinanceirosPage() {
                       <Tooltip />
                     </RechartsPie>
                   </ResponsiveContainer>
-
                   <div className="flex flex-wrap justify-center gap-3 mt-2">
                     {tuitionByStatus.map((item, index) => (
                       <div key={index} className="flex items-center gap-1.5 text-xs">
-                        <div 
-                          className="w-2.5 h-2.5 rounded-full shrink-0" 
-                          style={{ backgroundColor: item.color }}
-                        />
+                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                         <span className="text-muted-foreground">{item.name}:</span>
                         <span className="font-medium">{item.value}</span>
                       </div>
@@ -564,49 +509,22 @@ export default function RelatoriosFinanceirosPage() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
 
-          {/* Table Tab */}
-          <TabsContent value="table">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base md:text-lg">Resumo Mensal Detalhado</CardTitle>
-                <CardDescription className="text-xs md:text-sm">
-                  Demonstrativo completo de receitas, despesas e saldo por mês
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {loadingMonthly ? (
-                  <div className="h-[300px] flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                  </div>
-                ) : (
-                  <MonthlyTable data={monthlyData} totals={yearlyTotals} />
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Trends Tab */}
-          <TabsContent value="trends" className="space-y-4 md:space-y-6">
             {/* Balance Trend */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <TrendingUp className="h-5 w-5" />
                   Evolução do Saldo
                 </CardTitle>
-                <CardDescription className="text-xs md:text-sm">
-                  Tendência do saldo ao longo do ano
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 {loadingMonthly ? (
-                  <div className="h-[250px] flex items-center justify-center">
+                  <div className="h-[200px] flex items-center justify-center">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ResponsiveContainer width="100%" height={200}>
                     <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorSaldo" x1="0" y1="0" x2="0" y2="1">
@@ -615,96 +533,147 @@ export default function RelatoriosFinanceirosPage() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis 
-                        dataKey="month" 
-                        className="text-xs"
-                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                        interval={0}
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                      />
-                      <YAxis 
-                        className="text-xs"
-                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                        width={45}
-                      />
+                      <XAxis dataKey="month" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9 }} interval={0} angle={-45} textAnchor="end" height={50} />
+                      <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9 }} tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} width={40} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Area
-                        type="monotone"
-                        dataKey="saldo"
-                        name="Saldo"
-                        stroke={COLORS.saldo}
-                        fill="url(#colorSaldo)"
-                        strokeWidth={2}
-                      />
+                      <Area type="monotone" dataKey="saldo" name="Saldo" stroke={COLORS.saldo} fill="url(#colorSaldo)" strokeWidth={2} />
                     </AreaChart>
                   </ResponsiveContainer>
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
 
-            {/* Propinas Trend */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                  <LineChartIcon className="h-5 w-5" />
-                  Evolução das Propinas
-                </CardTitle>
-                <CardDescription className="text-xs md:text-sm">
-                  Arrecadação mensal de propinas
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {loadingMonthly ? (
-                  <div className="h-[250px] flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height={250}>
-                    <LineChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis 
-                        dataKey="month" 
-                        className="text-xs"
-                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                        interval={0}
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                      />
-                      <YAxis 
-                        className="text-xs"
-                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                        width={45}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend wrapperStyle={{ fontSize: '12px' }} />
-                      <Line 
-                        type="monotone" 
-                        dataKey="propinas" 
-                        name="Propinas" 
-                        stroke={COLORS.propinas}
-                        strokeWidth={2}
-                        dot={{ fill: COLORS.propinas, strokeWidth: 2 }}
-                        activeDot={{ r: 6 }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="receitas" 
-                        name="Receitas Totais" 
-                        stroke={COLORS.receitas}
-                        strokeWidth={2}
-                        strokeDasharray="5 5"
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                )}
-              </CardContent>
-            </Card>
+          {/* COBRANÇAS TAB */}
+          <TabsContent value="cobrancas" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Inadimplentes */}
+              <FinancialReportCard
+                title="Relatório de Inadimplência"
+                description="Propinas em atraso detalhado por educando"
+                icon={<AlertTriangle className="h-5 w-5 text-destructive" />}
+                data={defaultersData}
+                columns={defaultersColumns}
+                isLoading={loadingDefaulters}
+                summary={[
+                  { label: 'Total em Atraso', value: formatMZN(totalOverdue), variant: 'destructive' },
+                  { label: 'Educandos', value: defaultersData.length, variant: 'warning' },
+                  { label: 'Críticos (60+ dias)', value: defaultersData.filter(d => d.urgency === 'Crítica').length, variant: 'destructive' },
+                ]}
+              />
+
+              {/* Acordos de Pagamento */}
+              <FinancialReportCard
+                title="Acordos de Pagamento"
+                description="Negociações de regularização de dívidas"
+                icon={<CreditCard className="h-5 w-5 text-primary" />}
+                data={agreementsData}
+                columns={agreementsColumns}
+                isLoading={loadingAgreements}
+                summary={[
+                  { label: 'Total Acordado', value: formatMZN(totalAgreements), variant: 'success' },
+                  { label: 'Acordos Activos', value: agreementsData.filter(a => a.status === 'PENDENTE').length },
+                  { label: 'Pagos', value: agreementsData.filter(a => a.status === 'PAGO').length, variant: 'success' },
+                ]}
+              />
+            </div>
+
+            {/* Comunicações */}
+            <FinancialReportCard
+              title="Histórico de Cobranças"
+              description="Comunicações de cobrança enviadas via WhatsApp, SMS e outros canais"
+              icon={<MessageSquare className="h-5 w-5 text-primary" />}
+              data={commsData}
+              columns={commsColumns}
+              isLoading={loadingComms}
+              summary={[
+                { label: 'Total Enviados', value: commsData.length },
+                { label: 'WhatsApp', value: commsData.filter(c => c.type === 'WHATSAPP').length, variant: 'success' },
+                { label: 'SMS', value: commsData.filter(c => c.type === 'SMS').length },
+              ]}
+            />
+          </TabsContent>
+
+          {/* MOVIMENTAÇÕES TAB */}
+          <TabsContent value="movimentacoes" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Receitas */}
+              <FinancialReportCard
+                title="Receitas por Categoria"
+                description={`Receitas registadas em ${selectedYear}`}
+                icon={<TrendingUp className="h-5 w-5 text-success" />}
+                data={revenuesData}
+                columns={revenueColumns}
+                isLoading={loadingRevenues}
+                summary={[
+                  { label: 'Total Receitas', value: formatMZN(totalRevenues), variant: 'success' },
+                  { label: 'Transacções', value: revenuesData.length },
+                ]}
+              />
+
+              {/* Despesas */}
+              <FinancialReportCard
+                title="Despesas por Categoria"
+                description={`Despesas registadas em ${selectedYear}`}
+                icon={<TrendingDown className="h-5 w-5 text-destructive" />}
+                data={expensesData}
+                columns={expenseColumns}
+                isLoading={loadingExpenses}
+                summary={[
+                  { label: 'Total Despesas', value: formatMZN(totalExpenses), variant: 'destructive' },
+                  { label: 'Transacções', value: expensesData.length },
+                ]}
+              />
+            </div>
+
+            {/* Propinas Detalhado */}
+            <FinancialReportCard
+              title="Propinas Detalhado"
+              description="Lista completa de propinas por status"
+              icon={<Wallet className="h-5 w-5" />}
+              data={tuitionStatusData}
+              columns={tuitionColumns}
+              isLoading={loadingTuition}
+              summary={[
+                { label: 'Total Registos', value: tuitionStatusData.length },
+                { label: 'Pagos', value: tuitionStatusData.filter(t => t.status === 'Pago').length, variant: 'success' },
+                { label: 'Pendentes', value: tuitionStatusData.filter(t => t.status === 'Pendente').length, variant: 'warning' },
+                { label: 'Atrasados', value: tuitionStatusData.filter(t => t.status === 'Atrasado').length, variant: 'destructive' },
+              ]}
+            />
+          </TabsContent>
+
+          {/* ACADÉMICO TAB */}
+          <TabsContent value="academico" className="space-y-4">
+            {/* Matrículas */}
+            <FinancialReportCard
+              title="Matrículas e Taxas"
+              description="Relatório de matrículas com valores de taxa e mensalidade"
+              icon={<GraduationCap className="h-5 w-5 text-primary" />}
+              data={enrollmentsData}
+              columns={enrollmentColumns}
+              isLoading={loadingEnrollments}
+              summary={[
+                { label: 'Total Matrículas', value: enrollmentsData.length },
+                { label: 'Aprovadas', value: enrollmentsData.filter(e => e.status === 'APROVADA').length, variant: 'success' },
+                { label: 'Pendentes', value: enrollmentsData.filter(e => e.status === 'PENDENTE').length, variant: 'warning' },
+              ]}
+            />
+
+            {/* Por Turma */}
+            <FinancialReportCard
+              title="Resumo Financeiro por Turma"
+              description="Análise de arrecadação e inadimplência por turma"
+              icon={<Building className="h-5 w-5" />}
+              data={classData}
+              columns={classColumns}
+              isLoading={loadingClass}
+              summary={[
+                { label: 'Turmas', value: classData.length },
+                { label: 'Total Esperado', value: formatMZN(classData.reduce((a, c) => a + c.total_expected, 0)) },
+                { label: 'Total Recebido', value: formatMZN(classData.reduce((a, c) => a + c.total_paid, 0)), variant: 'success' },
+              ]}
+            />
           </TabsContent>
         </Tabs>
       </div>
