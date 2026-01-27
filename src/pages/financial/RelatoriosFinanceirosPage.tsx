@@ -392,24 +392,34 @@ function ReportSection({
             Sem dados para exibir
           </div>
         ) : (
-          <div className="overflow-x-auto max-h-[350px]">
-            <table className="w-full text-xs">
-              <thead className="bg-muted/50 sticky top-0">
-                <tr>
-                  <th className="text-left py-2 px-2 font-medium w-10">#</th>
+          <div className="overflow-x-auto max-h-[350px] relative border rounded-md">
+            <table className="w-full text-xs border-collapse">
+              <thead className="bg-muted sticky top-0 z-10">
+                <tr className="border-b border-border">
+                  <th className="text-left py-2.5 px-3 font-semibold text-foreground bg-muted w-12">#</th>
                   {columns.map((col) => (
-                    <th key={col.key} className="text-left py-2 px-2 font-medium">
+                    <th 
+                      key={col.key} 
+                      className={`py-2.5 px-3 font-semibold text-foreground bg-muted whitespace-nowrap ${
+                        col.format === 'currency' ? 'text-right' : 'text-left'
+                      }`}
+                    >
                       {col.header}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-background">
                 {data.slice(0, 15).map((row, index) => (
-                  <tr key={index} className="border-b border-muted/30 hover:bg-muted/30">
-                    <td className="py-2 px-2 text-muted-foreground">{index + 1}</td>
+                  <tr key={index} className="border-b border-muted/50 hover:bg-muted/40 transition-colors">
+                    <td className="py-2 px-3 text-muted-foreground font-medium">{index + 1}</td>
                     {columns.map((col) => (
-                      <td key={col.key} className={`py-2 px-2 ${col.format === 'currency' ? 'font-mono text-right' : ''}`}>
+                      <td 
+                        key={col.key} 
+                        className={`py-2 px-3 ${
+                          col.format === 'currency' ? 'font-mono text-right tabular-nums' : ''
+                        }`}
+                      >
                         {col.format === 'currency' ? formatMZN(row[col.key]) :
                          col.format === 'percent' ? `${Number(row[col.key]).toFixed(1)}%` :
                          row[col.key] ?? '-'}
@@ -420,7 +430,7 @@ function ReportSection({
               </tbody>
             </table>
             {data.length > 15 && (
-              <p className="text-xs text-muted-foreground text-center py-2 bg-muted/30">
+              <p className="text-xs text-muted-foreground text-center py-2 bg-muted/50 border-t border-border sticky bottom-0">
                 +{data.length - 15} registos adicionais (visíveis no PDF/Excel)
               </p>
             )}
