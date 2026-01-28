@@ -188,11 +188,21 @@ export function useCreateTicket() {
   
   return useSupabaseMutation<Ticket, CreateTicketData>(
     async (data) => {
+      // Auto-route to department based on category
+      const assigned_department = getDepartmentForCategory(data.category);
+      
       const { data: ticket, error } = await supabase
         .from('tickets')
         .insert({
-          ...data,
-          created_by: user?.id || null,
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          priority: data.priority,
+          created_by_name: data.created_by_name,
+          created_by_role: data.created_by_role || null,
+          created_by: user?.id?.startsWith('dev-') ? null : (user?.id || null),
+          assigned_department,
+          status: 'ABERTO',
         })
         .select()
         .single();
