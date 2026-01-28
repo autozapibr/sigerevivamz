@@ -221,11 +221,12 @@ export function useCreateMessage() {
   
   return useSupabaseMutation<TicketMessage, CreateMessageData>(
     async (data) => {
+      const sender_id = user?.id?.startsWith('dev-') ? null : (user?.id || null);
       const { data: message, error } = await supabase
         .from('ticket_messages')
         .insert({
           ...data,
-          sender_id: user?.id || null,
+          sender_id,
         })
         .select()
         .single();
