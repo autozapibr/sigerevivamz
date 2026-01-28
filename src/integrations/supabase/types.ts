@@ -1728,6 +1728,8 @@ export type Database = {
           id: number
           is_read: boolean | null
           message: string
+          recipient_name: string | null
+          recipient_role: string | null
           ticket_id: number
           user_id: string
         }
@@ -1736,6 +1738,8 @@ export type Database = {
           id?: never
           is_read?: boolean | null
           message: string
+          recipient_name?: string | null
+          recipient_role?: string | null
           ticket_id: number
           user_id: string
         }
@@ -1744,6 +1748,8 @@ export type Database = {
           id?: never
           is_read?: boolean | null
           message?: string
+          recipient_name?: string | null
+          recipient_role?: string | null
           ticket_id?: number
           user_id?: string
         }

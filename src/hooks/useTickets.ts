@@ -62,6 +62,8 @@ export interface TicketNotification {
   message: string;
   is_read: boolean;
   created_at: string;
+  recipient_role: string | null;
+  recipient_name: string | null;
 }
 
 export interface CreateTicketData {
