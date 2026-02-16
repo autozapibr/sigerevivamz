@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 import type { 
   StudentEnrollment, 
   AcademicYear, 
@@ -292,7 +293,6 @@ export function useUpdateEnrollmentStatus() {
       if (notes) updateData.notes = notes;
       if (status === 'APROVADA') {
         updateData.approved_at = new Date().toISOString();
-        // approved_by will be set by RLS context
       }
       
       const { error } = await supabase
@@ -302,25 +302,68 @@ export function useUpdateEnrollmentStatus() {
       
       if (error) throw error;
       
-      // Also update student status if approved
+      // When approved: update student status + auto-generate tuition fees
       if (status === 'APROVADA') {
         const { data: enrollment } = await supabase
           .from('student_enrollments')
-          .select('student_id')
+          .select('student_id, monthly_fee, discount_percent, academic_year_id, academic_years(start_date, end_date)')
           .eq('id', enrollmentId)
           .single();
         
         if (enrollment) {
+          // Update student enrollment_status
           await supabase
             .from('students')
             .update({ enrollment_status: 'APROVADA' })
             .eq('id', enrollment.student_id);
+          
+          // Auto-generate tuition fees for remaining months
+          const monthlyFee = Number(enrollment.monthly_fee) || 0;
+          const discount = Number(enrollment.discount_percent) || 0;
+          const finalAmount = monthlyFee * (1 - discount / 100);
+          
+          if (finalAmount > 0) {
+            const now = new Date();
+            const currentMonth = now.getMonth(); // 0-indexed
+            const currentYear = now.getFullYear();
+            
+            // Generate fees from current month to December (school year)
+            const feesToCreate = [];
+            for (let m = currentMonth; m < 12; m++) {
+              const monthStr = `${currentYear}-${String(m + 1).padStart(2, '0')}`;
+              feesToCreate.push({
+                student_id: enrollment.student_id,
+                month: monthStr,
+                amount: finalAmount,
+                due_date: `${monthStr}-10`, // Due on 10th of each month
+                status: 'Pendente' as const,
+              });
+            }
+            
+            if (feesToCreate.length > 0) {
+              // Check for existing fees to avoid duplicates
+              const { data: existing } = await supabase
+                .from('tuition_fees')
+                .select('month')
+                .eq('student_id', enrollment.student_id)
+                .in('month', feesToCreate.map(f => f.month));
+              
+              const existingMonths = new Set((existing || []).map(e => e.month));
+              const newFees = feesToCreate.filter(f => !existingMonths.has(f.month));
+              
+              if (newFees.length > 0) {
+                await supabase.from('tuition_fees').insert(newFees);
+              }
+            }
+          }
         }
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['student-enrollments'] });
       queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['tuition-fees'] });
+      queryClient.invalidateQueries({ queryKey: ['financial-summary'] });
       toast({
         title: 'Estado actualizado',
         description: 'O estado da matrícula foi alterado com sucesso.',
