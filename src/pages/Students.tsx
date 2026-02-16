@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   Plus, Search, Filter, Users, User, Phone, Mail, 
   MoreHorizontal, Eye, Edit, Trash2, UserCheck, UserX,
-  Download, Upload, GraduationCap
+  Download, Upload, GraduationCap, Loader2
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -45,6 +45,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { StudentForm, initialStudentFormData, type StudentFormData } from '@/components/students/StudentForm';
 import { 
   useStudents, 
   useCreateStudent, 
@@ -66,16 +67,7 @@ export function Students() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
-  const [newStudent, setNewStudent] = useState({
-    name: '',
-    birth_date: '',
-    gender: 'MASCULINO' as const,
-    phone: '',
-    bi_number: '',
-    class_id: undefined as number | undefined,
-    guardian: '',
-    address: '',
-  });
+  const [newStudent, setNewStudent] = useState<StudentFormData>({ ...initialStudentFormData });
 
   const filters: StudentFilters = {
     search: searchTerm,
@@ -92,22 +84,28 @@ export function Students() {
   const deleteStudent = useDeleteStudent();
 
   const handleCreateStudent = async () => {
-    await createStudent.mutateAsync(newStudent);
-    setShowCreateDialog(false);
-    setNewStudent({
-      name: '',
-      birth_date: '',
-      gender: 'MASCULINO',
-      phone: '',
-      bi_number: '',
-      class_id: undefined,
-      guardian: '',
-      address: '',
+    await createStudent.mutateAsync({
+      name: newStudent.name,
+      birth_date: newStudent.birth_date || undefined,
+      gender: newStudent.gender,
+      phone: newStudent.phone || undefined,
+      bi_number: newStudent.bi_number || undefined,
+      nuit: newStudent.nuit || undefined,
+      nationality: newStudent.nationality || undefined,
+      email: newStudent.email || undefined,
+      province: newStudent.province || undefined,
+      district: newStudent.district || undefined,
+      address: newStudent.address || undefined,
+      class_id: newStudent.class_id,
+      guardian: newStudent.guardian || undefined,
+      health_notes: newStudent.health_notes || undefined,
+      previous_school: newStudent.previous_school || undefined,
     });
+    setShowCreateDialog(false);
+    setNewStudent({ ...initialStudentFormData });
   };
 
   const handleDeleteStudent = async () => {
-    if (selectedStudent) {
       await deleteStudent.mutateAsync(selectedStudent.id);
       setShowDeleteDialog(false);
       setSelectedStudent(null);
@@ -394,100 +392,19 @@ export function Students() {
 
       {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Novo Educando</DialogTitle>
             <DialogDescription>
-              Preencha os dados básicos do educando. Poderá adicionar mais detalhes depois.
+              Preencha os dados do educando organizados por secção.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome Completo *</Label>
-              <Input
-                id="name"
-                placeholder="Ex: João Manuel Silva"
-                value={newStudent.name}
-                onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="birth_date">Data de Nascimento</Label>
-                <Input
-                  id="birth_date"
-                  type="date"
-                  value={newStudent.birth_date}
-                  onChange={(e) => setNewStudent({ ...newStudent, birth_date: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="gender">Género</Label>
-                <Select 
-                  value={newStudent.gender} 
-                  onValueChange={(v) => setNewStudent({ ...newStudent, gender: v as any })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="MASCULINO">Masculino</SelectItem>
-                    <SelectItem value="FEMININO">Feminino</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone">Telefone</Label>
-                <Input
-                  id="phone"
-                  placeholder="+258 84 000 0000"
-                  value={newStudent.phone}
-                  onChange={(e) => setNewStudent({ ...newStudent, phone: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bi_number">Nº BI</Label>
-                <Input
-                  id="bi_number"
-                  placeholder="00000000000A"
-                  value={newStudent.bi_number}
-                  onChange={(e) => setNewStudent({ ...newStudent, bi_number: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="class">Turma</Label>
-              <Select 
-                value={newStudent.class_id?.toString() || ''} 
-                onValueChange={(v) => setNewStudent({ ...newStudent, class_id: v ? Number(v) : undefined })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar turma" />
-                </SelectTrigger>
-                <SelectContent>
-                  {classes.map(c => (
-                    <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="guardian">Encarregado de Educação</Label>
-              <Input
-                id="guardian"
-                placeholder="Nome do encarregado"
-                value={newStudent.guardian}
-                onChange={(e) => setNewStudent({ ...newStudent, guardian: e.target.value })}
-              />
-            </div>
-          </div>
+          <StudentForm
+            formData={newStudent}
+            onChange={setNewStudent}
+            classes={classes}
+          />
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
@@ -497,7 +414,8 @@ export function Students() {
               onClick={handleCreateStudent}
               disabled={!newStudent.name || createStudent.isPending}
             >
-              {createStudent.isPending ? 'A registar...' : 'Registar'}
+              {createStudent.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {createStudent.isPending ? 'A registar...' : 'Registar Educando'}
             </Button>
           </DialogFooter>
         </DialogContent>
