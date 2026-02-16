@@ -106,10 +106,9 @@ export function Students() {
   };
 
   const handleDeleteStudent = async () => {
-      await deleteStudent.mutateAsync(selectedStudent.id);
-      setShowDeleteDialog(false);
-      setSelectedStudent(null);
-    }
+    await deleteStudent.mutateAsync(selectedStudent.id);
+    setShowDeleteDialog(false);
+    setSelectedStudent(null);
   };
 
   const handleToggleStatus = async (student: any) => {
