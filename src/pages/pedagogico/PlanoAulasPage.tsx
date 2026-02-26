@@ -106,6 +106,9 @@ export default function PlanoAulasPage() {
                 content={generatedContent}
                 onSave={handleSave}
                 isSaving={savePlan.isPending}
+                teacherName={user?.name || ''}
+                className={currentClassName}
+                subjectName={currentSubjectName}
               />
             ) : (
               <div className="border-2 border-dashed border-border rounded-xl p-12 flex flex-col items-center justify-center text-center min-h-[500px] bg-card/50">

@@ -200,8 +200,20 @@ INSTRUÇÕES IMPORTANTES:
 2. Utilize as ferramentas AEP selecionadas pelo professor como parte da metodologia do plano.
 3. Inclua referências bíblicas da versão NAA (Nova Almeida Atualizada) alinhadas ao princípio escolhido.
 4. Consulte e siga o material de referência AEP fornecido no contexto do sistema.
+5. Busque na base curricular nacional de Moçambique as 2 competências que devem ser desenvolvidas com este tema.
+6. Se a Ideia-Guia não foi fornecida, gere 3 sugestões no início do plano.
+7. Se os Objectivos/Competências não foram fornecidos, gere-os automaticamente.
+8. Organize o plano seguindo os 4 passos PRRR: PESQUISAR → RACIOCINAR → RELACIONAR → REGISTAR.
 
-Retorne APENAS o HTML do plano de aula, bem formatado com estilos inline para impressão.`;
+FORMATO DE SAÍDA:
+- Retorne HTML bem formatado com estilos inline para impressão.
+- Use emojis/ícones para tornar o plano visualmente atrativo: 📖 para pesquisar, 🧠 para raciocinar, 🔗 para relacionar, ✍️ para registar, 📌 para objectivos, 🔑 para palavras-chave, ✝️ para versículos, 💡 para ideia-guia, 🛠️ para ferramentas.
+- Use numeração, recuos, bullets e tamanhos de fonte diferenciados.
+- Use <h1> para título principal, <h2> para secções dos 4 passos, <h3> para sub-secções.
+- Use <blockquote> para versículos bíblicos.
+- Use <table> para tabelas de dados quando aplicável.
+- Use <ul>/<ol> para listas organizadas.
+- O plano deve ser completo e detalhado, pronto para o professor utilizar em sala de aula.`;
 
     // Determine API endpoint and key based on provider
     let apiUrl: string;
