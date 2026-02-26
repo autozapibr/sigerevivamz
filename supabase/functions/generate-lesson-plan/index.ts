@@ -101,6 +101,7 @@ serve(async (req) => {
       }
     }
 
+    const { formData, className, subjectName, teacherName } = await req.json();
 
     // Fetch admin config
     const serviceClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
