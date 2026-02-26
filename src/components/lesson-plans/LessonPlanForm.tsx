@@ -6,8 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Loader2, Sparkles, X, Info, BookOpen, Lightbulb } from 'lucide-react';
+import { Loader2, Sparkles, X, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLessonPlanFields, type LessonPlanField } from '@/hooks/useLessonPlans';
 import { useClasses, useSubjects } from '@/hooks/useGrades';
@@ -17,6 +16,9 @@ interface LessonPlanFormProps {
   onGenerate: (formData: Record<string, any>, classId?: number, subjectId?: number, className?: string, subjectName?: string) => void;
   isGenerating: boolean;
 }
+
+// Fields that get the AI assist button inside the textarea
+const AI_ASSIST_FIELDS = ['versiculos_biblicos', 'ideia_guia', 'objetivos_competencias'];
 
 export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps) {
   const { data: fields, isLoading: fieldsLoading } = useLessonPlanFields();
@@ -45,78 +47,50 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
     }
   };
 
-  // AI helper to suggest Bible verses
-  const handleAiSuggestVerses = useCallback(async () => {
-    const tema = formValues['tema_aula'] || '';
-    const principios = (formValues['principio'] as string[]) || [];
-    const palavras = formValues['palavras_chave'] || '';
-    
-    if (!tema) {
-      toast.error('Preencha o Tema da Aula primeiro.');
-      return;
-    }
-
-    setAiLoadingField('versiculos_biblicos');
-    try {
-      const prompt = `Sugira 3 versículos bíblicos (versão NAA) relacionados ao tema "${tema}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}. Formato: Referência - Texto breve. Inclua AT e NT.`;
-      
-      const { data, error } = await supabase.functions.invoke('generate-lesson-plan', {
-        body: {
-          formData: { 'Pedido': prompt },
-          className: '',
-          subjectName: '',
-          teacherName: '',
-        },
-      });
-      
-      if (error) throw error;
-      // Extract plain text from response
-      const content = (data?.content || '').replace(/<[^>]*>/g, '').trim();
-      handleFieldChange('versiculos_biblicos', content);
-      toast.success('Versículos sugeridos pela IA!');
-    } catch (err: any) {
-      toast.error('Erro ao buscar versículos', { description: err.message });
-    } finally {
-      setAiLoadingField(null);
-    }
-  }, [formValues]);
-
-  // AI helper to suggest Ideia-Guia
-  const handleAiSuggestIdeiaGuia = useCallback(async () => {
+  const handleAiAssist = useCallback(async (fieldName: string) => {
     const tema = formValues['tema_aula'] || '';
     const principios = (formValues['principio'] as string[]) || [];
     const palavras = formValues['palavras_chave'] || '';
     const versiculos = formValues['versiculos_biblicos'] || '';
     const selectedSubject = subjects?.find(s => s.id === Number(subjectId));
-    
+    const selectedClass = classes?.find(c => c.id === Number(classId));
+
     if (!tema) {
       toast.error('Preencha o Tema da Aula primeiro.');
       return;
     }
 
-    setAiLoadingField('ideia_guia');
+    setAiLoadingField(fieldName);
     try {
-      const prompt = `Gere 3 sugestões de Ideia-Guia AEP para o tema "${tema}", disciplina "${selectedSubject?.name || ''}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}${versiculos ? `, versículos: ${versiculos}` : ''}. Cada ideia-guia deve ser uma frase curta que conecte o tema ao princípio bíblico. Formato: numere 1, 2, 3. Sem HTML, texto puro.`;
-      
+      let prompt = '';
+
+      if (fieldName === 'versiculos_biblicos') {
+        prompt = `Sugira 3 versículos bíblicos (versão NAA) relacionados ao tema "${tema}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}. Formato: Referência - Texto breve. Inclua AT e NT.`;
+      } else if (fieldName === 'ideia_guia') {
+        prompt = `Gere 3 sugestões de Ideia-Guia AEP para o tema "${tema}", disciplina "${selectedSubject?.name || ''}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}${versiculos ? `, versículos: ${versiculos}` : ''}. Cada ideia-guia deve ser uma frase curta que conecte o tema ao princípio bíblico. Formato: numere 1, 2, 3. Sem HTML, texto puro.`;
+      } else if (fieldName === 'objetivos_competencias') {
+        prompt = `Gere objectivos e competências para uma aula sobre "${tema}", disciplina "${selectedSubject?.name || ''}", turma "${selectedClass?.name || ''}"${principios.length ? `, princípios AEP: ${principios.join(', ')}` : ''}. Inclua 2 competências da base curricular nacional de Moçambique e 2 objectivos AEP alinhados. Formato: numere, sem HTML, texto puro.`;
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-lesson-plan', {
         body: {
           formData: { 'Pedido': prompt },
-          className: '',
+          className: selectedClass?.name || '',
           subjectName: selectedSubject?.name || '',
           teacherName: '',
         },
       });
-      
+
       if (error) throw error;
       const content = (data?.content || '').replace(/<[^>]*>/g, '').trim();
-      handleFieldChange('ideia_guia', content);
-      toast.success('Ideias-Guia geradas! Edite, escolha ou acrescente.');
+      handleFieldChange(fieldName, content);
+      toast.success('Conteúdo gerado pela IA! Edite conforme necessário.');
     } catch (err: any) {
-      toast.error('Erro ao gerar Ideia-Guia', { description: err.message });
+      toast.error('Erro ao gerar com IA', { description: err.message });
     } finally {
       setAiLoadingField(null);
     }
-  }, [formValues, subjectId, subjects]);
+  }, [formValues, subjectId, classId, subjects, classes]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,26 +100,22 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
       return;
     }
 
-    // Validate tema_aula
     if (!formValues['tema_aula']?.trim()) {
       toast.error('O campo "Tema da Aula" é obrigatório.');
       return;
     }
 
-    // Validate num_aulas
     if (!formValues['num_aulas']) {
       toast.error('Selecione o número de aulas pretendido.');
       return;
     }
 
-    // Validate principio (exactly 2)
     const principios = (formValues['principio'] as string[]) || [];
     if (principios.length !== 2) {
       toast.error('Selecione exactamente 2 Princípios da AEP.');
       return;
     }
 
-    // Validate palavras_chave (at least 3)
     const palavrasText = (formValues['palavras_chave'] || '').trim();
     const palavrasCount = palavrasText ? palavrasText.split(/[,;]+/).filter((w: string) => w.trim()).length : 0;
     if (palavrasCount < 3) {
@@ -153,17 +123,9 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
       return;
     }
 
-    // Validate ferramentas (at least 2)
-    const ferramentas = (formValues['ferramentas_aep'] as string[]) || [];
-    if (ferramentas.length < 2) {
-      toast.error('Selecione pelo menos 2 Ferramentas da AEP.');
-      return;
-    }
-
     const selectedClass = classes?.find(c => c.id === Number(classId));
     const selectedSubject = subjects?.find(s => s.id === Number(subjectId));
     
-    // Build labeled data
     const labeledData: Record<string, any> = {};
     fields?.forEach(f => {
       if (formValues[f.field_name] !== undefined && formValues[f.field_name] !== '') {
@@ -182,19 +144,24 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
 
   const getMultiSelectConfig = (fieldName: string) => {
     if (fieldName === 'principio') return { min: 2, max: 2, hint: 'Selecione exactamente 2 princípios' };
-    if (fieldName === 'ferramentas_aep') return { min: 2, max: undefined, hint: 'Selecione pelo menos 2 ferramentas' };
+    if (fieldName === 'ferramentas_aep') return { min: 0, max: undefined, hint: 'Selecione as ferramentas desejadas (opcional)' };
     return { min: 1, max: undefined, hint: '' };
   };
 
   const renderField = (field: LessonPlanField) => {
     const value = formValues[field.field_name];
     const isAiLoading = aiLoadingField === field.field_name;
+    const isOptional = !field.is_required || field.field_name === 'ferramentas_aep';
+    const hasAiAssist = AI_ASSIST_FIELDS.includes(field.field_name);
 
-    // Select field (num_aulas)
+    // Select field
     if (field.field_type === 'select' && field.options?.length > 0) {
       return (
         <div key={field.id} className="space-y-1.5">
-          <Label className="text-xs font-semibold">{field.field_label} {field.is_required && <span className="text-destructive">*</span>}</Label>
+          <Label className="text-xs font-semibold">
+            {field.field_label} {!isOptional && <span className="text-destructive">*</span>}
+            {isOptional && <span className="text-muted-foreground font-normal ml-1">(opcional)</span>}
+          </Label>
           <Select value={value || ''} onValueChange={v => handleFieldChange(field.field_name, v)}>
             <SelectTrigger className="h-9">
               <SelectValue placeholder="Selecione" />
@@ -209,13 +176,16 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
       );
     }
 
-    // Multiselect (princípios, ferramentas)
+    // Multiselect
     if (field.field_type === 'multiselect' && field.options?.length > 0) {
       const selected = (value as string[]) || [];
       const config = getMultiSelectConfig(field.field_name);
       return (
         <div key={field.id} className="space-y-1.5">
-          <Label className="text-xs font-semibold">{field.field_label} {field.is_required && <span className="text-destructive">*</span>}</Label>
+          <Label className="text-xs font-semibold">
+            {field.field_label} {!isOptional && <span className="text-destructive">*</span>}
+            {isOptional && <span className="text-muted-foreground font-normal ml-1">(opcional)</span>}
+          </Label>
           <p className="text-[11px] text-muted-foreground flex items-center gap-1">
             <Info className="h-3 w-3 shrink-0" />
             {config.hint}
@@ -242,60 +212,43 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
       );
     }
 
-    // Textarea fields with AI helpers
+    // Textarea fields
     if (field.field_type === 'textarea') {
-      const showAiButton = field.field_name === 'versiculos_biblicos' || field.field_name === 'ideia_guia';
-      const aiHandler = field.field_name === 'versiculos_biblicos' ? handleAiSuggestVerses : handleAiSuggestIdeiaGuia;
-      const aiIcon = field.field_name === 'versiculos_biblicos' ? BookOpen : Lightbulb;
-      const AiIcon = aiIcon;
-
       return (
         <div key={field.id} className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs font-semibold">
-              {field.field_label} {field.is_required && <span className="text-destructive">*</span>}
-            </Label>
-            {showAiButton && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-[11px] gap-1 text-primary hover:text-primary/80"
-                      onClick={aiHandler}
-                      disabled={isAiLoading || isGenerating}
-                    >
-                      {isAiLoading ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <AiIcon className="h-3 w-3" />
-                      )}
-                      <Sparkles className="h-2.5 w-2.5" />
-                      IA
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="left">
-                    <p className="text-xs">
-                      {field.field_name === 'versiculos_biblicos'
-                        ? 'A IA sugere versículos relacionados ao tema, princípios e palavras-chave'
-                        : 'A IA gera 3 sugestões de Ideia-Guia para editar, escolher ou acrescentar'
-                      }
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+          <Label className="text-xs font-semibold">
+            {field.field_label} {!isOptional && <span className="text-destructive">*</span>}
+            {isOptional && <span className="text-muted-foreground font-normal ml-1">(opcional)</span>}
+          </Label>
+          <div className="relative">
+            <Textarea
+              value={value || ''}
+              onChange={e => handleFieldChange(field.field_name, e.target.value)}
+              placeholder={getPlaceholder(field.field_name)}
+              rows={field.field_name === 'ideia_guia' || field.field_name === 'objetivos_competencias' ? 4 : 3}
+              className={`text-sm ${hasAiAssist ? 'pb-10' : ''}`}
+              disabled={isAiLoading}
+            />
+            {hasAiAssist && (
+              <button
+                type="button"
+                onClick={() => handleAiAssist(field.field_name)}
+                disabled={isAiLoading || isGenerating}
+                className="absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-md bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isAiLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <span>auxílio da</span>
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>IA</span>
+                  </>
+                )}
+                {isAiLoading && <span>Gerando...</span>}
+              </button>
             )}
           </div>
-          <Textarea
-            value={value || ''}
-            onChange={e => handleFieldChange(field.field_name, e.target.value)}
-            placeholder={getPlaceholder(field.field_name)}
-            rows={field.field_name === 'ideia_guia' ? 4 : 3}
-            className="text-sm"
-            disabled={isAiLoading}
-          />
           {field.field_name === 'palavras_chave' && (
             <p className="text-[11px] text-muted-foreground">Mínimo 3 palavras separadas por vírgula</p>
           )}
@@ -303,10 +256,13 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
       );
     }
 
-    // Text input (tema_aula)
+    // Text input
     return (
       <div key={field.id} className="space-y-1.5">
-        <Label className="text-xs font-semibold">{field.field_label} {field.is_required && <span className="text-destructive">*</span>}</Label>
+        <Label className="text-xs font-semibold">
+          {field.field_label} {!isOptional && <span className="text-destructive">*</span>}
+          {isOptional && <span className="text-muted-foreground font-normal ml-1">(opcional)</span>}
+        </Label>
         <Input
           value={value || ''}
           onChange={e => handleFieldChange(field.field_name, e.target.value)}
@@ -382,13 +338,13 @@ function getPlaceholder(fieldName: string): string {
     case 'tema_aula':
       return 'Ex: Ecossistemas e ciclo da água';
     case 'objetivos_competencias':
-      return 'Opcional: a IA busca competências na base curricular nacional e objectivos AEP automaticamente';
+      return 'Clique em "auxílio da IA" para gerar automaticamente ou escreva os seus...';
     case 'palavras_chave':
       return 'Ex: Ecossistema, Fotossíntese, Mordomia (mín. 3 palavras)';
     case 'versiculos_biblicos':
-      return 'Clique no botão IA para sugestões ou digite: Génesis 2:15, Colossenses 1:16';
+      return 'Clique em "auxílio da IA" para sugestões ou digite: Génesis 2:15, Colossenses 1:16';
     case 'ideia_guia':
-      return 'Clique no botão IA para 3 sugestões ou escreva a sua ideia-guia...';
+      return 'Clique em "auxílio da IA" para 3 sugestões ou escreva a sua ideia-guia...';
     default:
       return '';
   }
