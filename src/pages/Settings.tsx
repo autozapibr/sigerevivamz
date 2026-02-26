@@ -14,6 +14,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { IntegrationsSection } from '@/components/settings/IntegrationsSection';
+import { LLMConfigSection } from '@/components/settings/LLMConfigSection';
+import { LessonPlanConfigSection } from '@/components/settings/LessonPlanConfigSection';
 
 export default function Settings() {
   const { theme, setTheme, isDark } = useTheme();
@@ -220,6 +222,16 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* LLM / AI Config - Only for Admin/Diretoria */}
+        {(user?.role === 'ADMIN' || user?.role === 'DIRETORIA') && (
+          <LLMConfigSection />
+        )}
+
+        {/* Lesson Plan Config - Only for Admin/Diretoria */}
+        {(user?.role === 'ADMIN' || user?.role === 'DIRETORIA') && (
+          <LessonPlanConfigSection />
+        )}
 
         {/* Integrations - Only for Admin/Diretoria */}
         {(user?.role === 'ADMIN' || user?.role === 'DIRETORIA') && (
