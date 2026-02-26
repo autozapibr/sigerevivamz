@@ -6,7 +6,8 @@ import {
   DollarSign, BarChart3, Settings, UserCheck, Building2, FileText,
   Bell, LogOut, Wallet, TrendingUp, CreditCard, UsersRound, LibraryBig,
   CalendarDays, ChartBar, BookMarked, NotebookPen, FileSpreadsheet,
-  FileCheck, Briefcase, ChevronRight, MessageSquare
+  FileCheck, Briefcase, ChevronRight, MessageSquare, Palette, User,
+  Brain, Plug, Database
 } from 'lucide-react';
 
 import {
@@ -81,11 +82,25 @@ const systemModules = {
   },
 };
 
+// Módulo de configurações (apenas ADMIN/DIRETORIA)
+const configModule = {
+  label: 'Configurações',
+  icon: Settings,
+  items: [
+    { title: 'Aparência', url: '/configuracoes/aparencia', icon: Palette },
+    { title: 'Perfil & Região', url: '/configuracoes/perfil', icon: User },
+    { title: 'Notificações', url: '/configuracoes/notificacoes', icon: Bell },
+    { title: 'Inteligência Artificial', url: '/configuracoes/ia', icon: Brain },
+    { title: 'Plano de Aulas', url: '/configuracoes/plano-aulas', icon: BookMarked },
+    { title: 'Integrações', url: '/configuracoes/integracoes', icon: Plug },
+    { title: 'Sistema', url: '/configuracoes/sistema', icon: Database },
+  ],
+};
+
 const systemItems = [
   { title: 'Comunicação', url: '/comunicacao', icon: MessageSquare, restricted: false },
   { title: 'Notificações', url: '/notificacoes', icon: Bell, restricted: false },
   { title: 'Relatórios', url: '/relatorios', icon: BarChart3, restricted: false },
-  { title: 'Configurações', url: '/configuracoes', icon: Settings, restricted: true }, // Apenas ADMIN e DIRETORIA
 ];
 
 export function AppSidebar() {
@@ -249,32 +264,90 @@ export function AppSidebar() {
               {!collapsed && 'Sistema'}
             </p>
             <div className="space-y-1">
-              {systemItems
-                .filter(item => {
-                  // Se é item restrito, verificar se utilizador é ADMIN ou DIRETORIA
-                  if (item.restricted) {
-                    return user?.role === 'ADMIN' || user?.role === 'DIRETORIA';
-                  }
-                  return true;
-                })
-                .map((item) => {
-                  const ItemIcon = item.icon;
-                  return (
-                    <NavLink
-                      key={item.url}
-                      to={item.url}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200",
-                        isActive(item.url)
-                          ? "bg-primary text-primary-foreground font-medium shadow-sm"
-                          : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                      )}
-                    >
-                      <ItemIcon className="w-5 h-5 flex-shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  );
-                })}
+              {systemItems.map((item) => {
+                const ItemIcon = item.icon;
+                return (
+                  <NavLink
+                    key={item.url}
+                    to={item.url}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200",
+                      isActive(item.url)
+                        ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                    )}
+                  >
+                    <ItemIcon className="w-5 h-5 flex-shrink-0" />
+                    {!collapsed && <span>{item.title}</span>}
+                  </NavLink>
+                );
+              })}
+
+              {/* Configurações - collapsible, apenas ADMIN/DIRETORIA */}
+              {(user?.role === 'ADMIN' || user?.role === 'DIRETORIA') && (() => {
+                const configIsActive = configModule.items.some(i => location.pathname.startsWith(i.url));
+                const configIsOpen = openModules.includes('configuracoes') || configIsActive;
+                const ConfigIcon = configModule.icon;
+
+                return (
+                  <Collapsible
+                    open={configIsOpen && !collapsed}
+                    onOpenChange={() => !collapsed && toggleModule('configuracoes')}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <button
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                          configIsActive
+                            ? "bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                        )}
+                      >
+                        <ConfigIcon className="w-5 h-5 flex-shrink-0" />
+                        {!collapsed && (
+                          <>
+                            <span className="flex-1 text-left">{configModule.label}</span>
+                            <ChevronRight
+                              className={cn(
+                                "w-4 h-4 transition-transform duration-200",
+                                configIsOpen && "rotate-90"
+                              )}
+                            />
+                          </>
+                        )}
+                      </button>
+                    </CollapsibleTrigger>
+
+                    <CollapsibleContent>
+                      <motion.div
+                        className="mt-1 ml-4 pl-4 border-l-2 border-border/50 space-y-1"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {configModule.items.map((item) => {
+                          const ItemIcon = item.icon;
+                          return (
+                            <NavLink
+                              key={item.url}
+                              to={item.url}
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
+                                isActive(item.url)
+                                  ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                              )}
+                            >
+                              <ItemIcon className="w-4 h-4" />
+                              <span>{item.title}</span>
+                            </NavLink>
+                          );
+                        })}
+                      </motion.div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                );
+              })()}
             </div>
           </div>
         </ScrollArea>
