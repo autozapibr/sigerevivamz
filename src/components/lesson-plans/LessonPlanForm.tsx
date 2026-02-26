@@ -65,7 +65,16 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
       let prompt = '';
 
       if (fieldName === 'versiculos_biblicos') {
-        prompt = `Sugira 3 versículos bíblicos (versão NAA) relacionados ao tema "${tema}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}. Formato: Referência - Texto breve. Inclua AT e NT. Responda APENAS em texto puro, sem blocos de código, sem markdown, sem HTML.`;
+        prompt = `Cite exactamente 4 versículos bíblicos relacionados ao tema "${tema}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}.
+
+REGRAS OBRIGATÓRIAS:
+- 2 versículos do Antigo Testamento e 2 do Novo Testamento.
+- Use a versão NAA (Nova Almeida Atualizada).
+- Formato EXACTO para cada versículo (um por linha):
+  Livro capítulo:versículo - Texto completo do versículo.
+- NÃO inclua títulos, cabeçalhos, comentários, explicações ou categorias como "Antigo Testamento:" ou "Novo Testamento:".
+- NÃO use markdown, HTML, negrito, itálico ou qualquer formatação.
+- Apenas 4 linhas de texto puro, uma por versículo, nada mais.`;
       } else if (fieldName === 'ideia_guia') {
         prompt = `Gere 3 sugestões de Ideia-Guia AEP para o tema "${tema}", disciplina "${selectedSubject?.name || ''}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}${versiculos ? `, versículos: ${versiculos}` : ''}. Cada ideia-guia deve ser uma frase curta que conecte o tema ao princípio bíblico. Formato: numere 1, 2, 3. Responda APENAS em texto puro, sem blocos de código, sem markdown, sem HTML.`;
       } else if (fieldName === 'objetivos_competencias') {
