@@ -22,6 +22,13 @@ import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 import DevSeed from "./pages/DevSeed";
 import Settings from "./pages/Settings";
+import AparenciaPage from "./pages/settings/AparenciaPage";
+import PerfilPage from "./pages/settings/PerfilPage";
+import NotificacoesConfigPage from "./pages/settings/NotificacoesConfigPage";
+import IAConfigPage from "./pages/settings/IAConfigPage";
+import PlanoAulaConfigPage from "./pages/settings/PlanoAulaConfigPage";
+import IntegracoesPage from "./pages/settings/IntegracoesPage";
+import SistemaPage from "./pages/settings/SistemaPage";
 
 import CaixaPage from "./pages/financial/CaixaPage";
 import PropinasPage from "./pages/financial/PropinasPage";
@@ -185,6 +192,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="/configuracoes" element={<ProtectedRoute><Navigate to="/configuracoes/aparencia" replace /></ProtectedRoute>} />
+      <Route path="/configuracoes/aparencia" element={<ProtectedRoute><AparenciaPage /></ProtectedRoute>} />
+      <Route path="/configuracoes/perfil" element={<ProtectedRoute><PerfilPage /></ProtectedRoute>} />
+      <Route path="/configuracoes/notificacoes" element={<ProtectedRoute><NotificacoesConfigPage /></ProtectedRoute>} />
+      <Route path="/configuracoes/ia" element={<ProtectedRoute><IAConfigPage /></ProtectedRoute>} />
+      <Route path="/configuracoes/plano-aulas" element={<ProtectedRoute><PlanoAulaConfigPage /></ProtectedRoute>} />
+      <Route path="/configuracoes/integracoes" element={<ProtectedRoute><IntegracoesPage /></ProtectedRoute>} />
+      <Route path="/configuracoes/sistema" element={<ProtectedRoute><SistemaPage /></ProtectedRoute>} />
       {/* Rotas de Gestão Financeira */}
       <Route
         path="/financeiro/dashboard"
