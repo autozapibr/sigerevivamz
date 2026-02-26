@@ -975,6 +975,139 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_plan_config: {
+        Row: {
+          config_key: string
+          config_value: string
+          created_at: string | null
+          description: string | null
+          id: number
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          config_key: string
+          config_value: string
+          created_at?: string | null
+          description?: string | null
+          id?: never
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          config_key?: string
+          config_value?: string
+          created_at?: string | null
+          description?: string | null
+          id?: never
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      lesson_plan_fields: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          field_label: string
+          field_name: string
+          field_type: string
+          id: number
+          is_active: boolean | null
+          is_required: boolean | null
+          options: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number
+          field_label: string
+          field_name: string
+          field_type?: string
+          id?: never
+          is_active?: boolean | null
+          is_required?: boolean | null
+          options?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          field_label?: string
+          field_name?: string
+          field_type?: string
+          id?: never
+          is_active?: boolean | null
+          is_required?: boolean | null
+          options?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      lesson_plans: {
+        Row: {
+          class_id: number | null
+          created_at: string | null
+          form_data: Json
+          generated_content: string
+          id: number
+          status: string
+          subject_id: number | null
+          teacher_id: string
+          teacher_name: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          class_id?: number | null
+          created_at?: string | null
+          form_data?: Json
+          generated_content: string
+          id?: never
+          status?: string
+          subject_id?: number | null
+          teacher_id: string
+          teacher_name?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          class_id?: number | null
+          created_at?: string | null
+          form_data?: Json
+          generated_content?: string
+          id?: never
+          status?: string
+          subject_id?: number | null
+          teacher_id?: string
+          teacher_name?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_plans_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_plans_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "lesson_plans_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_agreements: {
         Row: {
           agreed_amount: number
