@@ -207,11 +207,21 @@ export function useLessonPlanMutations() {
 
   const saveConfig = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
-      const { error } = await supabase
+      // Try update first
+      const { data: updated, error: updateError } = await supabase
         .from('lesson_plan_config')
         .update({ config_value: value })
-        .eq('config_key', key);
-      if (error) throw error;
+        .eq('config_key', key)
+        .select();
+      if (updateError) throw updateError;
+      
+      // If no rows updated, insert
+      if (!updated || updated.length === 0) {
+        const { error: insertError } = await supabase
+          .from('lesson_plan_config')
+          .insert({ config_key: key, config_value: value });
+        if (insertError) throw insertError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lesson-plan-config'] });

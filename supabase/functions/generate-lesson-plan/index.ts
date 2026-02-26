@@ -51,11 +51,6 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
-
     const { formData, className, subjectName, teacherName } = await req.json();
 
     // Fetch admin config
@@ -70,7 +65,8 @@ serve(async (req) => {
     });
 
     const systemPrompt = configMap["system_prompt"] || "Gere um plano de aula AEP.";
-    const model = configMap["model"] || "google/gemini-2.5-flash";
+    const llmProvider = configMap["llm_provider"] || "lovable_ai";
+    let model = configMap["model"] || "google/gemini-3-flash-preview";
     const temperature = parseFloat(configMap["temperature"] || "0.4");
     const maxTokens = parseInt(configMap["max_tokens"] || "4000");
 
@@ -87,7 +83,6 @@ serve(async (req) => {
 
         for (const doc of trainingDocs) {
           try {
-            // Only read text-based files directly
             const isTextBased = doc.mime_type?.includes("text") || 
               doc.file_name.endsWith(".txt") || 
               doc.file_name.endsWith(".md");
@@ -99,13 +94,11 @@ serve(async (req) => {
 
               if (!dlError && fileData) {
                 const text = await fileData.text();
-                // Limit each doc to ~3000 chars to avoid token overflow
                 const trimmed = text.length > 3000 ? text.substring(0, 3000) + "\n...[truncado]" : text;
                 docContents.push(`--- Documento: ${doc.file_name} ---\n${trimmed}`);
               }
             } else {
-              // For PDF/DOCX, include filename as reference
-              docContents.push(`--- Documento de referência: ${doc.file_name} (formato ${doc.mime_type}) ---\nEste documento contém material sobre a Abordagem Educacional por Princípios (AEP). Use os princípios da AEP conforme descrito no prompt do sistema.`);
+              docContents.push(`--- Documento de referência: ${doc.file_name} (formato ${doc.mime_type}) ---\nEste documento contém material sobre a Abordagem Educacional por Princípios (AEP).`);
             }
           } catch (docErr) {
             console.warn(`Error reading training doc ${doc.file_name}:`, docErr);
@@ -120,10 +113,9 @@ serve(async (req) => {
       console.warn("Error fetching training docs:", err);
     }
 
-    // Build full system prompt with training context
     const fullSystemPrompt = systemPrompt + trainingContext;
 
-    // Build user prompt from form data
+    // Build user prompt
     const formEntries = Object.entries(formData as Record<string, string | string[]>)
       .map(([key, value]) => {
         const displayValue = Array.isArray(value) ? value.join(", ") : value;
@@ -142,14 +134,80 @@ ${formEntries}
 
 Retorne APENAS o HTML do plano de aula, bem formatado com estilos inline para impressão.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Determine API endpoint and key based on provider
+    let apiUrl: string;
+    let apiKey: string;
+    let requestModel = model;
+
+    if (llmProvider === "openai") {
+      // Direct OpenAI
+      apiUrl = "https://api.openai.com/v1/chat/completions";
+      // Get key from integration_settings
+      const { data: openaiSetting } = await serviceClient
+        .from("integration_settings")
+        .select("api_key")
+        .eq("integration_name", "openai")
+        .single();
+      apiKey = openaiSetting?.api_key || Deno.env.get("OPENAI_API_KEY") || "";
+      if (!apiKey) throw new Error("Chave API da OpenAI não configurada.");
+    } else if (llmProvider === "google") {
+      // Direct Google AI Studio - uses generateContent endpoint
+      const { data: googleSetting } = await serviceClient
+        .from("integration_settings")
+        .select("api_key")
+        .eq("integration_name", "google_ai")
+        .single();
+      const googleKey = googleSetting?.api_key;
+      if (!googleKey) throw new Error("Chave API do Google AI não configurada.");
+
+      // Google AI uses a different API format
+      const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${googleKey}`;
+      
+      const googleResponse = await fetch(googleApiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            { role: "user", parts: [{ text: fullSystemPrompt + "\n\n" + userPrompt }] }
+          ],
+          generationConfig: {
+            temperature,
+            maxOutputTokens: maxTokens,
+          },
+        }),
+      });
+
+      if (!googleResponse.ok) {
+        const errText = await googleResponse.text();
+        console.error("Google AI error:", googleResponse.status, errText);
+        throw new Error("Erro ao gerar plano de aula com Google AI: " + errText);
+      }
+
+      const googleData = await googleResponse.json();
+      const generatedContent = googleData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+      return new Response(
+        JSON.stringify({ success: true, content: generatedContent }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } else {
+      // Lovable AI Gateway (default)
+      apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
+      apiKey = Deno.env.get("LOVABLE_API_KEY") || "";
+      if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada.");
+      // Model already has prefix like google/gemini-... or openai/gpt-...
+      requestModel = model;
+    }
+
+    // OpenAI-compatible call (Lovable Gateway or direct OpenAI)
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model,
+        model: requestModel,
         messages: [
           { role: "system", content: fullSystemPrompt },
           { role: "user", content: userPrompt },
@@ -173,7 +231,7 @@ Retorne APENAS o HTML do plano de aula, bem formatado com estilos inline para im
         );
       }
       const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      console.error("AI error:", response.status, errorText);
       throw new Error("Erro ao gerar plano de aula com IA");
     }
 

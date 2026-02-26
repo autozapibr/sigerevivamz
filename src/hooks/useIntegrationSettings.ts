@@ -49,18 +49,35 @@ export function useIntegrationSettings() {
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { data, error } = await supabase
+      // Try update first
+      const { data: updateData, error: updateError } = await supabase
         .from('integration_settings')
         .update({
           ...updates,
           updated_by: user?.id,
         })
         .eq('integration_name', integrationName)
-        .select()
-        .single();
+        .select();
 
-      if (error) throw error;
-      return data;
+      if (updateError) throw updateError;
+      
+      // If no rows updated, insert
+      if (!updateData || updateData.length === 0) {
+        const { data: insertData, error: insertError } = await supabase
+          .from('integration_settings')
+          .insert({
+            integration_name: integrationName,
+            ...updates,
+            created_by: user?.id,
+            updated_by: user?.id,
+          })
+          .select()
+          .single();
+        if (insertError) throw insertError;
+        return insertData;
+      }
+      
+      return updateData[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['integration-settings'] });
