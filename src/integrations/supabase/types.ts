@@ -1044,6 +1044,42 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_plan_training_docs: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: number
+          is_active: boolean | null
+          mime_type: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: never
+          is_active?: boolean | null
+          mime_type?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: never
+          is_active?: boolean | null
+          mime_type?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       lesson_plans: {
         Row: {
           class_id: number | null
