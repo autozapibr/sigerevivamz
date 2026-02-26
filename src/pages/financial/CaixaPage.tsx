@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearch } from '@/contexts/SearchContext';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -113,7 +114,12 @@ function TransactionCard({
 export default function CaixaPage() {
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
   const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const { searchQuery: searchTerm, setPlaceholder } = useSearch();
+
+  useEffect(() => {
+    setPlaceholder('Pesquisar movimentos financeiros...');
+    return () => setPlaceholder('Pesquisar educandos, professores, turmas...');
+  }, [setPlaceholder]);
   const [newMovementDialog, setNewMovementDialog] = useState(false);
   const [movementType, setMovementType] = useState<TransactionType>('Receita');
   const [formData, setFormData] = useState({
@@ -301,15 +307,6 @@ export default function CaixaPage() {
                   </SelectContent>
                 </Select>
 
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Pesquisar descrição..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
               </div>
 
               {/* Actions Row */}

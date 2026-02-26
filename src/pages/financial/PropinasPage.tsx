@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearch } from '@/contexts/SearchContext';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -129,7 +130,12 @@ function TuitionCard({ fee, onPay }: { fee: TuitionFee; onPay: (fee: TuitionFee)
 export default function PropinasPage() {
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const { searchQuery: searchTerm, setPlaceholder } = useSearch();
+
+  useEffect(() => {
+    setPlaceholder('Pesquisar educando por nome...');
+    return () => setPlaceholder('Pesquisar educandos, professores, turmas...');
+  }, [setPlaceholder]);
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
   const [paymentMethod, setPaymentMethod] = useState('NUMERARIO');
   const [generateDialog, setGenerateDialog] = useState(false);
@@ -314,15 +320,6 @@ export default function PropinasPage() {
                   </SelectContent>
                 </Select>
 
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Pesquisar educando..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
               </div>
 
               {/* Actions Row */}

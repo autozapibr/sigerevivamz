@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearch } from '@/contexts/SearchContext';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -59,7 +60,12 @@ import { formatPhone, formatBI } from '@/lib/validators/mozambique';
 
 export function Students() {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { searchQuery: searchTerm, setPlaceholder } = useSearch();
+
+  useEffect(() => {
+    setPlaceholder('Pesquisar por nome, BI ou telefone...');
+    return () => setPlaceholder('Pesquisar educandos, professores, turmas...');
+  }, [setPlaceholder]);
   const [statusFilter, setStatusFilter] = useState<StudentFilters['status']>('all');
   const [classFilter, setClassFilter] = useState<string>('all');
   const [genderFilter, setGenderFilter] = useState<StudentFilters['gender']>('all');
@@ -182,16 +188,6 @@ export function Students() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col lg:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Pesquisar por nome, BI ou telefone..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              
               <div className="flex flex-wrap gap-2">
                 <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v as any)}>
                   <SelectTrigger className="w-32">
