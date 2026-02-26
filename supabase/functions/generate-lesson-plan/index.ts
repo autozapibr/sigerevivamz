@@ -120,6 +120,10 @@ serve(async (req) => {
     const temperature = parseFloat(configMap["temperature"] || "0.4");
     const maxTokens = parseInt(configMap["max_tokens"] || "4000");
 
+    // Strip provider prefix from model name for direct API calls
+    // e.g. "google/gemini-2.5-flash" -> "gemini-2.5-flash"
+    const cleanModel = model.includes("/") ? model.split("/").pop()! : model;
+
     // Fetch active training documents content
     let trainingContext = "";
     try {
@@ -259,7 +263,7 @@ FORMATO DE SAÍDA:
       const googleKey = googleSetting?.api_key;
       if (!googleKey) throw new Error("Chave API do Google AI não configurada.");
 
-      const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${googleKey}`;
+      const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${googleKey}`;
       
       const googleResponse = await fetch(googleApiUrl, {
         method: "POST",
