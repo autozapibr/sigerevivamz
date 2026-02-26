@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearch } from '@/contexts/SearchContext';
 import { motion } from 'framer-motion';
 import { 
   LibraryBig, Plus, Search, BookOpen, Users, Clock, 
@@ -53,7 +54,12 @@ import { useStudents } from '@/hooks/useStudents';
 
 export default function BibliotecaPage() {
   const [activeTab, setActiveTab] = useState('catalogo');
-  const [searchTerm, setSearchTerm] = useState('');
+  const { searchQuery: searchTerm, setPlaceholder } = useSearch();
+
+  useEffect(() => {
+    setPlaceholder('Pesquisar por título, autor ou ISBN...');
+    return () => setPlaceholder('Pesquisar educandos, professores, turmas...');
+  }, [setPlaceholder]);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -224,16 +230,6 @@ export default function BibliotecaPage() {
             <Card>
               <CardContent className="p-4 md:pt-6">
                 <div className="flex flex-col gap-3 md:flex-row md:gap-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Pesquisar por título, autor ou ISBN..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  
                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                     <SelectTrigger className="w-full md:w-48">
                       <Filter className="w-4 h-4 mr-2" />

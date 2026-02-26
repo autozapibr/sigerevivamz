@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearch } from '@/contexts/SearchContext';
 import { motion } from 'framer-motion';
 import { 
   Plus, Search, BookOpen, MoreHorizontal, 
@@ -44,7 +45,12 @@ import {
 } from '@/hooks/useSubjects';
 
 export default function Subjects() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const { searchQuery: searchTerm, setPlaceholder } = useSearch();
+
+  useEffect(() => {
+    setPlaceholder('Pesquisar disciplina ou código...');
+    return () => setPlaceholder('Pesquisar educandos, professores, turmas...');
+  }, [setPlaceholder]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -187,16 +193,6 @@ export default function Subjects() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Pesquisar disciplina ou código..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              
               <Button onClick={() => { resetForm(); setShowCreateDialog(true); }}>
                 <Plus className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Nova Disciplina</span>

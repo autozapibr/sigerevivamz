@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearch } from '@/contexts/SearchContext';
 import { motion } from 'framer-motion';
 import { 
   Plus, Search, Users, User, Phone, Mail, 
@@ -60,7 +61,12 @@ import { formatPhone } from '@/lib/validators/mozambique';
 // Using initialStaffFormData from StaffForm
 
 export default function ColaboradoresPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const { searchQuery: searchTerm, setPlaceholder } = useSearch();
+
+  useEffect(() => {
+    setPlaceholder('Pesquisar por nome, função ou email...');
+    return () => setPlaceholder('Pesquisar educandos, professores, turmas...');
+  }, [setPlaceholder]);
   const [statusFilter, setStatusFilter] = useState<EmployeeFilters['status']>('all');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -257,16 +263,6 @@ export default function ColaboradoresPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Pesquisar por nome, função ou email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              
               <div className="flex gap-2">
                 <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v as any)}>
                   <SelectTrigger className="w-32">

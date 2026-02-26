@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearch } from '@/contexts/SearchContext';
 import { motion } from 'framer-motion';
 import { 
   Plus, Search, Users, MoreHorizontal, BookOpen, 
@@ -46,7 +47,12 @@ import { useTeachers } from '@/hooks/useTeachers';
 
 export default function Turmas() {
   const currentYear = new Date().getFullYear();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { searchQuery: searchTerm, setPlaceholder } = useSearch();
+
+  useEffect(() => {
+    setPlaceholder('Pesquisar turma por nome...');
+    return () => setPlaceholder('Pesquisar educandos, professores, turmas...');
+  }, [setPlaceholder]);
   const [yearFilter, setYearFilter] = useState<string>(currentYear.toString());
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -177,16 +183,6 @@ export default function Turmas() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Pesquisar turma..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              
               <div className="flex gap-2">
                 <Select value={yearFilter} onValueChange={setYearFilter}>
                   <SelectTrigger className="w-32">

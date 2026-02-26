@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearch } from '@/contexts/SearchContext';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,7 +56,12 @@ type UrgencyFilter = 'all' | 'baixa' | 'media' | 'alta' | 'critica';
 type ViewMode = 'kanban' | 'list';
 
 export default function CobrancasPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const { searchQuery: searchTerm, setPlaceholder } = useSearch();
+
+  useEffect(() => {
+    setPlaceholder('Pesquisar educando devedor...');
+    return () => setPlaceholder('Pesquisar educandos, professores, turmas...');
+  }, [setPlaceholder]);
   const [urgencyFilter, setUrgencyFilter] = useState<UrgencyFilter>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('kanban');
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
@@ -264,18 +270,8 @@ Secretaria Escolar`;
         <Card>
           <CardHeader className="pb-3">
             <div className="flex flex-col gap-3">
-              {/* Search Row */}
+              {/* Filters Row */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Pesquisar educando..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-
                 {/* Mobile Filter */}
                 <div className="flex gap-2 sm:hidden">
                   <Select value={urgencyFilter} onValueChange={(v) => setUrgencyFilter(v as UrgencyFilter)}>

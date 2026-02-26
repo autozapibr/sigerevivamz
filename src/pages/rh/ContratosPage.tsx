@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearch } from '@/contexts/SearchContext';
 import { motion } from 'framer-motion';
 import { 
   Search, FileText, AlertTriangle, CheckCircle, 
@@ -43,7 +44,12 @@ import { StaffContractData } from '@/components/contracts/ContractTemplates';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ContratosPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const { searchQuery: searchTerm, setPlaceholder } = useSearch();
+
+  useEffect(() => {
+    setPlaceholder('Pesquisar por nome ou nº de contrato...');
+    return () => setPlaceholder('Pesquisar educandos, professores, turmas...');
+  }, [setPlaceholder]);
   const [statusFilter, setStatusFilter] = useState<ContractFilters['status']>('all');
   const [contractTypeFilter, setContractTypeFilter] = useState<string>('all');
   const [showGenerator, setShowGenerator] = useState(false);
@@ -220,16 +226,6 @@ export default function ContratosPage() {
                 </Button>
               </div>
 
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Pesquisar por nome ou nº de contrato..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              
               <div className="flex gap-2 flex-wrap">
                 <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v as ContractFilters['status'])}>
                   <SelectTrigger className="w-32">
