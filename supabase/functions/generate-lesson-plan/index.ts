@@ -13,43 +13,48 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Não autorizado." }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getUser(token);
-    if (claimsError || !claimsData?.user) {
-      return new Response(
-        JSON.stringify({ error: "Token inválido." }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    let isAuthenticated = false;
+
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "");
+      
+      // Skip auth validation if the token is the anon key itself (demo mode)
+      if (token !== supabaseAnonKey) {
+        const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+          global: { headers: { Authorization: authHeader } },
+        });
+
+        const { data: claimsData, error: claimsError } = await supabaseClient.auth.getUser(token);
+        if (claimsError || !claimsData?.user) {
+          return new Response(
+            JSON.stringify({ error: "Token inválido." }),
+            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        // Check role
+        const userId = claimsData.user.id;
+        const { data: roleData } = await supabaseClient
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId);
+
+        const allowedRoles = ["ADMIN", "DIRETORIA", "PROFESSOR", "PEDAGOGICO"];
+        const userRoles = roleData?.map((r: any) => r.role) || [];
+        if (!userRoles.some((r: string) => allowedRoles.includes(r))) {
+          return new Response(
+            JSON.stringify({ error: "Sem permissão para gerar planos de aula." }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        isAuthenticated = true;
+      }
     }
 
-    // Check role
-    const userId = claimsData.user.id;
-    const { data: roleData } = await supabaseClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
-
-    const allowedRoles = ["ADMIN", "DIRETORIA", "PROFESSOR", "PEDAGOGICO"];
-    const userRoles = roleData?.map((r: any) => r.role) || [];
-    if (!userRoles.some((r: string) => allowedRoles.includes(r))) {
-      return new Response(
-        JSON.stringify({ error: "Sem permissão para gerar planos de aula." }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    // In demo mode (no auth), still allow the function to proceed
 
     const { formData, className, subjectName, teacherName } = await req.json();
 
