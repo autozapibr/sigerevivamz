@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Settings, Plus, Save, Trash2, GripVertical, Brain, X } from 'lucide-react';
+import { TrainingDocsUpload } from './TrainingDocsUpload';
 import {
   useAllLessonPlanFields,
   useLessonPlanConfig,
@@ -83,6 +84,8 @@ export function LessonPlanAdminConfig() {
             <Button onClick={handleSavePrompt} disabled={saveConfig.isPending}>
               <Save className="mr-2 h-4 w-4" /> Guardar Prompt
             </Button>
+
+            <TrainingDocsUpload />
           </CardContent>
         </Card>
       </TabsContent>
