@@ -78,27 +78,37 @@ export default function PlanoAulasPage() {
         </TabsList>
 
         <TabsContent value="gerar" className="space-y-6 mt-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Form - 33% */}
+            <div className="lg:col-span-4 space-y-6">
               <LessonPlanForm
                 onGenerate={handleGenerate}
                 isGenerating={generatePlan.isPending}
               />
-              {generatedContent && (
-                <LessonPlanPreview
-                  content={generatedContent}
-                  onSave={handleSave}
-                  isSaving={savePlan.isPending}
-                />
-              )}
-            </div>
-            <div>
               <LessonPlanHistory
                 plans={plans || []}
                 onView={setViewingPlan}
                 onDelete={id => deletePlan.mutate(id)}
                 onFinalize={id => updatePlanStatus.mutate({ id, status: 'finalizado' })}
               />
+            </div>
+            {/* Preview - 67% */}
+            <div className="lg:col-span-8">
+              {generatedContent ? (
+                <LessonPlanPreview
+                  content={generatedContent}
+                  onSave={handleSave}
+                  isSaving={savePlan.isPending}
+                />
+              ) : (
+                <div className="border-2 border-dashed border-border rounded-xl p-12 flex flex-col items-center justify-center text-center min-h-[500px] bg-card/50">
+                  <BookMarked className="h-16 w-16 text-muted-foreground/30 mb-4" />
+                  <h3 className="text-lg font-semibold text-muted-foreground mb-2">Pré-visualização do Plano</h3>
+                  <p className="text-sm text-muted-foreground/70 max-w-sm">
+                    Preencha o formulário ao lado e clique em "Gerar Plano de Aula com IA" para visualizar o resultado aqui.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </TabsContent>
