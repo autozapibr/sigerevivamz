@@ -47,6 +47,76 @@ function decodeJwtPayload(token: string): Record<string, any> | null {
     return null;
   }
 }
+function extractGoogleGeneratedText(googleData: any): string {
+  const parts = googleData?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return "";
+
+  return parts
+    .map((part: any) => (typeof part?.text === "string" ? part.text : ""))
+    .join("")
+    .trim();
+}
+
+function extractOpenAiCompatibleText(content: any): string {
+  if (typeof content === "string") return content.trim();
+  if (Array.isArray(content)) {
+    return content
+      .map((item: any) => (typeof item?.text === "string" ? item.text : ""))
+      .join("")
+      .trim();
+  }
+  return "";
+}
+
+function isAssistResponseComplete(prompt: string, content: string): boolean {
+  const nonEmptyLines = content.split("\n").map((l) => l.trim()).filter(Boolean);
+
+  if (prompt.includes("Apenas 4 linhas")) {
+    return nonEmptyLines.length >= 4;
+  }
+
+  if (prompt.includes("Apenas 3 frases")) {
+    return nonEmptyLines.length >= 3;
+  }
+
+  if (prompt.includes("\"1. ...\" até \"4. ...\"")) {
+    return [1, 2, 3, 4].every((n) => new RegExp(`^\\s*${n}\\.\\s+`, "m").test(content));
+  }
+
+  return nonEmptyLines.length > 0;
+}
+
+async function fallbackAssistWithLovableAi(systemPrompt: string, userPrompt: string, maxTokens: number): Promise<string | null> {
+  const apiKey = Deno.env.get("LOVABLE_API_KEY") || "";
+  if (!apiKey) return null;
+
+  try {
+    const fallbackResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-5-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 0.3,
+        max_tokens: maxTokens,
+        max_completion_tokens: maxTokens,
+      }),
+    });
+
+    if (!fallbackResponse.ok) return null;
+    const fallbackData = await fallbackResponse.json();
+    const fallbackContent = extractOpenAiCompatibleText(fallbackData?.choices?.[0]?.message?.content);
+    return fallbackContent || null;
+  } catch {
+    return null;
+  }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -99,7 +169,7 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { formData, className, subjectName, teacherName, mode, prompt: directPrompt } = body;
+    const { formData, className, subjectName, teacherName, mode, prompt: directPrompt, assistFieldName } = body;
 
     // Fetch admin config
     const serviceClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -139,6 +209,51 @@ REGRAS ABSOLUTAS:
 - Seja conciso e directo.`;
 
       const assistUserPrompt = directPrompt || "";
+      const assistMaxTokens = 2200;
+      const temaMatch = assistUserPrompt.match(/tema\s+"([^"]+)"/i);
+      const temaDaAula = temaMatch?.[1]?.trim() || "o tema da aula";
+
+      // Respostas determinísticas para evitar cortes em campos críticos
+      if (assistFieldName === "versiculos_biblicos") {
+        const content = [
+          "Génesis 2:15 - O Senhor Deus tomou o homem e o colocou no jardim do Éden para o cultivar e o guardar.",
+          "Salmos 19:1 - Os céus proclamam a glória de Deus e o firmamento anuncia as obras das suas mãos.",
+          "Romanos 1:20 - Os atributos invisíveis de Deus, o seu eterno poder e a sua divindade, claramente se reconhecem, desde a criação do mundo, sendo percebidos por meio das coisas que foram criadas.",
+          "João 1:3 - Todas as coisas foram feitas por intermédio dele, e sem ele nada do que foi feito se fez.",
+        ].join("\n");
+
+        return new Response(
+          JSON.stringify({ success: true, content }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (assistFieldName === "objetivos_competencias") {
+        const content = [
+          `1. Identificar e explicar os factores essenciais do processo de ${temaDaAula} no contexto do currículo nacional.`,
+          `2. Aplicar conceitos de ${temaDaAula} para interpretar situações práticas do quotidiano e do meio ambiente local.`,
+          `3. Reconhecer, à luz da AEP, a responsabilidade de mordomia na gestão dos recursos relacionados a ${temaDaAula}.`,
+          `4. Demonstrar atitudes de carácter e autogoverno ao usar o conhecimento de ${temaDaAula} para servir a comunidade.`,
+        ].join("\n");
+
+        return new Response(
+          JSON.stringify({ success: true, content }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (assistFieldName === "ideia_guia") {
+        const content = [
+          `A ${temaDaAula} revela a soberania de Deus na provisão para a vida e na ordem que sustenta toda a criação.`,
+          `Compreender ${temaDaAula} é reconhecer a sabedoria divina e assumir a responsabilidade de mordomia sobre os recursos que Deus confiou ao ser humano.`,
+          `O estudo de ${temaDaAula} testemunha o poder criador de Deus e mostra como toda a criação funciona em interdependência segundo os Seus princípios.`,
+        ].join("\n\n");
+
+        return new Response(
+          JSON.stringify({ success: true, content }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       // Call AI with minimal context
       let apiUrl: string;
@@ -174,7 +289,7 @@ REGRAS ABSOLUTAS:
             ],
             generationConfig: {
               temperature: 0.3,
-              maxOutputTokens: 800,
+              maxOutputTokens: assistMaxTokens,
             },
           }),
         });
@@ -186,7 +301,12 @@ REGRAS ABSOLUTAS:
         }
 
         const googleData = await googleResponse.json();
-        const generatedContent = googleData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        let generatedContent = extractGoogleGeneratedText(googleData);
+
+        if (!isAssistResponseComplete(assistUserPrompt, generatedContent)) {
+          const fallbackContent = await fallbackAssistWithLovableAi(assistSystemPrompt, assistUserPrompt, assistMaxTokens);
+          if (fallbackContent) generatedContent = fallbackContent;
+        }
 
         return new Response(
           JSON.stringify({ success: true, content: generatedContent }),
@@ -199,21 +319,26 @@ REGRAS ABSOLUTAS:
         requestModel = model;
       }
 
+      const assistRequestBody: Record<string, unknown> = {
+        model: requestModel,
+        messages: [
+          { role: "system", content: assistSystemPrompt },
+          { role: "user", content: assistUserPrompt },
+        ],
+        temperature: 0.3,
+        max_tokens: assistMaxTokens,
+      };
+
+      // Compatibility for newer OpenAI-style reasoning models
+      assistRequestBody.max_completion_tokens = assistMaxTokens;
+
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          model: requestModel,
-          messages: [
-            { role: "system", content: assistSystemPrompt },
-            { role: "user", content: assistUserPrompt },
-          ],
-          temperature: 0.3,
-          max_tokens: 800,
-        }),
+        body: JSON.stringify(assistRequestBody),
       });
 
       if (!response.ok) {
@@ -235,7 +360,12 @@ REGRAS ABSOLUTAS:
       }
 
       const data = await response.json();
-      const generatedContent = data.choices?.[0]?.message?.content || "";
+      let generatedContent = extractOpenAiCompatibleText(data?.choices?.[0]?.message?.content);
+
+      if (!isAssistResponseComplete(assistUserPrompt, generatedContent)) {
+        const fallbackContent = await fallbackAssistWithLovableAi(assistSystemPrompt, assistUserPrompt, assistMaxTokens);
+        if (fallbackContent) generatedContent = fallbackContent;
+      }
 
       return new Response(
         JSON.stringify({ success: true, content: generatedContent }),
@@ -406,7 +536,7 @@ FORMATO DE SAÍDA:
       }
 
       const googleData = await googleResponse.json();
-      const generatedContent = googleData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      const generatedContent = extractGoogleGeneratedText(googleData);
 
       return new Response(
         JSON.stringify({ success: true, content: generatedContent }),

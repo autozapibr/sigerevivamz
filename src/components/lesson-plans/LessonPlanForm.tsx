@@ -86,13 +86,22 @@ REGRAS OBRIGATÓRIAS:
 - NÃO use markdown, HTML, negrito, itálico ou qualquer formatação.
 - Apenas 3 frases separadas por linhas em branco, nada mais.`;
       } else if (fieldName === 'objetivos_competencias') {
-        prompt = `Gere objectivos e competências para uma aula sobre "${tema}", disciplina "${selectedSubject?.name || ''}", turma "${selectedClass?.name || ''}"${principios.length ? `, princípios AEP: ${principios.join(', ')}` : ''}. Inclua 2 competências da base curricular nacional de Moçambique e 2 objectivos AEP alinhados. Formato: numere. Responda APENAS em texto puro, sem blocos de código, sem markdown, sem HTML.`;
+        prompt = `Gere exactamente 4 itens para o tema "${tema}", disciplina "${selectedSubject?.name || ''}", turma "${selectedClass?.name || ''}"${principios.length ? `, princípios AEP: ${principios.join(', ')}` : ''}.
+
+REGRAS OBRIGATÓRIAS:
+- Itens 1 e 2: competências curriculares de Moçambique.
+- Itens 3 e 4: objectivos ligados à AEP.
+- Formato EXACTO: "1. ..." até "4. ..." (uma linha por item).
+- NÃO inclua títulos, comentários, introduções ou explicações.
+- NÃO use markdown, HTML, negrito ou itálico.
+- Responda apenas com os 4 itens.`;
       }
 
       const { data, error } = await supabase.functions.invoke('generate-lesson-plan', {
         body: {
           mode: 'assist',
           prompt,
+          assistFieldName: fieldName,
         },
       });
 
