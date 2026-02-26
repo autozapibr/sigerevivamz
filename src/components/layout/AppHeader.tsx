@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useNavigate } from 'react-router-dom';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
+import { useSearch } from '@/contexts/SearchContext';
 
 interface AppHeaderProps {
   title?: string;
@@ -28,6 +29,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
   const { toggleTheme, isDark } = useTheme();
   const navigate = useNavigate();
   const unreadCount = useUnreadNotificationCount();
+  const { searchQuery, setSearchQuery, placeholder } = useSearch();
 
   const getInitials = (name: string) => {
     return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
@@ -58,7 +60,9 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
         <div className="relative group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input
-            placeholder="Pesquisar educandos, professores, turmas..."
+            placeholder={placeholder}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 h-10 bg-muted/50 border-0 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
           />
           <kbd className="hidden md:inline-flex absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">

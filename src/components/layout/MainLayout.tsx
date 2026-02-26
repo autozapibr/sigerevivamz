@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { AppHeader } from './AppHeader';
+import { SearchProvider } from '@/contexts/SearchContext';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children, title, subtitle }: MainLayoutProps) {
   return (
+    <SearchProvider>
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-background overflow-x-hidden">
         <AppSidebar />
@@ -42,5 +44,6 @@ export function MainLayout({ children, title, subtitle }: MainLayoutProps) {
         </div>
       </div>
     </SidebarProvider>
+    </SearchProvider>
   );
 }
