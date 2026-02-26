@@ -123,15 +123,12 @@ export function AppSidebar() {
 
   return (
     <Sidebar 
-      className={cn(
-        "border-r border-border/50 transition-all duration-300",
-        collapsed ? "w-[70px]" : "w-[260px]"
-      )} 
+      className="border-r border-border/50 transition-all duration-300"
       collapsible="icon"
     >
       <SidebarContent className="bg-sidebar">
         {/* Logo */}
-        <div className="p-4 border-b border-border/50">
+        <div className={cn("p-4 border-b border-border/50", collapsed && "flex justify-center p-3")}>
           <motion.div 
             className="flex items-center gap-3"
             layout
