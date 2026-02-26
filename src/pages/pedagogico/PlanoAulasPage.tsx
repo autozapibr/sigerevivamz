@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookMarked, Settings } from 'lucide-react';
@@ -10,12 +10,35 @@ import { useLessonPlans, useLessonPlanMutations, type LessonPlan } from '@/hooks
 import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import DOMPurify from 'dompurify';
+import { useSearch } from '@/contexts/SearchContext';
 
 export default function PlanoAulasPage() {
   const { user } = useAuth();
   const { data: plans } = useLessonPlans();
   const { generatePlan, savePlan, updatePlanStatus, deletePlan } = useLessonPlanMutations();
+  const { searchQuery, setPlaceholder, setSearchQuery } = useSearch();
   
+  // Set contextual placeholder on mount, reset on unmount
+  useEffect(() => {
+    setPlaceholder('Pesquisar planos de aula por título, disciplina, turma...');
+    setSearchQuery('');
+    return () => {
+      setPlaceholder('Pesquisar educandos, professores, turmas...');
+      setSearchQuery('');
+    };
+  }, [setPlaceholder, setSearchQuery]);
+
+  // Filter plans based on search query
+  const filteredPlans = useMemo(() => {
+    if (!plans || !searchQuery.trim()) return plans || [];
+    const q = searchQuery.toLowerCase();
+    return plans.filter(p =>
+      p.title.toLowerCase().includes(q) ||
+      p.teacher_name?.toLowerCase().includes(q) ||
+      p.status.toLowerCase().includes(q)
+    );
+  }, [plans, searchQuery]);
+
   const [generatedContent, setGeneratedContent] = useState('');
   const [currentFormData, setCurrentFormData] = useState<Record<string, any>>({});
   const [currentClassId, setCurrentClassId] = useState<number | undefined>();
@@ -86,7 +109,7 @@ export default function PlanoAulasPage() {
                 isGenerating={generatePlan.isPending}
               />
               <LessonPlanHistory
-                plans={plans || []}
+                plans={filteredPlans}
                 onView={setViewingPlan}
                 onDelete={id => deletePlan.mutate(id)}
                 onFinalize={id => updatePlanStatus.mutate({ id, status: 'finalizado' })}
