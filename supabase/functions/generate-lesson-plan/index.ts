@@ -6,6 +6,36 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Fetch word definition from Webster's 1828 Dictionary
+async function fetchWebsterDefinition(word: string): Promise<string | null> {
+  try {
+    const url = `https://webstersdictionary1828.com/Dictionary/${encodeURIComponent(word)}`;
+    const response = await fetch(url, {
+      headers: { "User-Agent": "SGE-REVIVA-LessonPlanGenerator/1.0" },
+    });
+    if (!response.ok) return null;
+
+    const html = await response.text();
+    
+    // Extract definition from the page HTML
+    const defMatch = html.match(/<p[^>]*class="[^"]*defword[^"]*"[^>]*>([\s\S]*?)<\/p>/i) ||
+                     html.match(/<div[^>]*class="[^"]*definition[^"]*"[^>]*>([\s\S]*?)<\/div>/i) ||
+                     html.match(/<p[^>]*>([\s\S]{50,500}?)<\/p>/i);
+    
+    if (defMatch) {
+      // Strip HTML tags
+      const cleanDef = defMatch[1].replace(/<[^>]+>/g, "").trim();
+      if (cleanDef.length > 20) {
+        return cleanDef.substring(0, 800);
+      }
+    }
+    return null;
+  } catch (err) {
+    console.warn(`Error fetching Webster definition for "${word}":`, err);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -15,8 +45,6 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-
-    let isAuthenticated = false;
 
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.replace("Bearer ", "");
@@ -35,7 +63,6 @@ serve(async (req) => {
           );
         }
 
-        // Check role
         const userId = claimsData.user.id;
         const { data: roleData } = await supabaseClient
           .from("user_roles")
@@ -50,11 +77,8 @@ serve(async (req) => {
             { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
-        isAuthenticated = true;
       }
     }
-
-    // In demo mode (no auth), still allow the function to proceed
 
     const { formData, className, subjectName, teacherName } = await req.json();
 
@@ -118,7 +142,41 @@ serve(async (req) => {
       console.warn("Error fetching training docs:", err);
     }
 
-    const fullSystemPrompt = systemPrompt + trainingContext;
+    // Extract key words from the topic/subject for Webster 1828 lookup
+    let websterContext = "";
+    try {
+      const tema = (formData as Record<string, any>)["Tema da Aula"] || 
+                   (formData as Record<string, any>)["tema_aula"] || 
+                   subjectName || "";
+      
+      if (tema) {
+        // Extract meaningful words (skip short/common words)
+        const stopWords = new Set(["de", "do", "da", "dos", "das", "em", "no", "na", "nos", "nas", "a", "o", "e", "ou", "um", "uma", "para", "com", "por", "se", "que", "os", "as", "ao", "à", "é", "são"]);
+        const words = tema.split(/[\s,;:]+/)
+          .map((w: string) => w.trim())
+          .filter((w: string) => w.length > 3 && !stopWords.has(w.toLowerCase()));
+        
+        // Lookup up to 3 key words
+        const lookupWords = words.slice(0, 3);
+        const definitions: string[] = [];
+        
+        for (const word of lookupWords) {
+          console.log(`Looking up Webster 1828 definition for: ${word}`);
+          const def = await fetchWebsterDefinition(word);
+          if (def) {
+            definitions.push(`**${word}** (Webster 1828): ${def}`);
+          }
+        }
+        
+        if (definitions.length > 0) {
+          websterContext = "\n\n=== DEFINIÇÕES DO DICIONÁRIO NOAH WEBSTER 1828 ===\nAs seguintes definições foram consultadas no Dicionário Webster 1828 (webstersdictionary1828.com). Utilize estas definições no passo PESQUISAR do plano de aula, traduzindo para o Português de Moçambique:\n\n" + definitions.join("\n\n");
+        }
+      }
+    } catch (err) {
+      console.warn("Error fetching Webster definitions:", err);
+    }
+
+    const fullSystemPrompt = systemPrompt + trainingContext + websterContext;
 
     // Build user prompt
     const formEntries = Object.entries(formData as Record<string, string | string[]>)
@@ -137,6 +195,12 @@ Professor: ${teacherName || "Não especificado"}
 DADOS DO FORMULÁRIO:
 ${formEntries}
 
+INSTRUÇÕES IMPORTANTES:
+1. No passo PESQUISAR, inclua SEMPRE a definição das palavras-chave do tema consultadas no Dicionário Noah Webster 1828, traduzidas para o Português de Moçambique.
+2. Utilize as ferramentas AEP selecionadas pelo professor como parte da metodologia do plano.
+3. Inclua referências bíblicas da versão NAA (Nova Almeida Atualizada) alinhadas ao princípio escolhido.
+4. Consulte e siga o material de referência AEP fornecido no contexto do sistema.
+
 Retorne APENAS o HTML do plano de aula, bem formatado com estilos inline para impressão.`;
 
     // Determine API endpoint and key based on provider
@@ -145,9 +209,7 @@ Retorne APENAS o HTML do plano de aula, bem formatado com estilos inline para im
     let requestModel = model;
 
     if (llmProvider === "openai") {
-      // Direct OpenAI
       apiUrl = "https://api.openai.com/v1/chat/completions";
-      // Get key from integration_settings
       const { data: openaiSetting } = await serviceClient
         .from("integration_settings")
         .select("api_key")
@@ -156,7 +218,6 @@ Retorne APENAS o HTML do plano de aula, bem formatado com estilos inline para im
       apiKey = openaiSetting?.api_key || Deno.env.get("OPENAI_API_KEY") || "";
       if (!apiKey) throw new Error("Chave API da OpenAI não configurada.");
     } else if (llmProvider === "google") {
-      // Direct Google AI Studio - uses generateContent endpoint
       const { data: googleSetting } = await serviceClient
         .from("integration_settings")
         .select("api_key")
@@ -165,7 +226,6 @@ Retorne APENAS o HTML do plano de aula, bem formatado com estilos inline para im
       const googleKey = googleSetting?.api_key;
       if (!googleKey) throw new Error("Chave API do Google AI não configurada.");
 
-      // Google AI uses a different API format
       const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${googleKey}`;
       
       const googleResponse = await fetch(googleApiUrl, {
@@ -200,7 +260,6 @@ Retorne APENAS o HTML do plano de aula, bem formatado com estilos inline para im
       apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
       apiKey = Deno.env.get("LOVABLE_API_KEY") || "";
       if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada.");
-      // Model already has prefix like google/gemini-... or openai/gpt-...
       requestModel = model;
     }
 

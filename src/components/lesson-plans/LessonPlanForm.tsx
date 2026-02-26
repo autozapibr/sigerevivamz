@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Sparkles, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { useLessonPlanFields, type LessonPlanField } from '@/hooks/useLessonPlans';
 import { useClasses, useSubjects } from '@/hooks/useGrades';
 
@@ -38,6 +39,17 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate multiselect fields with minimum selections
+    const multiselectFields = fields?.filter(f => f.field_type === 'multiselect') || [];
+    for (const f of multiselectFields) {
+      const selected = (formValues[f.field_name] as string[]) || [];
+      if (f.is_required && selected.length < 2) {
+        toast.error(`Selecione pelo menos 2 opções em "${f.field_label}".`);
+        return;
+      }
+    }
+
     const selectedClass = classes?.find(c => c.id === Number(classId));
     const selectedSubject = subjects?.find(s => s.id === Number(subjectId));
     
@@ -91,12 +103,13 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
       return (
         <div key={field.id} className="space-y-2">
           <Label>{field.field_label} {field.is_required && <span className="text-destructive">*</span>}</Label>
+          <p className="text-xs text-muted-foreground">Selecione pelo menos 2 ferramentas</p>
           <div className="flex flex-wrap gap-2">
             {field.options.map(opt => (
               <Badge
                 key={opt}
                 variant={selected.includes(opt) ? 'default' : 'outline'}
-                className="cursor-pointer select-none"
+                className="cursor-pointer select-none text-xs"
                 onClick={() => handleMultiSelectToggle(field.field_name, opt)}
               >
                 {opt}
@@ -104,6 +117,9 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
               </Badge>
             ))}
           </div>
+          {selected.length > 0 && (
+            <p className="text-xs text-muted-foreground">{selected.length} ferramenta(s) selecionada(s)</p>
+          )}
         </div>
       );
     }
