@@ -165,6 +165,15 @@ export const formatBI = (value: string): string => {
   return value;
 };
 
+// Conversor para formato WhatsApp (apenas dígitos, com código do país)
+export const toWhatsAppFormat = (phone: string): string => {
+  let digits = phone.replace(/\D/g, '');
+  if (!digits.startsWith('258') && digits.length === 9) {
+    digits = '258' + digits;
+  }
+  return digits;
+};
+
 // Formatador de moeda moçambicana
 export const formatMZN = (value: number): string => {
   return new Intl.NumberFormat('pt-MZ', {

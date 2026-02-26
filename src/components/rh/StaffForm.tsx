@@ -309,24 +309,18 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
 
         {/* BI & NUIT */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="bi_number">Número do BI</Label>
-            <Input
-              id="bi_number"
-              placeholder="123456789012L"
-              value={formData.bi_number}
-              onChange={(e) => onChange({ ...formData, bi_number: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="nuit">NUIT</Label>
-            <Input
-              id="nuit"
-              placeholder="123456789"
-              value={formData.nuit}
-              onChange={(e) => onChange({ ...formData, nuit: e.target.value })}
-            />
-          </div>
+          <MozambiqueInput
+            label="Número do BI"
+            mask="BI"
+            value={formData.bi_number}
+            onChange={(value) => onChange({ ...formData, bi_number: value })}
+          />
+          <MozambiqueInput
+            label="NUIT"
+            mask="NUIT"
+            value={formData.nuit}
+            onChange={(value) => onChange({ ...formData, nuit: value })}
+          />
         </div>
 
         {/* Email & Phone */}
