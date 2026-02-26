@@ -42,7 +42,13 @@ export function useTrainingDocsMutations() {
         throw new Error('Ficheiro muito grande. Máximo 10MB.');
       }
 
-      const filePath = `training/${Date.now()}_${file.name}`;
+      // Sanitize filename: remove parentheses, replace accented chars, spaces with underscores
+      const sanitizedName = file.name
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove accents
+        .replace(/[()]/g, '') // remove parentheses
+        .replace(/\s+/g, '_') // spaces to underscores
+        .replace(/[^a-zA-Z0-9._-]/g, ''); // keep only safe chars
+      const filePath = `training/${Date.now()}_${sanitizedName}`;
       
       const { error: uploadError } = await supabase.storage
         .from('aep-training-docs')
