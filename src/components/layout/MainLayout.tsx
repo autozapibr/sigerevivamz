@@ -29,6 +29,16 @@ export function MainLayout({ children, title, subtitle }: MainLayoutProps) {
               {children}
             </div>
           </motion.main>
+
+          <footer className="py-3 px-4 text-center text-xs text-muted-foreground/60 border-t border-border">
+            © 2026 SiGER - Sistema de Gestão Escolar Reviva
+            <span className="mx-1">·</span>
+            Feito com ❤️ por{' '}
+            <a href="https://autozapi.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              AutoZapi
+            </a>{' '}
+            Soluções em TI, AI e Automações.
+          </footer>
         </div>
       </div>
     </SidebarProvider>
