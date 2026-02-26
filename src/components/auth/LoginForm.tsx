@@ -389,9 +389,13 @@ export function LoginForm() {
           </p>
 
           <p className="mt-6 text-center text-xs text-muted-foreground/60">
-            © 2025 SiGER - Sistema de Gestão Escolar Reviva
+            © 2026 SiGER - Sistema de Gestão Escolar Reviva
             <br />
-            Feito com ❤️ em Moçambique
+            Feito com ❤️ por{' '}
+            <a href="https://autozapi.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              AutoZapi
+            </a>{' '}
+            Soluções em TI, AI e Automações.
           </p>
         </div>
       </motion.div>
