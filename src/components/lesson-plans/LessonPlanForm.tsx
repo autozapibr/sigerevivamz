@@ -76,7 +76,15 @@ REGRAS OBRIGATÓRIAS:
 - NÃO use markdown, HTML, negrito, itálico ou qualquer formatação.
 - Apenas 4 linhas de texto puro, uma por versículo, nada mais.`;
       } else if (fieldName === 'ideia_guia') {
-        prompt = `Gere 3 sugestões de Ideia-Guia AEP para o tema "${tema}", disciplina "${selectedSubject?.name || ''}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}${versiculos ? `, versículos: ${versiculos}` : ''}. Cada ideia-guia deve ser uma frase curta que conecte o tema ao princípio bíblico. Formato: numere 1, 2, 3. Responda APENAS em texto puro, sem blocos de código, sem markdown, sem HTML.`;
+        prompt = `Gere exactamente 3 sugestões de Ideia-Guia AEP para o tema "${tema}", disciplina "${selectedSubject?.name || ''}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}.
+
+REGRAS OBRIGATÓRIAS:
+- Cada ideia-guia deve ser UMA frase que conecte o tema aos princípios bíblicos seleccionados.
+- NÃO numere as frases (sem 1., 2., 3.).
+- Separe cada ideia-guia por uma linha em branco.
+- NÃO inclua títulos, cabeçalhos, comentários ou explicações.
+- NÃO use markdown, HTML, negrito, itálico ou qualquer formatação.
+- Apenas 3 frases separadas por linhas em branco, nada mais.`;
       } else if (fieldName === 'objetivos_competencias') {
         prompt = `Gere objectivos e competências para uma aula sobre "${tema}", disciplina "${selectedSubject?.name || ''}", turma "${selectedClass?.name || ''}"${principios.length ? `, princípios AEP: ${principios.join(', ')}` : ''}. Inclua 2 competências da base curricular nacional de Moçambique e 2 objectivos AEP alinhados. Formato: numere. Responda APENAS em texto puro, sem blocos de código, sem markdown, sem HTML.`;
       }
