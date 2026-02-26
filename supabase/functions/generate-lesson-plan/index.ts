@@ -36,6 +36,20 @@ async function fetchWebsterDefinition(word: string): Promise<string | null> {
   }
 }
 
+function decodeJwtPayload(token: string): Record<string, any> | null {
+  try {
+    const [, payloadBase64] = token.split(".");
+    if (!payloadBase64) return null;
+
+    const normalized = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    const json = atob(padded);
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -45,25 +59,32 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabasePublishableKey = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
 
     if (authHeader?.startsWith("Bearer ")) {
-      const token = authHeader.replace("Bearer ", "");
-      
-      // Skip auth validation if the token is the anon key itself (demo mode)
-      if (token !== supabaseAnonKey) {
+      const token = authHeader.replace("Bearer ", "").trim();
+      const tokenPayload = decodeJwtPayload(token);
+      const isAnonDemoToken =
+        token === supabaseAnonKey ||
+        token === supabasePublishableKey ||
+        (tokenPayload?.role === "anon" && !tokenPayload?.sub);
+
+      // Validate only real user JWTs. Demo/anon tokens should bypass auth checks.
+      if (!isAnonDemoToken) {
         const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
           global: { headers: { Authorization: authHeader } },
         });
 
-        const { data: claimsData, error: claimsError } = await supabaseClient.auth.getUser(token);
-        if (claimsError || !claimsData?.user) {
+        const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+        const userId = claimsData?.claims?.sub as string | undefined;
+
+        if (claimsError || !userId) {
           return new Response(
             JSON.stringify({ error: "Token inválido." }),
             { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
 
-        const userId = claimsData.user.id;
         const { data: roleData } = await supabaseClient
           .from("user_roles")
           .select("role")
@@ -80,7 +101,6 @@ serve(async (req) => {
       }
     }
 
-    const { formData, className, subjectName, teacherName } = await req.json();
 
     // Fetch admin config
     const serviceClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
