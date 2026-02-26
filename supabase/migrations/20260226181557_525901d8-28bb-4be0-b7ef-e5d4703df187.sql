@@ -1,0 +1,1 @@
+UPDATE public.lesson_plan_fields SET field_label = 'Textos Bíblicos' WHERE id = 14;

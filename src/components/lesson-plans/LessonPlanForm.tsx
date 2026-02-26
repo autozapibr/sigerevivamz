@@ -65,11 +65,11 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
       let prompt = '';
 
       if (fieldName === 'versiculos_biblicos') {
-        prompt = `Sugira 3 versículos bíblicos (versão NAA) relacionados ao tema "${tema}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}. Formato: Referência - Texto breve. Inclua AT e NT.`;
+        prompt = `Sugira 3 versículos bíblicos (versão NAA) relacionados ao tema "${tema}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}. Formato: Referência - Texto breve. Inclua AT e NT. Responda APENAS em texto puro, sem blocos de código, sem markdown, sem HTML.`;
       } else if (fieldName === 'ideia_guia') {
-        prompt = `Gere 3 sugestões de Ideia-Guia AEP para o tema "${tema}", disciplina "${selectedSubject?.name || ''}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}${versiculos ? `, versículos: ${versiculos}` : ''}. Cada ideia-guia deve ser uma frase curta que conecte o tema ao princípio bíblico. Formato: numere 1, 2, 3. Sem HTML, texto puro.`;
+        prompt = `Gere 3 sugestões de Ideia-Guia AEP para o tema "${tema}", disciplina "${selectedSubject?.name || ''}"${principios.length ? `, princípios: ${principios.join(', ')}` : ''}${palavras ? `, palavras-chave: ${palavras}` : ''}${versiculos ? `, versículos: ${versiculos}` : ''}. Cada ideia-guia deve ser uma frase curta que conecte o tema ao princípio bíblico. Formato: numere 1, 2, 3. Responda APENAS em texto puro, sem blocos de código, sem markdown, sem HTML.`;
       } else if (fieldName === 'objetivos_competencias') {
-        prompt = `Gere objectivos e competências para uma aula sobre "${tema}", disciplina "${selectedSubject?.name || ''}", turma "${selectedClass?.name || ''}"${principios.length ? `, princípios AEP: ${principios.join(', ')}` : ''}. Inclua 2 competências da base curricular nacional de Moçambique e 2 objectivos AEP alinhados. Formato: numere, sem HTML, texto puro.`;
+        prompt = `Gere objectivos e competências para uma aula sobre "${tema}", disciplina "${selectedSubject?.name || ''}", turma "${selectedClass?.name || ''}"${principios.length ? `, princípios AEP: ${principios.join(', ')}` : ''}. Inclua 2 competências da base curricular nacional de Moçambique e 2 objectivos AEP alinhados. Formato: numere. Responda APENAS em texto puro, sem blocos de código, sem markdown, sem HTML.`;
       }
 
       const { data, error } = await supabase.functions.invoke('generate-lesson-plan', {
@@ -82,7 +82,10 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
       });
 
       if (error) throw error;
-      const content = (data?.content || '').replace(/<[^>]*>/g, '').trim();
+      const content = (data?.content || '')
+        .replace(/```[\w]*\n?/g, '')  // remove ```html, ```xml, etc.
+        .replace(/<[^>]*>/g, '')       // remove HTML tags
+        .trim();
       handleFieldChange(fieldName, content);
       toast.success('Conteúdo gerado pela IA! Edite conforme necessário.');
     } catch (err: any) {
@@ -116,6 +119,12 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
       return;
     }
 
+    const ferramentas = (formValues['ferramentas_aep'] as string[]) || [];
+    if (ferramentas.length < 1) {
+      toast.error('Selecione pelo menos 1 Ferramenta da AEP.');
+      return;
+    }
+
     const palavrasText = (formValues['palavras_chave'] || '').trim();
     const palavrasCount = palavrasText ? palavrasText.split(/[,;]+/).filter((w: string) => w.trim()).length : 0;
     if (palavrasCount < 3) {
@@ -144,14 +153,14 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
 
   const getMultiSelectConfig = (fieldName: string) => {
     if (fieldName === 'principio') return { min: 2, max: 2, hint: 'Selecione exactamente 2 princípios' };
-    if (fieldName === 'ferramentas_aep') return { min: 0, max: undefined, hint: 'Selecione as ferramentas desejadas (opcional)' };
+    if (fieldName === 'ferramentas_aep') return { min: 1, max: undefined, hint: 'Selecione pelo menos 1 ferramenta' };
     return { min: 1, max: undefined, hint: '' };
   };
 
   const renderField = (field: LessonPlanField) => {
     const value = formValues[field.field_name];
     const isAiLoading = aiLoadingField === field.field_name;
-    const isOptional = !field.is_required || field.field_name === 'ferramentas_aep';
+    const isOptional = !field.is_required;
     const hasAiAssist = AI_ASSIST_FIELDS.includes(field.field_name);
 
     // Select field
