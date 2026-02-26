@@ -74,10 +74,8 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
 
       const { data, error } = await supabase.functions.invoke('generate-lesson-plan', {
         body: {
-          formData: { 'Pedido': prompt },
-          className: selectedClass?.name || '',
-          subjectName: selectedSubject?.name || '',
-          teacherName: '',
+          mode: 'assist',
+          prompt,
         },
       });
 

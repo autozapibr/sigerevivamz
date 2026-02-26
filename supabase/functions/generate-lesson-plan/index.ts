@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 // Fetch word definition from Webster's 1828 Dictionary
@@ -17,13 +17,11 @@ async function fetchWebsterDefinition(word: string): Promise<string | null> {
 
     const html = await response.text();
     
-    // Extract definition from the page HTML
     const defMatch = html.match(/<p[^>]*class="[^"]*defword[^"]*"[^>]*>([\s\S]*?)<\/p>/i) ||
                      html.match(/<div[^>]*class="[^"]*definition[^"]*"[^>]*>([\s\S]*?)<\/div>/i) ||
                      html.match(/<p[^>]*>([\s\S]{50,500}?)<\/p>/i);
     
     if (defMatch) {
-      // Strip HTML tags
       const cleanDef = defMatch[1].replace(/<[^>]+>/g, "").trim();
       if (cleanDef.length > 20) {
         return cleanDef.substring(0, 800);
@@ -69,7 +67,6 @@ serve(async (req) => {
         token === supabasePublishableKey ||
         (tokenPayload?.role === "anon" && !tokenPayload?.sub);
 
-      // Validate only real user JWTs. Demo/anon tokens should bypass auth checks.
       if (!isAnonDemoToken) {
         const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
           global: { headers: { Authorization: authHeader } },
@@ -101,7 +98,8 @@ serve(async (req) => {
       }
     }
 
-    const { formData, className, subjectName, teacherName } = await req.json();
+    const body = await req.json();
+    const { formData, className, subjectName, teacherName, mode, prompt: directPrompt } = body;
 
     // Fetch admin config
     const serviceClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -114,15 +112,139 @@ serve(async (req) => {
       configMap[c.config_key] = c.config_value;
     });
 
-    const systemPrompt = configMap["system_prompt"] || "Gere um plano de aula AEP.";
     const llmProvider = configMap["llm_provider"] || "lovable_ai";
     let model = configMap["model"] || "google/gemini-3-flash-preview";
     const temperature = parseFloat(configMap["temperature"] || "0.4");
     const maxTokens = parseInt(configMap["max_tokens"] || "4000");
 
     // Strip provider prefix from model name for direct API calls
-    // e.g. "google/gemini-2.5-flash" -> "gemini-2.5-flash"
     const cleanModel = model.includes("/") ? model.split("/").pop()! : model;
+
+    // ========== ASSIST MODE ==========
+    // When mode === 'assist', we use a simple system prompt and the direct prompt
+    // without all the full lesson plan generation context.
+    if (mode === "assist") {
+      console.log("Assist mode: generating field-specific content");
+
+      const assistSystemPrompt = `Você é um assistente pedagógico especializado na Abordagem Educacional por Princípios (AEP) para escolas cristãs em Moçambique.
+
+REGRAS ABSOLUTAS:
+- Responda APENAS com o conteúdo solicitado, nada mais.
+- NÃO gere planos de aula completos.
+- NÃO inclua cabeçalhos como "PLANO DE AULA", "OBJETIVOS", "FERRAMENTAS", etc.
+- NÃO use markdown (sem \`\`\`, sem **, sem ##).
+- NÃO use HTML (sem <div>, <p>, <h1>, etc.).
+- Responda em texto puro simples.
+- Use numeração simples (1., 2., 3.) quando aplicável.
+- Seja conciso e directo.`;
+
+      const assistUserPrompt = directPrompt || "";
+
+      // Call AI with minimal context
+      let apiUrl: string;
+      let apiKey: string;
+      let requestModel = model;
+
+      if (llmProvider === "openai") {
+        apiUrl = "https://api.openai.com/v1/chat/completions";
+        const { data: openaiSetting } = await serviceClient
+          .from("integration_settings")
+          .select("api_key")
+          .eq("integration_name", "openai")
+          .single();
+        apiKey = openaiSetting?.api_key || Deno.env.get("OPENAI_API_KEY") || "";
+        if (!apiKey) throw new Error("Chave API da OpenAI não configurada.");
+      } else if (llmProvider === "google") {
+        const { data: googleSetting } = await serviceClient
+          .from("integration_settings")
+          .select("api_key")
+          .eq("integration_name", "google_ai")
+          .single();
+        const googleKey = googleSetting?.api_key;
+        if (!googleKey) throw new Error("Chave API do Google AI não configurada.");
+
+        const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${googleKey}`;
+        
+        const googleResponse = await fetch(googleApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              { role: "user", parts: [{ text: assistSystemPrompt + "\n\n" + assistUserPrompt }] }
+            ],
+            generationConfig: {
+              temperature: 0.3,
+              maxOutputTokens: 800,
+            },
+          }),
+        });
+
+        if (!googleResponse.ok) {
+          const errText = await googleResponse.text();
+          console.error("Google AI assist error:", googleResponse.status, errText);
+          throw new Error("Erro ao gerar conteúdo com Google AI: " + errText);
+        }
+
+        const googleData = await googleResponse.json();
+        const generatedContent = googleData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+        return new Response(
+          JSON.stringify({ success: true, content: generatedContent }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } else {
+        apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
+        apiKey = Deno.env.get("LOVABLE_API_KEY") || "";
+        if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada.");
+        requestModel = model;
+      }
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: requestModel,
+          messages: [
+            { role: "system", content: assistSystemPrompt },
+            { role: "user", content: assistUserPrompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 800,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(
+            JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        if (response.status === 402) {
+          return new Response(
+            JSON.stringify({ error: "Créditos insuficientes. Adicione créditos à sua conta." }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        const errorText = await response.text();
+        console.error("AI assist error:", response.status, errorText);
+        throw new Error("Erro ao gerar conteúdo com IA");
+      }
+
+      const data = await response.json();
+      const generatedContent = data.choices?.[0]?.message?.content || "";
+
+      return new Response(
+        JSON.stringify({ success: true, content: generatedContent }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ========== FULL PLAN MODE (default) ==========
+    const systemPrompt = configMap["system_prompt"] || "Gere um plano de aula AEP.";
 
     // Fetch active training documents content
     let trainingContext = "";
@@ -167,7 +289,7 @@ serve(async (req) => {
       console.warn("Error fetching training docs:", err);
     }
 
-    // Extract key words from the topic/subject for Webster 1828 lookup
+    // Extract key words for Webster 1828 lookup
     let websterContext = "";
     try {
       const tema = (formData as Record<string, any>)["Tema da Aula"] || 
@@ -175,13 +297,11 @@ serve(async (req) => {
                    subjectName || "";
       
       if (tema) {
-        // Extract meaningful words (skip short/common words)
         const stopWords = new Set(["de", "do", "da", "dos", "das", "em", "no", "na", "nos", "nas", "a", "o", "e", "ou", "um", "uma", "para", "com", "por", "se", "que", "os", "as", "ao", "à", "é", "são"]);
         const words = tema.split(/[\s,;:]+/)
           .map((w: string) => w.trim())
           .filter((w: string) => w.length > 3 && !stopWords.has(w.toLowerCase()));
         
-        // Lookup up to 3 key words
         const lookupWords = words.slice(0, 3);
         const definitions: string[] = [];
         
@@ -293,7 +413,6 @@ FORMATO DE SAÍDA:
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } else {
-      // Lovable AI Gateway (default)
       apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
       apiKey = Deno.env.get("LOVABLE_API_KEY") || "";
       if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada.");
