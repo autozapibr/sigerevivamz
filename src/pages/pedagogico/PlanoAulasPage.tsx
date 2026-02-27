@@ -41,6 +41,7 @@ export default function PlanoAulasPage() {
   }, [plans, searchQuery]);
 
   const [generatedContent, setGeneratedContent] = useState('');
+  const [isSaved, setIsSaved] = useState(false);
   const [currentFormData, setCurrentFormData] = useState<Record<string, any>>({});
   const [currentClassId, setCurrentClassId] = useState<number | undefined>();
   const [currentSubjectId, setCurrentSubjectId] = useState<number | undefined>();
@@ -92,6 +93,7 @@ export default function PlanoAulasPage() {
 
   useEffect(() => {
     if (savePlan.isSuccess) {
+      setIsSaved(true);
       try {
         sessionStorage.removeItem(LESSON_PLAN_DRAFT_KEY);
       } catch {
@@ -121,6 +123,7 @@ export default function PlanoAulasPage() {
         teacherName: user?.name || '',
       });
       setGeneratedContent(result);
+      setIsSaved(false);
     } catch (error: any) {
       console.error('Erro ao gerar plano:', error);
       toast({
@@ -188,7 +191,9 @@ export default function PlanoAulasPage() {
               <LessonPlanPreview
                 content={generatedContent}
                 onSave={handleSave}
+                onClose={() => { setGeneratedContent(''); setIsSaved(false); }}
                 isSaving={savePlan.isPending}
+                isSaved={isSaved}
                 teacherName={user?.name || ''}
                 className={currentClassName}
                 subjectName={currentSubjectName}
