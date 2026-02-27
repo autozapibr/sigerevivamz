@@ -94,6 +94,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Protect dev bypass users from unexpected SIGNED_OUT events
+      if (event === 'SIGNED_OUT') {
+        try {
+          const stored = sessionStorage.getItem('sge_dev_user');
+          if (stored) {
+            dispatch({ type: 'DEV_BYPASS', payload: JSON.parse(stored) });
+            return; // Don't logout dev user
+          }
+        } catch {}
+      }
       handleSession(session);
     });
 
