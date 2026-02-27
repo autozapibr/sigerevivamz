@@ -332,7 +332,7 @@ const AppRoutes = () => {
   );
 };
 
-// Prevent white screen from unhandled promise rejections
+// Prevent white screen from unhandled promise rejections (v2)
 if (typeof window !== 'undefined') {
   window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled rejection:', event.reason);
