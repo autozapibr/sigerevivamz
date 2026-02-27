@@ -40,6 +40,7 @@ import BibliotecaPage from "./pages/BibliotecaPage";
 import CalendarioProvasPage from "./pages/pedagogico/CalendarioProvasPage";
 import PlanoAulasPage from "./pages/pedagogico/PlanoAulasPage";
 import CurriculoPage from "./pages/pedagogico/CurriculoPage";
+import ArquivosPage from "./pages/pedagogico/ArquivosPage";
 import ColaboradoresPage from "./pages/rh/ColaboradoresPage";
 import DocumentacaoPage from "./pages/rh/DocumentacaoPage";
 import ContratosPage from "./pages/rh/ContratosPage";
@@ -326,7 +327,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
+      <Route
+        path="/arquivos"
+        element={
+          <ProtectedRoute>
+            <ArquivosPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

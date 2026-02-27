@@ -1754,6 +1754,76 @@ export type Database = {
         }
         Relationships: []
       }
+      teacher_files: {
+        Row: {
+          category: string
+          class_id: number | null
+          created_at: string | null
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: number
+          mime_type: string | null
+          subject_id: number | null
+          teacher_name: string
+          teacher_user_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string
+          class_id?: number | null
+          created_at?: string | null
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: never
+          mime_type?: string | null
+          subject_id?: number | null
+          teacher_name: string
+          teacher_user_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          class_id?: number | null
+          created_at?: string | null
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: never
+          mime_type?: string | null
+          subject_id?: number | null
+          teacher_name?: string
+          teacher_user_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_files_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_files_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "teacher_files_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teachers: {
         Row: {
           address: string | null

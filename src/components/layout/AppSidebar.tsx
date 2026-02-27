@@ -55,6 +55,7 @@ const systemModules = {
       { title: 'Calendário de Provas', url: '/calendario-provas', icon: Calendar },
       { title: 'Plano de Aulas', url: '/plano-aulas', icon: BookMarked },
       { title: 'Currículo', url: '/curriculo', icon: FileSpreadsheet },
+      { title: 'Arquivos', url: '/arquivos', icon: FileCheck },
     ],
   },
   gestao_financeira: {
