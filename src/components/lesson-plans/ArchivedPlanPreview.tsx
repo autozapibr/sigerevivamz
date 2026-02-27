@@ -182,11 +182,35 @@ export function ArchivedPlanPreview({ open, onOpenChange, filePath, fileName, te
               <LoadingSpinner />
             </div>
           ) : htmlContent ? (
-            <div
-              className="px-8 py-8"
-              style={{ fontFamily: "'Work Sans', sans-serif", fontWeight: 400, color: '#1a1a1a', fontSize: '12px', lineHeight: '1.7' }}
-              dangerouslySetInnerHTML={{ __html: htmlContent }}
-            />
+          <div className="px-8 py-8 lesson-plan-screen-preview">
+              <style dangerouslySetInnerHTML={{ __html: `
+                .lesson-plan-screen-preview {
+                  font-family: 'Inter', 'Work Sans', sans-serif;
+                  font-size: 14px;
+                  line-height: 1.75;
+                  color: hsl(20 14.3% 8%);
+                }
+                .lesson-plan-screen-preview h1 { display: none; }
+                .lesson-plan-screen-preview h2 {
+                  font-size: 17px; font-weight: 700; color: hsl(140 37% 28%);
+                  margin: 24px 0 10px; padding-bottom: 6px;
+                  border-bottom: 1.5px solid hsl(140 37% 28% / 0.25);
+                }
+                .lesson-plan-screen-preview h3 { font-size: 15px; font-weight: 600; color: hsl(140 25% 35%); margin: 20px 0 8px; }
+                .lesson-plan-screen-preview h4 { font-size: 14px; font-weight: 600; color: hsl(20 14.3% 12%); margin: 16px 0 6px; }
+                .lesson-plan-screen-preview p { margin: 8px 0; }
+                .lesson-plan-screen-preview ul, .lesson-plan-screen-preview ol { padding-left: 24px; margin: 8px 0; }
+                .lesson-plan-screen-preview li { margin: 5px 0; }
+                .lesson-plan-screen-preview strong { font-weight: 600; }
+                .lesson-plan-screen-preview blockquote { border-left: 3px solid hsl(140 37% 28%); margin: 12px 0; padding: 12px 18px; background: hsl(140 25% 96%); font-style: italic; border-radius: 6px; }
+                .lesson-plan-screen-preview table { border-collapse: collapse; width: 100%; margin: 14px 0; }
+                .lesson-plan-screen-preview th { background: hsl(140 37% 28%); color: white; padding: 8px 12px; text-align: left; font-size: 13px; font-weight: 600; }
+                .lesson-plan-screen-preview td { border: 1px solid hsl(140 10% 82%); padding: 7px 12px; font-size: 13px; }
+                .lesson-plan-screen-preview tr:nth-child(even) td { background: hsl(140 10% 97%); }
+                .lesson-plan-screen-preview hr { border: none; border-top: 1px solid hsl(140 10% 82%); margin: 16px 0; }
+              `}} />
+              <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+            </div>
           ) : null}
         </div>
       </DialogContent>
