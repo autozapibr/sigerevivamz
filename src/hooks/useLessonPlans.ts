@@ -132,20 +132,59 @@ export function useLessonPlanMutations() {
       teacher_name?: string;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Utilizador não autenticado.');
+
+      // 1. Save to lesson_plans table
       const { data, error } = await supabase
         .from('lesson_plans')
         .insert({
           ...plan,
-          teacher_id: user?.id,
+          teacher_id: user.id,
         })
         .select()
         .single();
       if (error) throw error;
+
+      // 2. Auto-archive as HTML file in teacher_files (Arquivos)
+      try {
+        const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${plan.title}</title></head><body>${plan.generated_content}</body></html>`;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const sanitizedTitle = plan.title
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[()]/g, '')
+          .replace(/\s+/g, '_')
+          .replace(/[^a-zA-Z0-9._-]/g, '');
+        const filePath = `${user.id}/${Date.now()}_${sanitizedTitle}.html`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('teacher-files')
+          .upload(filePath, blob);
+
+        if (!uploadError) {
+          const teacherName = plan.teacher_name || user.email || 'Professor';
+          await supabase.from('teacher_files').insert({
+            teacher_user_id: user.id,
+            teacher_name: teacherName,
+            file_name: `${plan.title}.html`,
+            file_path: filePath,
+            file_size: blob.size,
+            mime_type: 'text/html',
+            category: 'Plano de Aula',
+            description: `Plano gerado automaticamente - ${plan.title}`,
+            subject_id: plan.subject_id || null,
+            class_id: plan.class_id || null,
+          });
+        }
+      } catch (archiveErr) {
+        console.warn('Falha ao arquivar plano de aula:', archiveErr);
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lesson-plans'] });
-      toast.success('Plano de aula guardado!');
+      queryClient.invalidateQueries({ queryKey: ['teacher-files'] });
+      toast.success('Plano de aula guardado e arquivado!');
     },
     onError: (error) => {
       toast.error('Erro ao guardar plano', { description: error.message });
