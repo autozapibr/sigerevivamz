@@ -154,7 +154,8 @@ export default function PlanoAulasPage() {
       return;
     }
 
-    const title = `${currentSubjectName || 'Plano'} - ${currentClassName || 'Turma'} - ${new Date().toLocaleDateString('pt-MZ')}`;
+    const temaAula = (currentFormData as Record<string, unknown>)?.['tema_aula'] as string || '';
+    const title = `${currentSubjectName || 'Plano'} - ${currentClassName || 'Turma'} - ${temaAula || 'Sem tema'}`;
     savePlan.mutate({
       title,
       class_id: currentClassId || null,
