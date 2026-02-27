@@ -46,7 +46,14 @@ import ContratosPage from "./pages/rh/ContratosPage";
 import SignContract from "./pages/SignContract";
 import ComunicacaoPage from "./pages/ComunicacaoPage";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    },
+  },
+});
 
 // Componente para proteger rotas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {

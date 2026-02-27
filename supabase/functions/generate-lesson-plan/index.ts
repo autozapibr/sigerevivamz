@@ -418,8 +418,8 @@ REGRAS DE IDIOMA E ESTILO:
 O plano DEVE conter TODAS as secções abaixo, nesta ordem exacta:
 
 1. 📌 INFORMAÇÕES GERAIS
-   - Inicie por esta secção imediatamente após o título "Plano de Aula AEP"
-   - NÃO repita o cabeçalho institucional e NÃO crie tabela de dados da escola/professor/turma/disciplina (já existe no topo do documento)
+   - Comece DIRECTAMENTE com <h1>PLANO DE AULA AEP</h1> seguido de <h2>1. 📌 INFORMAÇÕES GERAIS</h2>
+   - NÃO crie blocos de dados da escola, professor, turma ou disciplina. NÃO inclua <div class="header-info">. NÃO crie tabelas com estes dados. Eles já existem no cabeçalho institucional do documento.
 
 2. 💡 IDEIA-GUIA
    - Use apenas 1 ideia-guia final (se houver várias sugestões, seleccione a melhor)

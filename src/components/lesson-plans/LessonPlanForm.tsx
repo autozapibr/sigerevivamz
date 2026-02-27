@@ -247,7 +247,6 @@ REGRAS OBRIGATÓRIAS:
         <div key={field.id} className="space-y-1.5">
           <Label className="text-xs font-semibold">
             {field.field_label} {!isOptional && <span className="text-destructive">*</span>}
-            {isOptional && <span className="text-muted-foreground font-normal ml-1">(opcional)</span>}
           </Label>
           <Select value={value || ''} onValueChange={v => handleFieldChange(field.field_name, v)}>
             <SelectTrigger className="h-9">
@@ -271,7 +270,6 @@ REGRAS OBRIGATÓRIAS:
         <div key={field.id} className="space-y-1.5">
           <Label className="text-xs font-semibold">
             {field.field_label} {!isOptional && <span className="text-destructive">*</span>}
-            {isOptional && <span className="text-muted-foreground font-normal ml-1">(opcional)</span>}
           </Label>
           <p className="text-[11px] text-muted-foreground flex items-center gap-1">
             <Info className="h-3 w-3 shrink-0" />
@@ -305,7 +303,6 @@ REGRAS OBRIGATÓRIAS:
         <div key={field.id} className="space-y-1.5">
           <Label className="text-xs font-semibold">
             {field.field_label} {!isOptional && <span className="text-destructive">*</span>}
-            {isOptional && <span className="text-muted-foreground font-normal ml-1">(opcional)</span>}
           </Label>
           <div className="relative">
             <Textarea
@@ -351,9 +348,8 @@ REGRAS OBRIGATÓRIAS:
       <div key={field.id} className="space-y-1.5">
         <Label className="text-xs font-semibold">
           {field.field_label} {!isOptional && <span className="text-destructive">*</span>}
-          {isOptional && <span className="text-muted-foreground font-normal ml-1">(opcional)</span>}
-        </Label>
-        <Input
+          </Label>
+          <Input
           value={value || ''}
           onChange={e => handleFieldChange(field.field_name, e.target.value)}
           placeholder={getPlaceholder(field.field_name)}

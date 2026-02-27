@@ -141,6 +141,16 @@ export default function PlanoAulasPage() {
       return;
     }
 
+    // Block save in demo/dev mode
+    if (user?.id?.startsWith('dev-')) {
+      toast({
+        title: 'Sessão de demonstração',
+        description: 'Guardar planos requer autenticação real. Use Imprimir ou Descarregar PDF.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const title = `${currentSubjectName || 'Plano'} - ${currentClassName || 'Turma'} - ${new Date().toLocaleDateString('pt-MZ')}`;
     savePlan.mutate({
       title,
