@@ -54,8 +54,8 @@ const systemModules = {
       { title: 'Assiduidade', url: '/presencas', icon: ClipboardCheck },
       { title: 'Calendário', url: '/calendario-provas', icon: Calendar },
       { title: 'Plano de Aula', url: '/plano-aulas', icon: BookMarked },
-      { title: 'Currículo', url: '/curriculo', icon: FileSpreadsheet },
       { title: 'Arquivos', url: '/arquivos', icon: FileCheck },
+      { title: 'Currículo', url: '/curriculo', icon: FileSpreadsheet },
     ],
   },
   gestao_financeira: {
