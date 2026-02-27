@@ -50,7 +50,7 @@ export default function CalendarioProvasPage() {
     title: '',
     description: '',
     date: '',
-    type: 'Prova',
+    type: 'Actividade',
     start_time: null,
     end_time: null,
     location: null,
@@ -69,9 +69,9 @@ export default function CalendarioProvasPage() {
   const markRead = useMarkExamNotificationRead();
   const markAllRead = useMarkAllExamNotificationsRead();
 
-  // Filter only exams
-  const exams = useMemo(() => {
-    let filtered = allEvents.filter(e => e.type === 'Prova');
+  // Filter events (show all types, not just exams)
+  const events = useMemo(() => {
+    let filtered = allEvents;
     
     if (filters.class_id) {
       filtered = filtered.filter(e => e.class_id === filters.class_id);
@@ -86,16 +86,17 @@ export default function CalendarioProvasPage() {
   // Stats
   const stats = useMemo(() => {
     const now = new Date();
-    const upcoming = exams.filter(e => !isBefore(parseISO(e.date), now));
-    const past = exams.filter(e => isBefore(parseISO(e.date), now));
+    const upcoming = events.filter(e => !isBefore(parseISO(e.date), now));
+    const past = events.filter(e => isBefore(parseISO(e.date), now));
     const thisWeek = upcoming.filter(e => {
-      const examDate = parseISO(e.date);
+      const eventDate = parseISO(e.date);
       const weekEnd = addDays(now, 7);
-      return !isBefore(examDate, now) && isBefore(examDate, weekEnd);
+      return !isBefore(eventDate, now) && isBefore(eventDate, weekEnd);
     });
+    const provas = events.filter(e => e.type === 'Prova').length;
     
-    return { total: exams.length, upcoming: upcoming.length, past: past.length, thisWeek: thisWeek.length };
-  }, [exams]);
+    return { total: events.length, upcoming: upcoming.length, past: past.length, thisWeek: thisWeek.length, provas };
+  }, [events]);
 
   // Calendar calculations
   const monthStart = startOfMonth(currentDate);
@@ -107,9 +108,9 @@ export default function CalendarioProvasPage() {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  const getExamsForDay = (date: Date) => {
+  const getEventsForDay = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return exams.filter(e => e.date === dateStr);
+    return events.filter(e => e.date === dateStr);
   };
 
   const navigate = (direction: number) => {
@@ -126,15 +127,15 @@ export default function CalendarioProvasPage() {
     setShowCreateDialog(true);
   };
 
-  const handleCreateExam = async () => {
+  const handleCreateEvent = async () => {
     if (!formData.title || !formData.date) return;
-    await createEvent.mutateAsync({ ...formData, type: 'Prova' });
+    await createEvent.mutateAsync(formData);
     setShowCreateDialog(false);
     setFormData({
       title: '',
       description: '',
       date: '',
-      type: 'Prova',
+      type: 'Actividade',
       start_time: null,
       end_time: null,
       location: null,
@@ -144,7 +145,7 @@ export default function CalendarioProvasPage() {
     });
   };
 
-  const canManageExams = user?.role === 'ADMIN' || user?.role === 'DIRETORIA' || 
+  const canManageEvents = user?.role === 'ADMIN' || user?.role === 'DIRETORIA' || 
                           user?.role === 'PROFESSOR' || user?.role === 'PEDAGOGICO';
 
   const weekDayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -152,8 +153,8 @@ export default function CalendarioProvasPage() {
 
   return (
     <MainLayout 
-      title="Calendário de Provas" 
-      subtitle="Agendamento e visualização de avaliações"
+      title="Calendário" 
+      subtitle="Provas, actividades e eventos do professor"
     >
       <div className="space-y-4 md:space-y-6">
         {/* Stats Cards */}
@@ -378,7 +379,7 @@ export default function CalendarioProvasPage() {
                   Hoje
                 </Button>
                 
-                {canManageExams && (
+                {canManageEvents && (
                   <Button 
                     size="sm" 
                     onClick={() => { 
@@ -388,7 +389,7 @@ export default function CalendarioProvasPage() {
                     }}
                   >
                     <Plus className="h-4 w-4 md:mr-2" />
-                    <span className="hidden sm:inline">Agendar Prova</span>
+                    <span className="hidden sm:inline">Novo Evento</span>
                   </Button>
                 )}
               </div>
@@ -438,7 +439,7 @@ export default function CalendarioProvasPage() {
                   {/* Calendar Grid */}
                   <div className="grid grid-cols-7 gap-1">
                     {monthDays.map(day => {
-                      const dayExams = getExamsForDay(day);
+                      const dayExams = getEventsForDay(day);
                       const isCurrentMonth = isSameMonth(day, currentDate);
                       
                       return (
@@ -449,23 +450,32 @@ export default function CalendarioProvasPage() {
                             ${!isCurrentMonth ? 'opacity-40' : ''}
                           `}
                           whileHover={{ scale: 1.02 }}
-                          onClick={() => canManageExams && handleDayClick(day)}
+                          onClick={() => canManageEvents && handleDayClick(day)}
                         >
                           <div className={`text-xs md:text-sm font-medium mb-1 ${isToday(day) ? 'text-primary' : ''}`}>
                             {format(day, 'd')}
                           </div>
                           <div className="space-y-0.5 md:space-y-1">
-                            {dayExams.slice(0, 2).map((exam) => (
-                              <div
-                                key={exam.id}
-                                className="text-[10px] md:text-xs p-0.5 md:p-1 rounded truncate bg-orange-500 text-white"
-                                title={`${exam.title}${exam.classes ? ` - ${exam.classes.name}` : ''}`}
-                                onClick={(e) => { e.stopPropagation(); setSelectedExam(exam); }}
-                              >
-                                <span className="hidden sm:inline">{exam.title}</span>
-                                <span className="sm:hidden">{exam.title.substring(0, 3)}...</span>
-                              </div>
-                            ))}
+                            {dayExams.slice(0, 2).map((exam) => {
+                              const colorMap: Record<string, string> = {
+                                Prova: 'bg-orange-500 text-white',
+                                Actividade: 'bg-emerald-500 text-white',
+                                Evento: 'bg-blue-500 text-white',
+                                Prazo: 'bg-purple-500 text-white',
+                                Feriado: 'bg-red-500 text-white',
+                              };
+                              return (
+                                <div
+                                  key={exam.id}
+                                  className={`text-[10px] md:text-xs p-0.5 md:p-1 rounded truncate ${colorMap[exam.type] || 'bg-primary text-primary-foreground'}`}
+                                  title={`[${exam.type}] ${exam.title}${exam.classes ? ` - ${exam.classes.name}` : ''}`}
+                                  onClick={(e) => { e.stopPropagation(); setSelectedExam(exam); }}
+                                >
+                                  <span className="hidden sm:inline">{exam.title}</span>
+                                  <span className="sm:hidden">{exam.title.substring(0, 3)}...</span>
+                                </div>
+                              );
+                            })}
                             {dayExams.length > 2 && (
                               <div className="text-[10px] md:text-xs text-muted-foreground">
                                 +{dayExams.length - 2}
@@ -492,7 +502,7 @@ export default function CalendarioProvasPage() {
                 <CardContent className="p-2 md:p-4">
                   <div className="space-y-2">
                     {weekDays.map(day => {
-                      const dayExams = getExamsForDay(day);
+                      const dayExams = getEventsForDay(day);
                       
                       return (
                         <motion.div
@@ -501,7 +511,7 @@ export default function CalendarioProvasPage() {
                             ${isToday(day) ? 'bg-primary/10 border-primary' : 'border-border hover:bg-muted/50'}
                           `}
                           whileHover={{ scale: 1.01 }}
-                          onClick={() => canManageExams && handleDayClick(day)}
+                          onClick={() => canManageEvents && handleDayClick(day)}
                         >
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
@@ -572,18 +582,18 @@ export default function CalendarioProvasPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Lista de Provas - {format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })}</CardTitle>
-                  <CardDescription>{exams.length} prova(s) encontrada(s)</CardDescription>
+                  <CardTitle className="text-lg">Eventos - {format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })}</CardTitle>
+                  <CardDescription>{events.length} evento(s) encontrado(s)</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {exams.length === 0 ? (
+                  {events.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <GraduationCap className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                      <p>Nenhuma prova agendada para este período</p>
+                      <p>Nenhum evento para este período</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {exams
+                      {events
                         .sort((a, b) => a.date.localeCompare(b.date))
                         .map((exam) => {
                           const isPast = isBefore(parseISO(exam.date), new Date());
@@ -649,13 +659,13 @@ export default function CalendarioProvasPage() {
         </AnimatePresence>
       </div>
 
-      {/* Create Exam Dialog */}
+      {/* Create Event Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5 text-orange-500" />
-              Agendar Nova Prova
+              <Calendar className="h-5 w-5 text-primary" />
+              Novo Evento
             </DialogTitle>
             <DialogDescription>
               {selectedDate && `Data: ${format(selectedDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}`}
@@ -664,18 +674,36 @@ export default function CalendarioProvasPage() {
           
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Título da Prova *</Label>
+              <Label htmlFor="title">Título *</Label>
               <Input
                 id="title"
-                placeholder="Ex: Prova de Matemática - 1º Trimestre"
+                placeholder="Ex: Reunião de pais, Prova de Matemática..."
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label>Tipo *</Label>
+              <Select 
+                value={formData.type} 
+                onValueChange={(v) => setFormData({ ...formData, type: v as any })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Actividade">Actividade</SelectItem>
+                  <SelectItem value="Prova">Prova</SelectItem>
+                  <SelectItem value="Evento">Evento</SelectItem>
+                  <SelectItem value="Prazo">Prazo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="class_id">Turma *</Label>
+                <Label htmlFor="class_id">Turma</Label>
                 <Select 
                   value={formData.class_id?.toString() || ''} 
                   onValueChange={(v) => setFormData({ ...formData, class_id: v ? parseInt(v) : null })}
@@ -692,7 +720,7 @@ export default function CalendarioProvasPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="subject_id">Disciplina *</Label>
+                <Label htmlFor="subject_id">Disciplina</Label>
                 <Select 
                   value={formData.subject_id?.toString() || ''} 
                   onValueChange={(v) => setFormData({ ...formData, subject_id: v ? parseInt(v) : null })}
@@ -757,10 +785,10 @@ export default function CalendarioProvasPage() {
               Cancelar
             </Button>
             <Button 
-              onClick={handleCreateExam}
-              disabled={!formData.title || !formData.class_id || !formData.subject_id || createEvent.isPending}
+              onClick={handleCreateEvent}
+              disabled={!formData.title || createEvent.isPending}
             >
-              {createEvent.isPending ? 'Aguarde...' : 'Agendar Prova'}
+              {createEvent.isPending ? 'Aguarde...' : 'Criar Evento'}
             </Button>
           </DialogFooter>
         </DialogContent>

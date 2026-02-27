@@ -2311,7 +2311,12 @@ export type Database = {
         | "PEDAGOGICO"
         | "ENCARREGADO"
         | "ALUNO"
-      calendar_event_type: "Feriado" | "Evento" | "Prova" | "Prazo"
+      calendar_event_type:
+        | "Feriado"
+        | "Evento"
+        | "Prova"
+        | "Prazo"
+        | "Actividade"
       communication_status:
         | "ENVIADO"
         | "ENTREGUE"
@@ -2513,7 +2518,13 @@ export const Constants = {
         "ENCARREGADO",
         "ALUNO",
       ],
-      calendar_event_type: ["Feriado", "Evento", "Prova", "Prazo"],
+      calendar_event_type: [
+        "Feriado",
+        "Evento",
+        "Prova",
+        "Prazo",
+        "Actividade",
+      ],
       communication_status: [
         "ENVIADO",
         "ENTREGUE",

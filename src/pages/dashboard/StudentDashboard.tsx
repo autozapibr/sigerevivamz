@@ -26,6 +26,7 @@ const eventTypeConfig: Record<CalendarEventType, { icon: React.ReactNode; color:
   Evento: { icon: <CalendarDays className="w-3 h-3" />, color: 'bg-blue-500', bgColor: 'bg-blue-500/10 text-blue-500', label: 'Eventos' },
   Prova: { icon: <GraduationCap className="w-3 h-3" />, color: 'bg-orange-500', bgColor: 'bg-orange-500/10 text-orange-500', label: 'Provas' },
   Prazo: { icon: <Clock className="w-3 h-3" />, color: 'bg-purple-500', bgColor: 'bg-purple-500/10 text-purple-500', label: 'Prazos' },
+  Actividade: { icon: <CalendarDays className="w-3 h-3" />, color: 'bg-emerald-500', bgColor: 'bg-emerald-500/10 text-emerald-500', label: 'Actividades' },
 };
 
 // Filters available for students

@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export type CalendarEventType = 'Feriado' | 'Evento' | 'Prova' | 'Prazo';
+export type CalendarEventType = 'Feriado' | 'Evento' | 'Prova' | 'Prazo' | 'Actividade';
 
 export interface CalendarEvent {
   id: number;
