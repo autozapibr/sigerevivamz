@@ -274,7 +274,7 @@ export function LLMConfigSection() {
               type="number"
               step="500"
               min="1000"
-              max="8000"
+              max="16000"
               value={maxTokensValue}
               onChange={e => { setMaxTokensValue(e.target.value); setHasUnsaved(true); }}
             />
