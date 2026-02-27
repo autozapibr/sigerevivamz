@@ -37,15 +37,15 @@ body {
 .page-header-meta { display: flex; gap: 18px; font-size: 10px; color: hsl(20 14.3% 18%); margin-top: 6px; padding-top: 5px; }
 .page-header-meta strong { font-weight: 600; }
 h1 { display: none; }
-h2 { font-size: 13px; font-weight: 700; color: hsl(140 37% 28%); margin: 20px 0 8px; border-bottom: 1.5px solid hsl(140 37% 28% / 0.3); padding-bottom: 4px; }
-h3 { font-size: 13px; font-weight: 600; color: hsl(140 25% 39%); margin: 16px 0 6px; }
-h4 { font-size: 12px; font-weight: 600; color: hsl(20 14.3% 12%); margin: 12px 0 5px; }
+h2 { font-size: 13px; font-weight: 700; color: hsl(140 37% 28%); margin: 20px 0 8px; border-bottom: 1.5px solid hsl(140 37% 28% / 0.3); padding-bottom: 4px; page-break-after: avoid; }
+h3 { font-size: 13px; font-weight: 600; color: hsl(140 25% 39%); margin: 16px 0 6px; page-break-after: avoid; }
+h4 { font-size: 12px; font-weight: 600; color: hsl(20 14.3% 12%); margin: 12px 0 5px; page-break-after: avoid; }
 p, li { font-size: 12px; }
 p { margin: 6px 0; }
 ul, ol { padding-left: 22px; margin: 6px 0; }
 li { margin: 4px 0; }
 strong { font-weight: 600; }
-blockquote { border-left: 3px solid hsl(140 37% 28%); margin: 10px 0; padding: 10px 16px; background: hsl(140 25% 96%); font-style: italic; border-radius: 4px; }
+blockquote { border-left: 3px solid hsl(140 37% 28%); margin: 10px 0; padding: 10px 16px; background: hsl(140 25% 96%); font-style: italic; border-radius: 4px; page-break-inside: avoid; }
 table { border-collapse: collapse; width: 100%; margin: 12px 0; }
 th { background: hsl(140 37% 28%); color: white; padding: 7px 10px; text-align: left; font-size: 11px; font-weight: 600; }
 td { border: 1px solid hsl(140 10% 82%); padding: 6px 10px; font-size: 11px; }
@@ -84,6 +84,34 @@ export function ArchivedPlanPreview({ open, onOpenChange, filePath, fileName, te
     })();
   }, [open, filePath]);
 
+  const getHeaderHtml = () => {
+    const nameParts = fileName.replace(/\.html$/i, '').split(' - ');
+    const subjectName = nameParts[0] || '';
+    const classNamePart = nameParts[1] || '';
+    return `
+      <div class="page-header">
+        <div class="page-header-top">
+          <div class="page-header-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>
+          </div>
+          <div>
+            <p class="page-header-title">ESCOLA REVIVA</p>
+            <p class="page-header-sub">SiGER - Sistema de Gestão Escolar Reviva</p>
+          </div>
+          <div class="page-header-right">
+            <p>PLANO DE AULA AEP</p>
+            <p>Abordagem Educacional por Princípios</p>
+          </div>
+        </div>
+        <div class="page-header-meta">
+          ${teacherName ? `<span><strong>Professor:</strong> ${teacherName}</span>` : ''}
+          ${classNamePart ? `<span><strong>Turma:</strong> ${classNamePart}</span>` : ''}
+          ${subjectName ? `<span><strong>Disciplina:</strong> ${subjectName}</span>` : ''}
+        </div>
+      </div>
+    `;
+  };
+
   const handlePrint = () => {
     if (!htmlContent) return;
     const printWindow = window.open('', '_blank');
@@ -91,7 +119,7 @@ export function ArchivedPlanPreview({ open, onOpenChange, filePath, fileName, te
       toast.error('Permita pop-ups para imprimir.');
       return;
     }
-    printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${fileName}</title><style>${A4_STYLES}</style></head><body>${htmlContent}</body></html>`);
+    printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${fileName}</title><style>${A4_STYLES}</style></head><body>${getHeaderHtml()}${htmlContent}</body></html>`);
     printWindow.document.close();
     printWindow.onafterprint = () => printWindow.close();
     setTimeout(() => printWindow.print(), 350);
@@ -107,8 +135,9 @@ export function ArchivedPlanPreview({ open, onOpenChange, filePath, fileName, te
       const styleEl = document.createElement('style');
       styleEl.textContent = A4_STYLES;
       wrapper.appendChild(styleEl);
+
       const contentDiv = document.createElement('div');
-      contentDiv.innerHTML = htmlContent;
+      contentDiv.innerHTML = getHeaderHtml() + htmlContent;
       wrapper.appendChild(contentDiv);
       document.body.appendChild(wrapper);
 
@@ -126,7 +155,7 @@ export function ArchivedPlanPreview({ open, onOpenChange, filePath, fileName, te
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+        pagebreak: { mode: ['css', 'legacy'] },
       }).from(wrapper).toPdf() as any).get('pdf').then((pdf: any) => {
         const totalPages = pdf.internal.getNumberOfPages();
         const pageWidth = pdf.internal.pageSize.getWidth();
@@ -163,10 +192,10 @@ export function ArchivedPlanPreview({ open, onOpenChange, filePath, fileName, te
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
         <DialogHeader className="flex flex-row items-center justify-between px-4 py-3 border-b border-border">
           <DialogTitle className="text-sm font-medium truncate flex-1">
-            {fileName}
+            {fileName.replace(/\.html$/i, '')}
             {teacherName && <span className="text-muted-foreground font-normal ml-2">— {teacherName}</span>}
           </DialogTitle>
-          <div className="flex items-center gap-1 ml-2">
+          <div className="flex items-center gap-1 mr-8">
             <Button variant="ghost" size="icon" onClick={handlePrint} title="Imprimir" className="h-8 w-8" disabled={!htmlContent}>
               <Printer className="h-4 w-4" />
             </Button>
