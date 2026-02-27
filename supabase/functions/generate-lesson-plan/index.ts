@@ -47,10 +47,10 @@ function decodeJwtPayload(token: string): Record<string, any> | null {
     return null;
   }
 }
+
 function extractGoogleGeneratedText(googleData: any): string {
   const parts = googleData?.candidates?.[0]?.content?.parts;
   if (!Array.isArray(parts)) return "";
-
   return parts
     .map((part: any) => (typeof part?.text === "string" ? part.text : ""))
     .join("")
@@ -68,54 +68,48 @@ function extractOpenAiCompatibleText(content: any): string {
   return "";
 }
 
-function isAssistResponseComplete(prompt: string, content: string): boolean {
-  const nonEmptyLines = content.split("\n").map((l) => l.trim()).filter(Boolean);
-
-  if (prompt.includes("Apenas 4 linhas")) {
-    return nonEmptyLines.length >= 4;
-  }
-
-  if (prompt.includes("Apenas 3 frases")) {
-    return nonEmptyLines.length >= 3;
-  }
-
-  if (prompt.includes("\"1. ...\" até \"4. ...\"")) {
-    return [1, 2, 3, 4].every((n) => new RegExp(`^\\s*${n}\\.\\s+`, "m").test(content));
-  }
-
-  return nonEmptyLines.length > 0;
+/** Strip markdown code fences and stray HTML wrappers from AI output */
+function cleanGeneratedHtml(raw: string): string {
+  let cleaned = raw
+    .replace(/^```html\s*/i, "")
+    .replace(/^```\w*\s*/gm, "")
+    .replace(/```\s*$/gm, "")
+    .trim();
+  return cleaned;
 }
 
-async function fallbackAssistWithLovableAi(systemPrompt: string, userPrompt: string, maxTokens: number): Promise<string | null> {
+async function callLovableAi(systemPrompt: string, userPrompt: string, maxTokens: number, temperature: number, model: string): Promise<string> {
   const apiKey = Deno.env.get("LOVABLE_API_KEY") || "";
-  if (!apiKey) return null;
+  if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada.");
 
-  try {
-    const fallbackResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-5-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.3,
-        max_tokens: maxTokens,
-        max_completion_tokens: maxTokens,
-      }),
-    });
+  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature,
+      max_tokens: maxTokens,
+      max_completion_tokens: maxTokens,
+    }),
+  });
 
-    if (!fallbackResponse.ok) return null;
-    const fallbackData = await fallbackResponse.json();
-    const fallbackContent = extractOpenAiCompatibleText(fallbackData?.choices?.[0]?.message?.content);
-    return fallbackContent || null;
-  } catch {
-    return null;
+  if (!resp.ok) {
+    if (resp.status === 429) throw new Error("RATE_LIMIT");
+    if (resp.status === 402) throw new Error("PAYMENT_REQUIRED");
+    const errText = await resp.text();
+    console.error("AI error:", resp.status, errText);
+    throw new Error("Erro ao gerar conteúdo com IA");
   }
+
+  const data = await resp.json();
+  return extractOpenAiCompatibleText(data?.choices?.[0]?.message?.content);
 }
 
 serve(async (req) => {
@@ -185,16 +179,14 @@ serve(async (req) => {
     const llmProvider = configMap["llm_provider"] || "lovable_ai";
     let model = configMap["model"] || "google/gemini-3-flash-preview";
     const temperature = parseFloat(configMap["temperature"] || "0.4");
-    const maxTokens = parseInt(configMap["max_tokens"] || "4000");
+    const configMaxTokens = parseInt(configMap["max_tokens"] || "8192");
 
     // Strip provider prefix from model name for direct API calls
     const cleanModel = model.includes("/") ? model.split("/").pop()! : model;
 
     // ========== ASSIST MODE ==========
-    // When mode === 'assist', we use a simple system prompt and the direct prompt
-    // without all the full lesson plan generation context.
     if (mode === "assist") {
-      console.log("Assist mode: generating field-specific content");
+      console.log("Assist mode: generating field-specific content for:", assistFieldName);
 
       const assistSystemPrompt = `Você é um assistente pedagógico especializado na Abordagem Educacional por Princípios (AEP) para escolas cristãs em Moçambique.
 
@@ -206,166 +198,112 @@ REGRAS ABSOLUTAS:
 - NÃO use HTML (sem <div>, <p>, <h1>, etc.).
 - Responda em texto puro simples.
 - Use numeração simples (1., 2., 3.) quando aplicável.
-- Seja conciso e directo.`;
+- Seja conciso e directo.
+- COMPLETE SEMPRE toda a resposta. Nunca corte no meio de uma frase.`;
 
       const assistUserPrompt = directPrompt || "";
-      const assistMaxTokens = 2200;
-      const temaMatch = assistUserPrompt.match(/tema\s+"([^"]+)"/i);
-      const temaDaAula = temaMatch?.[1]?.trim() || "o tema da aula";
+      const assistMaxTokens = 3000;
 
-      // Respostas determinísticas para evitar cortes em campos críticos
-      if (assistFieldName === "versiculos_biblicos") {
-        const content = [
-          "Génesis 2:15 - O Senhor Deus tomou o homem e o colocou no jardim do Éden para o cultivar e o guardar.",
-          "Salmos 19:1 - Os céus proclamam a glória de Deus e o firmamento anuncia as obras das suas mãos.",
-          "Romanos 1:20 - Os atributos invisíveis de Deus, o seu eterno poder e a sua divindade, claramente se reconhecem, desde a criação do mundo, sendo percebidos por meio das coisas que foram criadas.",
-          "João 1:3 - Todas as coisas foram feitas por intermédio dele, e sem ele nada do que foi feito se fez.",
-        ].join("\n");
+      // Use AI for ALL assist fields - no hardcoded responses
+      // This ensures biblical texts are relevant to the theme/principles
+      let generatedContent = "";
+      
+      try {
+        if (llmProvider === "google") {
+          const { data: googleSetting } = await serviceClient
+            .from("integration_settings")
+            .select("api_key")
+            .eq("integration_name", "google_ai")
+            .single();
+          const googleKey = googleSetting?.api_key;
+          if (!googleKey) throw new Error("Chave API do Google AI não configurada.");
 
-        return new Response(
-          JSON.stringify({ success: true, content }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+          const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${googleKey}`;
+          
+          const googleResponse = await fetch(googleApiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [
+                { role: "user", parts: [{ text: assistSystemPrompt + "\n\n" + assistUserPrompt }] }
+              ],
+              generationConfig: {
+                temperature: 0.3,
+                maxOutputTokens: assistMaxTokens,
+              },
+            }),
+          });
 
-      if (assistFieldName === "objetivos_competencias") {
-        const content = [
-          `1. Identificar e explicar os factores essenciais do processo de ${temaDaAula} no contexto do currículo nacional.`,
-          `2. Aplicar conceitos de ${temaDaAula} para interpretar situações práticas do quotidiano e do meio ambiente local.`,
-          `3. Reconhecer, à luz da AEP, a responsabilidade de mordomia na gestão dos recursos relacionados a ${temaDaAula}.`,
-          `4. Demonstrar atitudes de carácter e autogoverno ao usar o conhecimento de ${temaDaAula} para servir a comunidade.`,
-        ].join("\n");
+          if (!googleResponse.ok) {
+            const errText = await googleResponse.text();
+            console.error("Google AI assist error:", googleResponse.status, errText);
+            throw new Error("Google AI error");
+          }
 
-        return new Response(
-          JSON.stringify({ success: true, content }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+          const googleData = await googleResponse.json();
+          generatedContent = extractGoogleGeneratedText(googleData);
+        } else if (llmProvider === "openai") {
+          const { data: openaiSetting } = await serviceClient
+            .from("integration_settings")
+            .select("api_key")
+            .eq("integration_name", "openai")
+            .single();
+          const apiKey = openaiSetting?.api_key || Deno.env.get("OPENAI_API_KEY") || "";
+          if (!apiKey) throw new Error("Chave API da OpenAI não configurada.");
 
-      if (assistFieldName === "ideia_guia") {
-        const content = [
-          `A ${temaDaAula} revela a soberania de Deus na provisão para a vida e na ordem que sustenta toda a criação.`,
-          `Compreender ${temaDaAula} é reconhecer a sabedoria divina e assumir a responsabilidade de mordomia sobre os recursos que Deus confiou ao ser humano.`,
-          `O estudo de ${temaDaAula} testemunha o poder criador de Deus e mostra como toda a criação funciona em interdependência segundo os Seus princípios.`,
-        ].join("\n\n");
-
-        return new Response(
-          JSON.stringify({ success: true, content }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Call AI with minimal context
-      let apiUrl: string;
-      let apiKey: string;
-      let requestModel = model;
-
-      if (llmProvider === "openai") {
-        apiUrl = "https://api.openai.com/v1/chat/completions";
-        const { data: openaiSetting } = await serviceClient
-          .from("integration_settings")
-          .select("api_key")
-          .eq("integration_name", "openai")
-          .single();
-        apiKey = openaiSetting?.api_key || Deno.env.get("OPENAI_API_KEY") || "";
-        if (!apiKey) throw new Error("Chave API da OpenAI não configurada.");
-      } else if (llmProvider === "google") {
-        const { data: googleSetting } = await serviceClient
-          .from("integration_settings")
-          .select("api_key")
-          .eq("integration_name", "google_ai")
-          .single();
-        const googleKey = googleSetting?.api_key;
-        if (!googleKey) throw new Error("Chave API do Google AI não configurada.");
-
-        const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${googleKey}`;
-        
-        const googleResponse = await fetch(googleApiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [
-              { role: "user", parts: [{ text: assistSystemPrompt + "\n\n" + assistUserPrompt }] }
-            ],
-            generationConfig: {
-              temperature: 0.3,
-              maxOutputTokens: assistMaxTokens,
+          const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
             },
-          }),
-        });
+            body: JSON.stringify({
+              model: cleanModel,
+              messages: [
+                { role: "system", content: assistSystemPrompt },
+                { role: "user", content: assistUserPrompt },
+              ],
+              temperature: 0.3,
+              max_tokens: assistMaxTokens,
+              max_completion_tokens: assistMaxTokens,
+            }),
+          });
 
-        if (!googleResponse.ok) {
-          const errText = await googleResponse.text();
-          console.error("Google AI assist error:", googleResponse.status, errText);
-          throw new Error("Erro ao gerar conteúdo com Google AI: " + errText);
+          if (!resp.ok) throw new Error("OpenAI error");
+          const data = await resp.json();
+          generatedContent = extractOpenAiCompatibleText(data?.choices?.[0]?.message?.content);
+        } else {
+          // Lovable AI
+          generatedContent = await callLovableAi(assistSystemPrompt, assistUserPrompt, assistMaxTokens, 0.3, model);
         }
-
-        const googleData = await googleResponse.json();
-        let generatedContent = extractGoogleGeneratedText(googleData);
-
-        if (!isAssistResponseComplete(assistUserPrompt, generatedContent)) {
-          const fallbackContent = await fallbackAssistWithLovableAi(assistSystemPrompt, assistUserPrompt, assistMaxTokens);
-          if (fallbackContent) generatedContent = fallbackContent;
-        }
-
-        return new Response(
-          JSON.stringify({ success: true, content: generatedContent }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      } else {
-        apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
-        apiKey = Deno.env.get("LOVABLE_API_KEY") || "";
-        if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada.");
-        requestModel = model;
-      }
-
-      const assistRequestBody: Record<string, unknown> = {
-        model: requestModel,
-        messages: [
-          { role: "system", content: assistSystemPrompt },
-          { role: "user", content: assistUserPrompt },
-        ],
-        temperature: 0.3,
-        max_tokens: assistMaxTokens,
-      };
-
-      // Compatibility for newer OpenAI-style reasoning models
-      assistRequestBody.max_completion_tokens = assistMaxTokens;
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(assistRequestBody),
-      });
-
-      if (!response.ok) {
-        if (response.status === 429) {
+      } catch (primaryErr: any) {
+        if (primaryErr.message === "RATE_LIMIT") {
           return new Response(
             JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
             { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
-        if (response.status === 402) {
+        if (primaryErr.message === "PAYMENT_REQUIRED") {
           return new Response(
-            JSON.stringify({ error: "Créditos insuficientes. Adicione créditos à sua conta." }),
+            JSON.stringify({ error: "Créditos insuficientes." }),
             { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
-        const errorText = await response.text();
-        console.error("AI assist error:", response.status, errorText);
-        throw new Error("Erro ao gerar conteúdo com IA");
+        // Fallback to Lovable AI
+        console.warn("Primary provider failed for assist, falling back to Lovable AI:", primaryErr.message);
+        try {
+          generatedContent = await callLovableAi(assistSystemPrompt, assistUserPrompt, assistMaxTokens, 0.3, "google/gemini-3-flash-preview");
+        } catch (fallbackErr) {
+          console.error("Fallback also failed:", fallbackErr);
+          throw primaryErr;
+        }
       }
 
-      const data = await response.json();
-      let generatedContent = extractOpenAiCompatibleText(data?.choices?.[0]?.message?.content);
-
-      if (!isAssistResponseComplete(assistUserPrompt, generatedContent)) {
-        const fallbackContent = await fallbackAssistWithLovableAi(assistSystemPrompt, assistUserPrompt, assistMaxTokens);
-        if (fallbackContent) generatedContent = fallbackContent;
-      }
+      // Clean up any markdown/HTML artifacts
+      generatedContent = generatedContent
+        .replace(/```[\w]*\n?/g, "")
+        .replace(/<[^>]*>/g, "")
+        .trim();
 
       return new Response(
         JSON.stringify({ success: true, content: generatedContent }),
@@ -374,7 +312,7 @@ REGRAS ABSOLUTAS:
     }
 
     // ========== FULL PLAN MODE (default) ==========
-    const systemPrompt = configMap["system_prompt"] || "Gere um plano de aula AEP.";
+    const systemPrompt = configMap["system_prompt"] || `Você é um especialista em Abordagem Educacional por Princípios (AEP) para escolas cristãs em Moçambique. Gere planos de aula AEP completos, detalhados e prontos para uso em sala de aula.`;
 
     // Fetch active training documents content
     let trainingContext = "";
@@ -400,7 +338,7 @@ REGRAS ABSOLUTAS:
 
               if (!dlError && fileData) {
                 const text = await fileData.text();
-                const trimmed = text.length > 3000 ? text.substring(0, 3000) + "\n...[truncado]" : text;
+                const trimmed = text.length > 5000 ? text.substring(0, 5000) + "\n...[truncado]" : text;
                 docContents.push(`--- Documento: ${doc.file_name} ---\n${trimmed}`);
               }
             } else {
@@ -412,7 +350,7 @@ REGRAS ABSOLUTAS:
         }
 
         if (docContents.length > 0) {
-          trainingContext = "\n\n=== MATERIAL DE REFERÊNCIA AEP ===\nOs seguintes documentos contêm informações sobre a Abordagem Educacional por Princípios que deve utilizar como base:\n\n" + docContents.join("\n\n");
+          trainingContext = "\n\n=== MATERIAL DE REFERÊNCIA AEP ===\n" + docContents.join("\n\n");
         }
       }
     } catch (err) {
@@ -444,7 +382,7 @@ REGRAS ABSOLUTAS:
         }
         
         if (definitions.length > 0) {
-          websterContext = "\n\n=== DEFINIÇÕES DO DICIONÁRIO NOAH WEBSTER 1828 ===\nAs seguintes definições foram consultadas no Dicionário Webster 1828 (webstersdictionary1828.com). Utilize estas definições no passo PESQUISAR do plano de aula, traduzindo para o Português de Moçambique:\n\n" + definitions.join("\n\n");
+          websterContext = "\n\n=== DEFINIÇÕES DO DICIONÁRIO NOAH WEBSTER 1828 ===\nUtilize estas definições no passo PESQUISAR, traduzindo para o Português de Moçambique:\n\n" + definitions.join("\n\n");
         }
       }
     } catch (err) {
@@ -461,7 +399,7 @@ REGRAS ABSOLUTAS:
       })
       .join("\n");
 
-    const userPrompt = `Gere um plano de aula AEP completo com os seguintes dados:
+    const userPrompt = `Gere um plano de aula AEP COMPLETO com os seguintes dados:
 
 Classe/Turma: ${className || "Não especificada"}
 Disciplina: ${subjectName || "Não especificada"}
@@ -470,40 +408,133 @@ Professor: ${teacherName || "Não especificado"}
 DADOS DO FORMULÁRIO:
 ${formEntries}
 
-INSTRUÇÕES IMPORTANTES:
-1. No passo PESQUISAR, inclua SEMPRE a definição das palavras-chave do tema consultadas no Dicionário Noah Webster 1828, traduzidas para o Português de Moçambique.
-2. Utilize as ferramentas AEP selecionadas pelo professor como parte da metodologia do plano.
-3. Inclua referências bíblicas da versão NAA (Nova Almeida Atualizada) alinhadas ao princípio escolhido.
-4. Consulte e siga o material de referência AEP fornecido no contexto do sistema.
-5. Busque na base curricular nacional de Moçambique as 2 competências que devem ser desenvolvidas com este tema.
-6. Se a Ideia-Guia não foi fornecida, gere 3 sugestões no início do plano.
-7. Se os Objectivos/Competências não foram fornecidos, gere-os automaticamente.
-8. Organize o plano seguindo os 4 passos PRRR: PESQUISAR → RACIOCINAR → RELACIONAR → REGISTAR.
+=== ESTRUTURA OBRIGATÓRIA DO PLANO DE AULA AEP ===
 
-FORMATO DE SAÍDA:
-- Retorne HTML bem formatado com estilos inline para impressão.
-- Use emojis/ícones para tornar o plano visualmente atrativo: 📖 para pesquisar, 🧠 para raciocinar, 🔗 para relacionar, ✍️ para registar, 📌 para objectivos, 🔑 para palavras-chave, ✝️ para versículos, 💡 para ideia-guia, 🛠️ para ferramentas.
-- Use numeração, recuos, bullets e tamanhos de fonte diferenciados.
-- Use <h1> para título principal, <h2> para secções dos 4 passos, <h3> para sub-secções.
+O plano DEVE conter TODAS as secções abaixo, nesta ordem exacta:
+
+1. 📌 INFORMAÇÕES GERAIS
+   - Tema da Aula, Disciplina, Turma, Professor, Número de Aulas, Data
+
+2. 💡 IDEIA-GUIA
+   - A ideia-guia fornecida pelo professor (ou gere uma se não fornecida)
+
+3. 📌 OBJECTIVOS E COMPETÊNCIAS
+   - 2 competências curriculares (base curricular de Moçambique)
+   - 2 objectivos ligados à AEP e aos princípios seleccionados
+
+4. 🔑 PALAVRAS-CHAVE
+   - As palavras-chave fornecidas pelo professor
+
+5. ✝️ TEXTOS BÍBLICOS
+   - Os versículos fornecidos (ou gere 4 versículos relevantes ao tema e princípios: 2 AT + 2 NT, versão NAA)
+   - IMPORTANTE: Os textos bíblicos DEVEM ser directamente relevantes ao tema "${(formData as any)["Tema da Aula"] || (formData as any)["tema_aula"] || subjectName || ""}" e aos princípios seleccionados. Não use versículos genéricos.
+
+6. 🛠️ FERRAMENTAS AEP
+   - Descreva como cada ferramenta seleccionada será utilizada na aula
+
+7. === OS QUATRO PASSOS (PRRR) — CORAÇÃO DO PLANO ===
+   Este é o coração do plano de aula AEP. Cada passo deve ser MUITO BEM desenvolvido, detalhado e prático.
+
+   📖 PASSO 1 — PESQUISAR (Research)
+   - Definições Webster 1828 das palavras-chave (traduzidas para Português)
+   - Pesquisa bíblica: o que a Palavra de Deus diz sobre o tema?
+   - Pesquisa académica: fundamentos científicos/curriculares
+   - Perguntas orientadoras para os alunos
+
+   🧠 PASSO 2 — RACIOCINAR (Reason)
+   - Análise crítica das informações pesquisadas
+   - Conexão entre o conhecimento académico e os princípios bíblicos
+   - Discussão guiada com perguntas de reflexão
+   - Como os princípios AEP seleccionados se aplicam ao tema
+
+   🔗 PASSO 3 — RELACIONAR (Relate)
+   - Aplicação prática à vida do aluno em Moçambique
+   - Conexão com a comunidade e o contexto local
+   - Actividades práticas e colaborativas
+   - Como o aluno pode viver estes princípios no dia-a-dia
+
+   ✍️ PASSO 4 — REGISTAR (Record)
+   - Actividades de registo: ensaios, diários, fichas, projectos
+   - Formas criativas de documentar a aprendizagem
+   - Produção individual e/ou em grupo
+   - Apresentação e partilha dos registos
+
+8. 📚 MATERIAIS UTILIZADOS
+   - Lista detalhada de todos os materiais necessários para a aula
+
+9. 🔧 RECURSOS ADICIONAIS
+   - Livros, websites, vídeos, materiais complementares
+
+10. 📝 AVALIAÇÕES
+    - Critérios de avaliação alinhados aos objectivos
+    - Instrumentos de avaliação (rubricas, observação, trabalhos)
+    - Avaliação formativa e somativa
+
+11. 📋 OBSERVAÇÕES
+    - Notas para o professor sobre adaptações, diferenciação, pontos de atenção
+
+12. 🎯 CONCLUSÃO — APLICAÇÃO FINAL
+    - Esta é a "cereja do bolo": a síntese que entrelaça TODO o conteúdo académico com os princípios AEP
+    - Deve produzir no aluno sabedoria e conhecimento de Deus
+    - Aplicação prática, pessoal e transformadora para a vida do aluno
+    - Momento de reflexão, oração ou compromisso pessoal
+
+=== FORMATO DE SAÍDA ===
+- Retorne HTML bem formatado, pronto para impressão em folha A4.
+- Use a fonte "Work Sans" (font-weight: 300 para corpo, 600 para títulos).
+- Use emojis nos títulos das secções conforme indicado acima.
+- Use <h1> para o título principal do plano.
+- Use <h2> para cada secção principal (Informações, Ideia-Guia, PRRR, etc.).
+- Use <h3> para sub-secções dentro dos 4 passos.
 - Use <blockquote> para versículos bíblicos.
-- Use <table> para tabelas de dados quando aplicável.
-- Use <ul>/<ol> para listas organizadas.
-- O plano deve ser completo e detalhado, pronto para o professor utilizar em sala de aula.`;
+- Use <table> com bordas para tabelas de dados.
+- Use <ul>/<ol> para listas.
+- Use recuos (padding-left), negrito (<strong>), e espaçamento adequado.
+- NÃO use markdown. Retorne APENAS HTML puro.
+- NÃO envolva em \`\`\`html ou qualquer code fence.
+- O plano deve ser COMPLETO, DETALHADO e pronto para o professor usar directamente em sala de aula.
+- Desenvolva EXTENSIVAMENTE os 4 passos PRRR — eles são o CORAÇÃO do plano.`;
+
+    // Use higher token limit for full plan
+    const fullPlanMaxTokens = Math.max(configMaxTokens, 8192);
 
     // Determine API endpoint and key based on provider
-    let apiUrl: string;
-    let apiKey: string;
-    let requestModel = model;
+    let generatedContent = "";
 
     if (llmProvider === "openai") {
-      apiUrl = "https://api.openai.com/v1/chat/completions";
       const { data: openaiSetting } = await serviceClient
         .from("integration_settings")
         .select("api_key")
         .eq("integration_name", "openai")
         .single();
-      apiKey = openaiSetting?.api_key || Deno.env.get("OPENAI_API_KEY") || "";
+      const apiKey = openaiSetting?.api_key || Deno.env.get("OPENAI_API_KEY") || "";
       if (!apiKey) throw new Error("Chave API da OpenAI não configurada.");
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: cleanModel,
+          messages: [
+            { role: "system", content: fullSystemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          temperature,
+          max_tokens: fullPlanMaxTokens,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("OpenAI error:", response.status, errorText);
+        throw new Error("Erro ao gerar plano de aula com OpenAI");
+      }
+
+      const data = await response.json();
+      generatedContent = extractOpenAiCompatibleText(data?.choices?.[0]?.message?.content);
     } else if (llmProvider === "google") {
       const { data: googleSetting } = await serviceClient
         .from("integration_settings")
@@ -524,7 +555,7 @@ FORMATO DE SAÍDA:
           ],
           generationConfig: {
             temperature,
-            maxOutputTokens: maxTokens,
+            maxOutputTokens: fullPlanMaxTokens,
           },
         }),
       });
@@ -536,57 +567,30 @@ FORMATO DE SAÍDA:
       }
 
       const googleData = await googleResponse.json();
-      const generatedContent = extractGoogleGeneratedText(googleData);
-
-      return new Response(
-        JSON.stringify({ success: true, content: generatedContent }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      generatedContent = extractGoogleGeneratedText(googleData);
     } else {
-      apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
-      apiKey = Deno.env.get("LOVABLE_API_KEY") || "";
-      if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada.");
-      requestModel = model;
+      // Lovable AI Gateway
+      try {
+        generatedContent = await callLovableAi(fullSystemPrompt, userPrompt, fullPlanMaxTokens, temperature, model);
+      } catch (err: any) {
+        if (err.message === "RATE_LIMIT") {
+          return new Response(
+            JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        if (err.message === "PAYMENT_REQUIRED") {
+          return new Response(
+            JSON.stringify({ error: "Créditos insuficientes. Adicione créditos à sua conta." }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        throw err;
+      }
     }
 
-    // OpenAI-compatible call (Lovable Gateway or direct OpenAI)
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: requestModel,
-        messages: [
-          { role: "system", content: fullSystemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        temperature,
-        max_tokens: maxTokens,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Créditos insuficientes. Adicione créditos à sua conta." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      const errorText = await response.text();
-      console.error("AI error:", response.status, errorText);
-      throw new Error("Erro ao gerar plano de aula com IA");
-    }
-
-    const data = await response.json();
-    const generatedContent = data.choices?.[0]?.message?.content || "";
+    // Clean markdown artifacts
+    generatedContent = cleanGeneratedHtml(generatedContent);
 
     return new Response(
       JSON.stringify({ success: true, content: generatedContent }),

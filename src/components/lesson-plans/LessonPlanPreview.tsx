@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Save, Printer, Share2, Download, GraduationCap } from 'lucide-react';
 import DOMPurify from 'dompurify';
@@ -12,6 +11,15 @@ interface LessonPlanPreviewProps {
   teacherName?: string;
   className?: string;
   subjectName?: string;
+}
+
+/** Strip markdown code fences the AI may wrap around HTML */
+function cleanContent(raw: string): string {
+  return raw
+    .replace(/^```html\s*/i, '')
+    .replace(/^```\w*\s*/gm, '')
+    .replace(/```\s*$/gm, '')
+    .trim();
 }
 
 const getSchoolHeaderHtml = (teacherName: string, className: string, subjectName: string) => `
@@ -38,31 +46,33 @@ const getSchoolHeaderHtml = (teacherName: string, className: string, subjectName
 `;
 
 export function LessonPlanPreview({ content, onSave, isSaving, teacherName = '', className = '', subjectName = '' }: LessonPlanPreviewProps) {
-  const sanitizedContent = DOMPurify.sanitize(content);
+  const cleaned = cleanContent(content);
+  const sanitizedContent = DOMPurify.sanitize(cleaned);
   const dateStr = new Date().toLocaleDateString('pt-MZ', { day: '2-digit', month: 'long', year: 'numeric' });
 
   const getFullHtml = () => `
     <!DOCTYPE html>
     <html><head><title>Plano de Aula AEP - Escola Reviva</title>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&display=swap');
       @page {
         size: A4;
         margin: 20mm 15mm 25mm 15mm;
-        @bottom-left { content: "${dateStr}"; font-size: 9px; color: #888; font-family: 'Inter', sans-serif; }
-        @bottom-right { content: "Página " counter(page) " de " counter(pages); font-size: 9px; color: #888; font-family: 'Inter', sans-serif; }
+        @bottom-left { content: "${dateStr}"; font-size: 9px; color: #888; font-family: 'Work Sans', sans-serif; }
+        @bottom-right { content: "Página " counter(page) " de " counter(pages); font-size: 9px; color: #888; font-family: 'Work Sans', sans-serif; }
       }
-      body { font-family: 'Inter', sans-serif; padding: 0; color: #1a1a1a; max-width: 100%; margin: 0; font-size: 12px; line-height: 1.6; }
-      h1 { font-size: 16px; color: #2D5F3F; margin: 16px 0 8px; border-bottom: 2px solid #2D5F3F; padding-bottom: 4px; }
-      h2 { font-size: 14px; color: #2D5F3F; margin: 14px 0 6px; }
-      h3 { font-size: 13px; color: #4A7C59; margin: 10px 0 4px; }
+      body { font-family: 'Work Sans', sans-serif; font-weight: 300; padding: 0; color: #1a1a1a; max-width: 100%; margin: 0; font-size: 12px; line-height: 1.7; }
+      h1 { font-size: 16px; font-weight: 700; color: #2D5F3F; margin: 16px 0 8px; border-bottom: 2px solid #2D5F3F; padding-bottom: 4px; }
+      h2 { font-size: 14px; font-weight: 600; color: #2D5F3F; margin: 14px 0 6px; }
+      h3 { font-size: 13px; font-weight: 600; color: #4A7C59; margin: 10px 0 4px; }
+      strong { font-weight: 600; }
       table { border-collapse: collapse; width: 100%; margin: 8px 0; }
-      th { background: #2D5F3F; color: white; padding: 6px 10px; text-align: left; font-size: 11px; }
+      th { background: #2D5F3F; color: white; padding: 6px 10px; text-align: left; font-size: 11px; font-weight: 600; }
       td { border: 1px solid #ddd; padding: 6px 10px; font-size: 11px; }
       tr:nth-child(even) td { background: #f9f9f9; }
-      ul, ol { padding-left: 20px; margin: 6px 0; }
-      li { margin: 3px 0; }
-      blockquote { border-left: 3px solid #2D5F3F; margin: 8px 0; padding: 6px 12px; background: #f0f7f2; font-style: italic; }
+      ul, ol { padding-left: 24px; margin: 6px 0; }
+      li { margin: 4px 0; }
+      blockquote { border-left: 3px solid #2D5F3F; margin: 8px 0; padding: 8px 14px; background: #f0f7f2; font-style: italic; }
       .page-break { page-break-before: always; }
       @media print {
         body { padding: 0; }
@@ -104,7 +114,7 @@ export function LessonPlanPreview({ content, onSave, isSaving, teacherName = '',
         await navigator.share({ title: 'Plano de Aula AEP', text });
       } catch { /* user cancelled */ }
     } else {
-      await navigator.clipboard.writeText(text + '\n\n' + content.replace(/<[^>]*>/g, ''));
+      await navigator.clipboard.writeText(text + '\n\n' + cleaned.replace(/<[^>]*>/g, ''));
       toast({ title: 'Copiado!', description: 'Conteúdo do plano copiado para a área de transferência.' });
     }
   };
@@ -150,7 +160,7 @@ export function LessonPlanPreview({ content, onSave, isSaving, teacherName = '',
             </div>
           </div>
           {(teacherName || className || subjectName) && (
-            <div className="flex gap-4 mt-2 pt-2 border-t border-white/20 text-[11px] text-white/80">
+            <div className="flex flex-wrap gap-4 mt-2 pt-2 border-t border-white/20 text-[11px] text-white/80">
               {teacherName && <span>👤 {teacherName}</span>}
               {className && <span>🏫 {className}</span>}
               {subjectName && <span>📚 {subjectName}</span>}
@@ -159,17 +169,21 @@ export function LessonPlanPreview({ content, onSave, isSaving, teacherName = '',
         </div>
 
         {/* Content area - white paper */}
-        <div className="px-6 sm:px-10 py-6 sm:py-8 min-h-[600px]">
+        <div className="px-6 sm:px-10 py-6 sm:py-8 min-h-[600px] overflow-x-hidden">
           <div
-            className="prose prose-sm max-w-none 
-              prose-headings:text-primary prose-headings:font-bold
-              prose-h1:text-lg prose-h1:border-b-2 prose-h1:border-primary prose-h1:pb-1
-              prose-h2:text-base prose-h3:text-sm prose-h3:text-secondary
-              prose-th:bg-primary prose-th:text-primary-foreground prose-th:text-xs
+            className="prose prose-sm max-w-none
+              [&]:font-['Work_Sans'] [&]:font-light
+              prose-headings:text-[#2D5F3F] prose-headings:font-semibold
+              prose-h1:text-lg prose-h1:border-b-2 prose-h1:border-[#2D5F3F] prose-h1:pb-1
+              prose-h2:text-base prose-h3:text-sm prose-h3:text-[#4A7C59]
+              prose-th:bg-[#2D5F3F] prose-th:text-white prose-th:text-xs prose-th:font-semibold
               prose-td:text-xs prose-td:border-border
-              prose-blockquote:border-l-primary prose-blockquote:bg-primary/5
+              prose-blockquote:border-l-[#2D5F3F] prose-blockquote:bg-[#f0f7f2]
               prose-li:text-sm
-              prose-p:text-sm prose-p:leading-relaxed"
+              prose-p:text-sm prose-p:leading-relaxed
+              prose-table:w-full prose-table:border-collapse
+              prose-strong:font-semibold"
+            style={{ fontFamily: "'Work Sans', sans-serif", fontWeight: 300 }}
             dangerouslySetInnerHTML={{ __html: sanitizedContent }}
           />
         </div>
