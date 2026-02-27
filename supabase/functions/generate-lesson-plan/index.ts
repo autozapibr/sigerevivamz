@@ -408,15 +408,21 @@ Professor: ${teacherName || "Não especificado"}
 DADOS DO FORMULÁRIO:
 ${formEntries}
 
+REGRAS DE IDIOMA E ESTILO:
+- Escreva TODO o conteúdo em Português de Moçambique (PT-MZ), alinhado ao uso formal moçambicano/português.
+- NÃO use vocabulário do Português do Brasil (evite termos como "ônibus", "treino", "grade curricular", "aula expositiva" em estilo brasileiro).
+- Prefira termos como: "actividade", "objectivo", "registo", "turma", "disciplina", "professor", "educando".
+
 === ESTRUTURA OBRIGATÓRIA DO PLANO DE AULA AEP ===
 
 O plano DEVE conter TODAS as secções abaixo, nesta ordem exacta:
 
 1. 📌 INFORMAÇÕES GERAIS
-   - Tema da Aula, Disciplina, Turma, Professor, Número de Aulas, Data
+   - Inicie por esta secção imediatamente após o título "Plano de Aula AEP"
+   - NÃO repita o cabeçalho institucional e NÃO crie tabela de dados da escola/professor/turma/disciplina (já existe no topo do documento)
 
 2. 💡 IDEIA-GUIA
-   - A ideia-guia fornecida pelo professor (ou gere uma se não fornecida)
+   - Use apenas 1 ideia-guia final (se houver várias sugestões, seleccione a melhor)
 
 3. 📌 OBJECTIVOS E COMPETÊNCIAS
    - 2 competências curriculares (base curricular de Moçambique)
@@ -432,8 +438,8 @@ O plano DEVE conter TODAS as secções abaixo, nesta ordem exacta:
 6. 🛠️ FERRAMENTAS AEP
    - Descreva como cada ferramenta seleccionada será utilizada na aula
 
-7. === OS QUATRO PASSOS (PRRR) — CORAÇÃO DO PLANO ===
-   Este é o coração do plano de aula AEP. Cada passo deve ser MUITO BEM desenvolvido, detalhado e prático.
+7. OS QUATRO PASSOS (PRRR)
+   Esta secção deve ser muito bem desenvolvida, detalhada e prática.
 
    📖 PASSO 1 — PESQUISAR (Research)
    - Definições Webster 1828 das palavras-chave (traduzidas para Português)
@@ -493,7 +499,7 @@ O plano DEVE conter TODAS as secções abaixo, nesta ordem exacta:
 - NÃO use markdown. Retorne APENAS HTML puro.
 - NÃO envolva em \`\`\`html ou qualquer code fence.
 - O plano deve ser COMPLETO, DETALHADO e pronto para o professor usar directamente em sala de aula.
-- Desenvolva EXTENSIVAMENTE os 4 passos PRRR — eles são o CORAÇÃO do plano.
+- Desenvolva extensivamente os 4 passos PRRR — com clareza pedagógica, aplicação prática e profundidade bíblica.
 
 OBRIGATÓRIO: O plano DEVE conter TODAS as 12 secções numeradas acima, de 1 a 12. NÃO termine antes da secção 12 (🎯 CONCLUSÃO — APLICAÇÃO FINAL). A Conclusão é a parte mais importante — deve integrar todo o conteúdo com os princípios AEP de forma transformadora.`;
 

@@ -1,4 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { format } from 'date-fns';
+import { pt } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,10 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, X, Info } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Loader2, Sparkles, X, Info, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLessonPlanFields, type LessonPlanField } from '@/hooks/useLessonPlans';
 import { useClasses, useSubjects } from '@/hooks/useGrades';
+import { useCalendarEvents } from '@/hooks/useCalendarEvents';
 import { supabase } from '@/integrations/supabase/client';
 
 interface LessonPlanFormProps {
@@ -24,9 +29,11 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
   const { data: fields, isLoading: fieldsLoading } = useLessonPlanFields();
   const { data: classes } = useClasses();
   const { data: subjects } = useSubjects();
+  const { data: calendarEvents } = useCalendarEvents();
   
   const [classId, setClassId] = useState<string>('');
   const [subjectId, setSubjectId] = useState<string>('');
+  const [lessonDates, setLessonDates] = useState<Date[]>([]);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [aiLoadingField, setAiLoadingField] = useState<string | null>(null);
 
@@ -45,6 +52,32 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
       }
       handleFieldChange(fieldName, [...current, option]);
     }
+  };
+
+  const syncedCalendarItems = useMemo(() => {
+    const classNum = classId ? Number(classId) : null;
+    const subjectNum = subjectId ? Number(subjectId) : null;
+
+    return (calendarEvents || []).filter((event) => {
+      const isPedagogicEvent = event.type === 'Prova' || event.type === 'Evento';
+      if (!isPedagogicEvent) return false;
+
+      const classMatch = classNum ? (event.class_id === classNum || event.class_id === null) : true;
+      const subjectMatch = subjectNum ? (event.subject_id === subjectNum || event.subject_id === null) : true;
+
+      return classMatch && subjectMatch;
+    });
+  }, [calendarEvents, classId, subjectId]);
+
+  const selectedDateConflicts = useMemo(() => {
+    const selectedIso = new Set(lessonDates.map((d) => format(d, 'yyyy-MM-dd')));
+    return syncedCalendarItems.filter((event) => selectedIso.has(event.date));
+  }, [lessonDates, syncedCalendarItems]);
+
+  const handleDateSelection = (dates: Date[] | undefined) => {
+    const validDates = dates || [];
+    setLessonDates(validDates);
+    handleFieldChange('datas_aulas', validDates.map((d) => format(d, 'yyyy-MM-dd')));
   };
 
   const handleAiAssist = useCallback(async (fieldName: string) => {
@@ -156,10 +189,31 @@ REGRAS OBRIGATÓRIAS:
       return;
     }
 
+    if (lessonDates.length === 0) {
+      toast.error('Seleccione pelo menos uma data de aula no calendário.');
+      return;
+    }
+
+    const ideiaGuiaText = (formValues['ideia_guia'] || '').trim();
+    const ideiaGuiaOpcoes = ideiaGuiaText
+      .split(/\n\s*\n|\r?\n/)
+      .map((linha: string) => linha.trim())
+      .filter(Boolean);
+
+    if (ideiaGuiaOpcoes.length > 1) {
+      toast.error('Na Ideia-Guia, mantenha apenas uma opção final seleccionada.');
+      return;
+    }
+
     const selectedClass = classes?.find(c => c.id === Number(classId));
     const selectedSubject = subjects?.find(s => s.id === Number(subjectId));
     
-    const labeledData: Record<string, any> = {};
+    const labeledData: Record<string, any> = {
+      'Data das Aulas': lessonDates
+        .map((date) => format(date, 'dd/MM/yyyy', { locale: pt }))
+        .join(', '),
+    };
+
     fields?.forEach(f => {
       if (formValues[f.field_name] !== undefined && formValues[f.field_name] !== '') {
         labeledData[f.field_label] = formValues[f.field_name];
@@ -285,6 +339,9 @@ REGRAS OBRIGATÓRIAS:
           {field.field_name === 'palavras_chave' && (
             <p className="text-[11px] text-muted-foreground">Mínimo 3 palavras separadas por vírgula</p>
           )}
+          {field.field_name === 'ideia_guia' && (
+            <p className="text-[11px] text-muted-foreground">Se gerar 3 opções com IA, seleccione apenas 1 versão final.</p>
+          )}
         </div>
       );
     }
@@ -320,8 +377,8 @@ REGRAS OBRIGATÓRIAS:
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Classe + Disciplina */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Classe/Turma + Disciplina */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">Classe/Turma <span className="text-destructive">*</span></Label>
               <Select value={classId} onValueChange={setClassId}>
@@ -350,10 +407,55 @@ REGRAS OBRIGATÓRIAS:
             </div>
           </div>
 
-          {/* Dynamic fields from DB, ordered */}
-          {fields?.map(renderField)}
+          {fields?.find((f) => f.field_name === 'tema_aula') && renderField(fields.find((f) => f.field_name === 'tema_aula')!)}
 
-          <Button type="submit" disabled={isGenerating || !classId || !subjectId} className="w-full mt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
+            {fields?.find((f) => f.field_name === 'num_aulas') && renderField(fields.find((f) => f.field_name === 'num_aulas')!)}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Data das aulas <span className="text-destructive">*</span></Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="outline" className="h-9 w-full justify-start text-left font-normal">
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    {lessonDates.length > 0
+                      ? `${lessonDates.length} dia(s) seleccionado(s)`
+                      : 'Seleccione múltiplos dias'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="multiple"
+                    selected={lessonDates}
+                    onSelect={handleDateSelection}
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              <p className="text-[11px] text-muted-foreground">
+                Sincronizado com Provas/Actividades da turma e disciplina seleccionadas.
+              </p>
+              {selectedDateConflicts.length > 0 && (
+                <div className="text-[11px] text-muted-foreground">
+                  Conflitos detectados: {selectedDateConflicts.slice(0, 3).map((event) => `${event.title} (${event.date})`).join(', ')}
+                  {selectedDateConflicts.length > 3 ? ' ...' : ''}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {fields?.find((f) => f.field_name === 'principio') && renderField(fields.find((f) => f.field_name === 'principio')!)}
+          {fields?.find((f) => f.field_name === 'objetivos_competencias') && renderField(fields.find((f) => f.field_name === 'objetivos_competencias')!)}
+          {fields?.find((f) => f.field_name === 'palavras_chave') && renderField(fields.find((f) => f.field_name === 'palavras_chave')!)}
+          {fields?.find((f) => f.field_name === 'versiculos_biblicos') && renderField(fields.find((f) => f.field_name === 'versiculos_biblicos')!)}
+          {fields?.find((f) => f.field_name === 'ideia_guia') && renderField(fields.find((f) => f.field_name === 'ideia_guia')!)}
+          {fields?.find((f) => f.field_name === 'ferramentas_aep') && renderField(fields.find((f) => f.field_name === 'ferramentas_aep')!)}
+
+          {/* Campos adicionais activos não mapeados acima */}
+          {fields
+            ?.filter((f) => !['tema_aula', 'num_aulas', 'principio', 'objetivos_competencias', 'palavras_chave', 'versiculos_biblicos', 'ideia_guia', 'ferramentas_aep'].includes(f.field_name))
+            .map(renderField)}
+
+          <Button type="submit" disabled={isGenerating || !classId || !subjectId || lessonDates.length === 0} className="w-full mt-2">
             {isGenerating ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando plano de aula...</>
             ) : (

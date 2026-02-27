@@ -81,10 +81,19 @@ export function useLessonPlans() {
   return useQuery({
     queryKey: ['lesson-plans'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: authData } = await supabase.auth.getUser();
+      const currentUserId = authData.user?.id;
+
+      let query = supabase
         .from('lesson_plans')
         .select('*')
         .order('created_at', { ascending: false });
+
+      if (currentUserId) {
+        query = query.eq('teacher_id', currentUserId);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data as LessonPlan[];
     },

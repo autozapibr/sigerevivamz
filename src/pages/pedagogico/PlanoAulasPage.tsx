@@ -11,6 +11,8 @@ import DOMPurify from 'dompurify';
 import { useSearch } from '@/contexts/SearchContext';
 import { toast } from '@/hooks/use-toast';
 
+const LESSON_PLAN_DRAFT_KEY = 'sge_lesson_plan_draft';
+
 export default function PlanoAulasPage() {
   const { user } = useAuth();
   const { data: plans } = useLessonPlans();
@@ -46,6 +48,58 @@ export default function PlanoAulasPage() {
   const [currentSubjectName, setCurrentSubjectName] = useState('');
   const [viewingPlan, setViewingPlan] = useState<LessonPlan | null>(null);
 
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(LESSON_PLAN_DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as {
+        generatedContent?: string;
+        currentFormData?: Record<string, any>;
+        currentClassId?: number;
+        currentSubjectId?: number;
+        currentClassName?: string;
+        currentSubjectName?: string;
+      };
+
+      setGeneratedContent(draft.generatedContent || '');
+      setCurrentFormData(draft.currentFormData || {});
+      setCurrentClassId(draft.currentClassId);
+      setCurrentSubjectId(draft.currentSubjectId);
+      setCurrentClassName(draft.currentClassName || '');
+      setCurrentSubjectName(draft.currentSubjectName || '');
+    } catch {
+      // no-op
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        LESSON_PLAN_DRAFT_KEY,
+        JSON.stringify({
+          generatedContent,
+          currentFormData,
+          currentClassId,
+          currentSubjectId,
+          currentClassName,
+          currentSubjectName,
+        })
+      );
+    } catch {
+      // no-op
+    }
+  }, [generatedContent, currentFormData, currentClassId, currentSubjectId, currentClassName, currentSubjectName]);
+
+  useEffect(() => {
+    if (savePlan.isSuccess) {
+      try {
+        sessionStorage.removeItem(LESSON_PLAN_DRAFT_KEY);
+      } catch {
+        // no-op
+      }
+    }
+  }, [savePlan.isSuccess]);
+
   const handleGenerate = async (
     formData: Record<string, any>,
     classId?: number,
@@ -78,6 +132,15 @@ export default function PlanoAulasPage() {
   };
 
   const handleSave = () => {
+    if (!generatedContent?.trim()) {
+      toast({
+        title: 'Nada para guardar',
+        description: 'Gere primeiro um plano de aula completo.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const title = `${currentSubjectName || 'Plano'} - ${currentClassName || 'Turma'} - ${new Date().toLocaleDateString('pt-MZ')}`;
     savePlan.mutate({
       title,
