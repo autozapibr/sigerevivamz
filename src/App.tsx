@@ -20,7 +20,7 @@ import Attendance from "./pages/Attendance";
 import Notifications from "./pages/Notifications";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
-import DevSeed from "./pages/DevSeed";
+
 import Settings from "./pages/Settings";
 import AparenciaPage from "./pages/settings/AparenciaPage";
 import PerfilPage from "./pages/settings/PerfilPage";
@@ -326,7 +326,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="/dev/seed" element={<DevSeed />} />
+      
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

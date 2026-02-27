@@ -1,7 +1,6 @@
-// deno-lint-ignore-file no-explicit-any
-// Seed users and profiles with service role
+// Seed master users for production
 // Endpoint: POST /functions/v1/seed-users
-// Creates 4 users (DIRETORIA, SECRETARIA, FINANCEIRO, PROFESSOR) with password 123456
+// Creates 7 master users with @escolareviva.com emails
 
 import { serve } from "https://deno.land/std@0.193.0/http/server.ts";
 import { createClient } from "@supabase/supabase-js";
@@ -18,16 +17,18 @@ const adminClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
 });
 
 const USERS = [
-  { email: "diretor@sge.mz", password: "123456", full_name: "Diretor SGE", role: "DIRETORIA" },
-  { email: "secretaria@sge.mz", password: "123456", full_name: "Secretaria SGE", role: "SECRETARIA" },
-  { email: "financeiro@sge.mz", password: "123456", full_name: "Financeiro SGE", role: "FINANCEIRO" },
-  { email: "professor@sge.mz", password: "123456", full_name: "Professor SGE", role: "PROFESSOR" },
+  { email: "admin@escolareviva.com", password: "654321", full_name: "Administrador Geral", role: "ADMIN" },
+  { email: "diretoria@escolareviva.com", password: "654321", full_name: "Diretor(a) Escolar", role: "DIRETORIA" },
+  { email: "secretaria@escolareviva.com", password: "654321", full_name: "Secretária Escolar", role: "SECRETARIA" },
+  { email: "financeiro@escolareviva.com", password: "654321", full_name: "Gestor Financeiro", role: "FINANCEIRO" },
+  { email: "professor@escolareviva.com", password: "654321", full_name: "Professor(a) Master", role: "PROFESSOR" },
+  { email: "responsavel@escolareviva.com", password: "654321", full_name: "Encarregado de Educação", role: "ENCARREGADO" },
+  { email: "aluno@escolareviva.com", password: "654321", full_name: "Aluno(a) Master", role: "ALUNO" },
 ] as const;
 
 type SeedResult = { email: string; role: string; status: "created" | "exists"; user_id: string };
 
 async function findUserIdByEmail(email: string): Promise<string | null> {
-  // List first 200 users and filter by email (sufficient for seeding in dev)
   const { data, error } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 200 });
   if (error) throw error;
   const user = data.users.find((u) => (u.email || "").toLowerCase() === email.toLowerCase());
@@ -51,7 +52,6 @@ async function ensureRole(user_id: string, role: string) {
 }
 
 serve(async (req) => {
-  // CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, {
       headers: {
@@ -97,11 +97,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({
-        ok: true,
-        users: results,
-        credentials: USERS.map((u) => ({ email: u.email, password: u.password, role: u.role })),
-      }),
+      JSON.stringify({ ok: true, users: results }),
       { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
     );
   } catch (e: any) {

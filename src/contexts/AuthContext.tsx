@@ -7,7 +7,6 @@ interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   register: (data: { name: string; email: string; password: string; role: UserRole }) => Promise<void>;
-  devBypassLogin: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,40 +15,18 @@ type AuthAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'LOGIN_SUCCESS'; payload: User }
   | { type: 'LOGOUT' }
-  | { type: 'SET_USER'; payload: User | null }
-  | { type: 'DEV_BYPASS'; payload: User };
+  | { type: 'SET_USER'; payload: User | null };
 
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
     case 'LOGIN_SUCCESS':
-      return { 
-        ...state, 
-        user: action.payload, 
-        isAuthenticated: true, 
-        isLoading: false 
-      };
+      return { ...state, user: action.payload, isAuthenticated: true, isLoading: false };
     case 'LOGOUT':
-      return { 
-        user: null, 
-        isAuthenticated: false, 
-        isLoading: false 
-      };
+      return { user: null, isAuthenticated: false, isLoading: false };
     case 'SET_USER':
-      return { 
-        ...state, 
-        user: action.payload, 
-        isAuthenticated: !!action.payload,
-        isLoading: false
-      };
-    case 'DEV_BYPASS':
-      return {
-        ...state,
-        user: action.payload,
-        isAuthenticated: true,
-        isLoading: false
-      };
+      return { ...state, user: action.payload, isAuthenticated: !!action.payload, isLoading: false };
     default:
       return state;
   }
@@ -61,28 +38,42 @@ const initialState: AuthState = {
   isLoading: true,
 };
 
+async function fetchUserRole(userId: string): Promise<UserRole> {
+  const { data } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .limit(1)
+    .single();
+  return (data?.role as UserRole) || 'ALUNO';
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   useEffect(() => {
+    const buildUser = async (session: Session): Promise<User> => {
+      const userId = session.user.id;
+      const email = session.user.email || '';
+      const metadata = session.user.user_metadata || {};
+      const role = await fetchUserRole(userId);
+
+      return {
+        id: userId,
+        email,
+        name: metadata.full_name || email.split('@')[0],
+        role,
+        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${email}`,
+        createdAt: session.user.created_at,
+        updatedAt: session.user.updated_at || session.user.created_at,
+      };
+    };
+
     const handleSession = (session: Session | null) => {
       if (session?.user) {
-        // Simplified auth - using only auth.users metadata
         setTimeout(async () => {
           try {
-            const userId = session.user!.id;
-            const email = session.user!.email || '';
-            const metadata = session.user!.user_metadata || {};
-
-            const user: User = {
-              id: userId,
-              email,
-              name: metadata.full_name || email.split('@')[0],
-              role: (metadata.role as UserRole) || 'SECRETARIA',
-              avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${email}`,
-              createdAt: session.user!.created_at,
-              updatedAt: session.user!.updated_at || session.user!.created_at,
-            };
+            const user = await buildUser(session);
             dispatch({ type: 'SET_USER', payload: user });
           } catch {
             dispatch({ type: 'SET_LOADING', payload: false });
@@ -93,32 +84,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Protect dev bypass users from unexpected SIGNED_OUT events
-      if (event === 'SIGNED_OUT') {
-        try {
-          const stored = sessionStorage.getItem('sge_dev_user');
-          if (stored) {
-            dispatch({ type: 'DEV_BYPASS', payload: JSON.parse(stored) });
-            return; // Don't logout dev user
-          }
-        } catch {}
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       handleSession(session);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       handleSession(session);
       if (!session) {
-        // Restore dev bypass user from sessionStorage if available
-        try {
-          const stored = sessionStorage.getItem('sge_dev_user');
-          if (stored) {
-            const devUser = JSON.parse(stored) as User;
-            dispatch({ type: 'DEV_BYPASS', payload: devUser });
-            return;
-          }
-        } catch {}
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     });
@@ -128,16 +100,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (credentials: LoginCredentials) => {
     dispatch({ type: 'SET_LOADING', payload: true });
-    
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password,
       });
-
       if (error) throw error;
-      
-      // User state will be updated via the auth state change listener
     } catch (error) {
       dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
@@ -146,25 +114,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (data: { name: string; email: string; password: string; role: UserRole }) => {
     dispatch({ type: 'SET_LOADING', payload: true });
-    
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
       const { error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: data.name,
             role: data.role,
           }
         }
       });
-
       if (error) throw error;
-      
-      // User state will be updated via the auth state change listener
     } catch (error) {
       dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
@@ -172,36 +134,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    try { sessionStorage.removeItem('sge_dev_user'); } catch {}
     await supabase.auth.signOut();
     dispatch({ type: 'LOGOUT' });
   };
 
-  // Development bypass login - creates a mock user without Supabase auth
-  // SECURITY: RLS policies protect all backend data regardless of frontend auth state
-  // This bypass only sets local UI state - actual data access requires valid Supabase auth
-  const devBypassLogin = (role: UserRole) => {
-    const devUser: User = {
-      id: `dev-${role.toLowerCase()}-${Date.now()}`,
-      email: `${role.toLowerCase()}@dev.escola.mz`,
-      name: `Utilizador ${role}`,
-      role: role,
-      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${role}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    try { sessionStorage.setItem('sge_dev_user', JSON.stringify(devUser)); } catch {}
-    dispatch({ type: 'DEV_BYPASS', payload: devUser });
-  };
-
   return (
-    <AuthContext.Provider value={{
-      ...state,
-      login,
-      logout,
-      register,
-      devBypassLogin,
-    }}>
+    <AuthContext.Provider value={{ ...state, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
