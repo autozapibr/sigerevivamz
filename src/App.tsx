@@ -208,8 +208,8 @@ const AppRoutes = () => {
       <Route path="/configuracoes/ia" element={<ProtectedRoute><IAConfigPage /></ProtectedRoute>} />
       <Route path="/configuracoes/plano-aulas" element={<ProtectedRoute><PlanoAulaConfigPage /></ProtectedRoute>} />
       <Route path="/configuracoes/integracoes" element={<ProtectedRoute><IntegracoesPage /></ProtectedRoute>} />
-      <Route path="/configuracoes/utilizadores" element={<ProtectedRoute><UtilizadoresPage /></ProtectedRoute>} />
       <Route path="/configuracoes/sistema" element={<ProtectedRoute><SistemaPage /></ProtectedRoute>} />
+      <Route path="/rh/utilizadores" element={<ProtectedRoute><UtilizadoresPage /></ProtectedRoute>} />
       {/* Rotas de Gestão Financeira */}
       <Route
         path="/financeiro/dashboard"

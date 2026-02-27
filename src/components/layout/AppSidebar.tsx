@@ -77,6 +77,7 @@ const systemModules = {
     items: [
       { title: 'Professores', url: '/teachers', icon: UserCheck },
       { title: 'Colaboradores', url: '/colaboradores', icon: UsersRound },
+      { title: 'Utilizadores', url: '/rh/utilizadores', icon: Users },
       { title: 'Documentação', url: '/rh/documentacao', icon: FileCheck },
       { title: 'Contratos', url: '/rh/contratos', icon: Briefcase },
     ],
@@ -94,7 +95,6 @@ const configModule = {
     { title: 'Inteligência Artificial', url: '/configuracoes/ia', icon: Brain },
     { title: 'Plano de Aulas', url: '/configuracoes/plano-aulas', icon: BookMarked },
     { title: 'Integrações', url: '/configuracoes/integracoes', icon: Plug },
-    { title: 'Utilizadores', url: '/configuracoes/utilizadores', icon: UsersRound },
     { title: 'Sistema', url: '/configuracoes/sistema', icon: Database },
   ],
 };
