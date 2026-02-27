@@ -312,7 +312,15 @@ REGRAS ABSOLUTAS:
     }
 
     // ========== FULL PLAN MODE (default) ==========
-    const systemPrompt = configMap["system_prompt"] || `Você é um especialista em Abordagem Educacional por Princípios (AEP) para escolas cristãs em Moçambique. Gere planos de aula AEP completos, detalhados e prontos para uso em sala de aula.`;
+    // Ignore system_prompt from DB config — use unified prompt below as single source of truth
+    const systemPrompt = `Você é um especialista em Abordagem Educacional por Princípios (AEP) para escolas cristãs em Moçambique. Gere planos de aula AEP completos, detalhados e prontos para uso em sala de aula.
+
+REGRAS ABSOLUTAS DE LAYOUT:
+- NÃO gere cabeçalhos institucionais (nome da escola, professor, turma, disciplina). Esses dados JÁ EXISTEM no documento — o frontend cria o cabeçalho.
+- NÃO crie <div class="header-info">, tabelas de identificação, ou qualquer bloco com "Escola:", "Professor:", "Turma:", "Disciplina:".
+- NÃO use <h1>. O título "PLANO DE AULA AEP" já existe no cabeçalho do documento.
+- Comece DIRECTAMENTE com <h2>1. 💡 IDEIA-GUIA</h2> como primeira linha do seu output.
+- Retorne APENAS HTML puro, sem markdown, sem code fences.`;
 
     // Fetch active training documents content
     let trainingContext = "";
@@ -409,99 +417,52 @@ DADOS DO FORMULÁRIO:
 ${formEntries}
 
 REGRAS DE IDIOMA E ESTILO:
-- Escreva TODO o conteúdo em Português de Moçambique (PT-MZ), alinhado ao uso formal moçambicano/português.
-- NÃO use vocabulário do Português do Brasil (evite termos como "ônibus", "treino", "grade curricular", "aula expositiva" em estilo brasileiro).
+- Escreva TODO o conteúdo em Português de Moçambique (PT-MZ).
 - Prefira termos como: "actividade", "objectivo", "registo", "turma", "disciplina", "professor", "educando".
 
-=== ESTRUTURA OBRIGATÓRIA DO PLANO DE AULA AEP ===
+=== ESTRUTURA OBRIGATÓRIA (11 secções) ===
 
-O plano DEVE conter TODAS as secções abaixo, nesta ordem exacta:
+Comece DIRECTAMENTE com a secção 1. NÃO inclua cabeçalhos da escola/professor/turma/disciplina.
 
-1. 📌 INFORMAÇÕES GERAIS
-   - Comece DIRECTAMENTE com <h1>PLANO DE AULA AEP</h1> seguido de <h2>1. 📌 INFORMAÇÕES GERAIS</h2>
-   - NÃO crie blocos de dados da escola, professor, turma ou disciplina. NÃO inclua <div class="header-info">. NÃO crie tabelas com estes dados. Eles já existem no cabeçalho institucional do documento.
+1. 💡 IDEIA-GUIA — Use apenas 1 ideia-guia final
+2. 📌 OBJECTIVOS E COMPETÊNCIAS — 2 competências curriculares + 2 objectivos AEP
+3. 🔑 PALAVRAS-CHAVE — As palavras-chave fornecidas
+4. ✝️ TEXTOS BÍBLICOS — Versículos relevantes ao tema "${(formData as any)["Tema da Aula"] || (formData as any)["tema_aula"] || subjectName || ""}" (2 AT + 2 NT, versão NAA)
+5. 🛠️ FERRAMENTAS AEP — Como cada ferramenta será utilizada
+6. OS QUATRO PASSOS (PRRR) — Desenvolva extensivamente:
+   📖 PASSO 1 — PESQUISAR: Definições Webster 1828, pesquisa bíblica, académica, perguntas orientadoras
+   🧠 PASSO 2 — RACIOCINAR: Análise crítica, conexão princípios bíblicos, discussão guiada
+   🔗 PASSO 3 — RELACIONAR: Aplicação prática em Moçambique, actividades colaborativas
+   ✍️ PASSO 4 — REGISTAR: Actividades de registo, produção individual/grupo
+7. 📚 MATERIAIS UTILIZADOS
+8. 🔧 RECURSOS ADICIONAIS
+9. 📝 AVALIAÇÕES — Critérios, instrumentos, formativa e somativa
+10. 📋 OBSERVAÇÕES — Notas para o professor
+11. 🎯 CONCLUSÃO — APLICAÇÃO FINAL — Síntese que entrelaça conteúdo com princípios AEP
 
-2. 💡 IDEIA-GUIA
-   - Use apenas 1 ideia-guia final (se houver várias sugestões, seleccione a melhor)
+=== EXEMPLO DE OUTPUT (primeiras 2 secções) ===
+<h2>1. 💡 IDEIA-GUIA</h2>
+<p>A criação revela a ordem e o propósito de Deus em cada elemento da natureza.</p>
 
-3. 📌 OBJECTIVOS E COMPETÊNCIAS
-   - 2 competências curriculares (base curricular de Moçambique)
-   - 2 objectivos ligados à AEP e aos princípios seleccionados
+<h2>2. 📌 OBJECTIVOS E COMPETÊNCIAS</h2>
+<h3>Competências Curriculares</h3>
+<ul>
+<li>Identificar os componentes do ecossistema local.</li>
+<li>Analisar relações de interdependência entre seres vivos.</li>
+</ul>
+<h3>Objectivos AEP</h3>
+<ul>
+<li>Reconhecer a soberania de Deus na criação.</li>
+<li>Desenvolver responsabilidade individual na preservação ambiental.</li>
+</ul>
+=== FIM DO EXEMPLO ===
 
-4. 🔑 PALAVRAS-CHAVE
-   - As palavras-chave fornecidas pelo professor
-
-5. ✝️ TEXTOS BÍBLICOS
-   - Os versículos fornecidos (ou gere 4 versículos relevantes ao tema e princípios: 2 AT + 2 NT, versão NAA)
-   - IMPORTANTE: Os textos bíblicos DEVEM ser directamente relevantes ao tema "${(formData as any)["Tema da Aula"] || (formData as any)["tema_aula"] || subjectName || ""}" e aos princípios seleccionados. Não use versículos genéricos.
-
-6. 🛠️ FERRAMENTAS AEP
-   - Descreva como cada ferramenta seleccionada será utilizada na aula
-
-7. OS QUATRO PASSOS (PRRR)
-   Esta secção deve ser muito bem desenvolvida, detalhada e prática.
-
-   📖 PASSO 1 — PESQUISAR (Research)
-   - Definições Webster 1828 das palavras-chave (traduzidas para Português)
-   - Pesquisa bíblica: o que a Palavra de Deus diz sobre o tema?
-   - Pesquisa académica: fundamentos científicos/curriculares
-   - Perguntas orientadoras para os alunos
-
-   🧠 PASSO 2 — RACIOCINAR (Reason)
-   - Análise crítica das informações pesquisadas
-   - Conexão entre o conhecimento académico e os princípios bíblicos
-   - Discussão guiada com perguntas de reflexão
-   - Como os princípios AEP seleccionados se aplicam ao tema
-
-   🔗 PASSO 3 — RELACIONAR (Relate)
-   - Aplicação prática à vida do aluno em Moçambique
-   - Conexão com a comunidade e o contexto local
-   - Actividades práticas e colaborativas
-   - Como o aluno pode viver estes princípios no dia-a-dia
-
-   ✍️ PASSO 4 — REGISTAR (Record)
-   - Actividades de registo: ensaios, diários, fichas, projectos
-   - Formas criativas de documentar a aprendizagem
-   - Produção individual e/ou em grupo
-   - Apresentação e partilha dos registos
-
-8. 📚 MATERIAIS UTILIZADOS
-   - Lista detalhada de todos os materiais necessários para a aula
-
-9. 🔧 RECURSOS ADICIONAIS
-   - Livros, websites, vídeos, materiais complementares
-
-10. 📝 AVALIAÇÕES
-    - Critérios de avaliação alinhados aos objectivos
-    - Instrumentos de avaliação (rubricas, observação, trabalhos)
-    - Avaliação formativa e somativa
-
-11. 📋 OBSERVAÇÕES
-    - Notas para o professor sobre adaptações, diferenciação, pontos de atenção
-
-12. 🎯 CONCLUSÃO — APLICAÇÃO FINAL
-    - Esta é a "cereja do bolo": a síntese que entrelaça TODO o conteúdo académico com os princípios AEP
-    - Deve produzir no aluno sabedoria e conhecimento de Deus
-    - Aplicação prática, pessoal e transformadora para a vida do aluno
-    - Momento de reflexão, oração ou compromisso pessoal
-
-=== FORMATO DE SAÍDA ===
-- Retorne HTML bem formatado, pronto para impressão em folha A4.
-- Use a fonte "Work Sans" (font-weight: 300 para corpo, 600 para títulos).
-- Use emojis nos títulos das secções conforme indicado acima.
-- Use <h1> para o título principal do plano.
-- Use <h2> para cada secção principal (Informações, Ideia-Guia, PRRR, etc.).
-- Use <h3> para sub-secções dentro dos 4 passos.
-- Use <blockquote> para versículos bíblicos.
-- Use <table> com bordas para tabelas de dados.
-- Use <ul>/<ol> para listas.
-- Use recuos (padding-left), negrito (<strong>), e espaçamento adequado.
-- NÃO use markdown. Retorne APENAS HTML puro.
-- NÃO envolva em \`\`\`html ou qualquer code fence.
-- O plano deve ser COMPLETO, DETALHADO e pronto para o professor usar directamente em sala de aula.
-- Desenvolva extensivamente os 4 passos PRRR — com clareza pedagógica, aplicação prática e profundidade bíblica.
-
-OBRIGATÓRIO: O plano DEVE conter TODAS as 12 secções numeradas acima, de 1 a 12. NÃO termine antes da secção 12 (🎯 CONCLUSÃO — APLICAÇÃO FINAL). A Conclusão é a parte mais importante — deve integrar todo o conteúdo com os princípios AEP de forma transformadora.`;
+FORMATO DE SAÍDA:
+- HTML puro, pronto para impressão A4. Fonte "Work Sans" (300 corpo, 600 títulos).
+- <h2> para cada secção principal. <h3> para sub-secções dos 4 passos.
+- <blockquote> para versículos bíblicos. <table> para dados tabulares.
+- NÃO use markdown. NÃO envolva em code fences. NÃO use <h1>.
+- O plano DEVE ser COMPLETO com TODAS as 11 secções. NÃO termine antes da secção 11.`;
 
     // Use higher token limit for full plan to ensure all 12 sections are generated
     const fullPlanMaxTokens = Math.max(configMaxTokens, 12000);
