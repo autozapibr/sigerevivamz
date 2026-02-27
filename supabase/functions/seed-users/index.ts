@@ -26,7 +26,9 @@ const USERS = [
   { email: "aluno@escolareviva.com", password: "654321", full_name: "Aluno(a) Master", role: "ALUNO" },
 ] as const;
 
-type SeedResult = { email: string; role: string; status: "created" | "exists"; user_id: string };
+type SeedResult = { email: string; role: string; status: "created" | "updated"; user_id: string };
+
+type SeedCredential = { email: string; password: string; role: string };
 
 async function findUserIdByEmail(email: string): Promise<string | null> {
   const { data, error } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 200 });
@@ -71,10 +73,11 @@ serve(async (req) => {
 
   try {
     const results: SeedResult[] = [];
+    const credentials: SeedCredential[] = [];
 
     for (const u of USERS) {
       let userId = await findUserIdByEmail(u.email);
-      let status: SeedResult["status"] = "exists";
+      let status: SeedResult["status"] = "created";
 
       if (!userId) {
         const { data: created, error: createError } = await adminClient.auth.admin.createUser({
@@ -85,7 +88,14 @@ serve(async (req) => {
         });
         if (createError) throw createError;
         userId = created.user?.id || null;
-        status = "created";
+      } else {
+        const { error: updateError } = await adminClient.auth.admin.updateUserById(userId, {
+          password: u.password,
+          email_confirm: true,
+          user_metadata: { full_name: u.full_name, role: u.role },
+        });
+        if (updateError) throw updateError;
+        status = "updated";
       }
 
       if (!userId) throw new Error(`Falha ao obter ID do usuário para ${u.email}`);
@@ -94,10 +104,11 @@ serve(async (req) => {
       await ensureRole(userId, u.role);
 
       results.push({ email: u.email, role: u.role, status, user_id: userId });
+      credentials.push({ email: u.email, password: u.password, role: u.role });
     }
 
     return new Response(
-      JSON.stringify({ ok: true, users: results }),
+      JSON.stringify({ ok: true, users: results, credentials }),
       { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
     );
   } catch (e: any) {
