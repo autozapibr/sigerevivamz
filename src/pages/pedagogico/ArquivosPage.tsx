@@ -352,12 +352,29 @@ export default function ArquivosPage() {
                             <span className="text-[10px] text-muted-foreground">
                               {formatFileSize(file.file_size)}
                             </span>
-                            {file.created_at && (
+                            {file.category === 'Plano de Aula' ? (
+                              (() => {
+                                const parts = file.file_name.replace(/\.html$/i, '').split(' - ');
+                                const tema = parts.length >= 3 ? parts.slice(2).join(' - ').trim() : '';
+                                const isValidTheme = tema && tema !== 'Sem tema' && !/^\d{2}\/\d{2}\/\d{4}$/.test(tema);
+                                return isValidTheme ? (
+                                  <span className="text-[10px] text-primary flex items-center gap-1">
+                                    <BookOpen className="w-3 h-3" />
+                                    {tema}
+                                  </span>
+                                ) : file.created_at ? (
+                                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    {format(new Date(file.created_at), "dd MMM yyyy", { locale: pt })}
+                                  </span>
+                                ) : null;
+                              })()
+                            ) : file.created_at ? (
                               <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
                                 {format(new Date(file.created_at), "dd MMM yyyy", { locale: pt })}
                               </span>
-                            )}
+                            ) : null}
                           </div>
                           {file.description && (
                             <p className="text-xs text-muted-foreground mt-1 truncate">{file.description}</p>
