@@ -239,31 +239,72 @@ export function LessonPlanPreview({ content, onSave, onClose, isSaving, isSaved 
     try {
       const html2pdf = (await import('html2pdf.js')).default;
 
-      const container = document.createElement('div');
-      container.innerHTML = getFullHtml();
-      // Extract just the body content and wrap it with styles
+      // Build content WITHOUT the fixed footer (it won't render in html2canvas)
       const wrapper = document.createElement('div');
       const styleEl = document.createElement('style');
-      styleEl.textContent = A4_STYLES;
+      styleEl.textContent = A4_STYLES + `
+        .running-footer { display: none !important; }
+      `;
       wrapper.appendChild(styleEl);
-      const bodyContent = container.querySelector('body');
-      if (bodyContent) {
-        wrapper.innerHTML += bodyContent.innerHTML;
-      } else {
-        wrapper.innerHTML += container.innerHTML;
-      }
+
+      // Add header + content
+      const contentDiv = document.createElement('div');
+      contentDiv.innerHTML = `
+        <main class="content">
+          ${getHeaderHtml(teacherName, className, subjectName)}
+          ${sanitizedContent}
+        </main>
+      `;
+      wrapper.appendChild(contentDiv);
       document.body.appendChild(wrapper);
 
       const fileName = `Plano_AEP_${(subjectName || 'Aula').replace(/\s+/g, '_')}_${dateOnly.replace(/\//g, '-')}.pdf`;
 
-      await html2pdf().set({
-        margin: [20, 14, 18, 14],
+      // Top margin increased to leave room for repeated header on subsequent pages
+      const marginTop = 20;
+      const marginBottom = 18;
+      const marginLeft = 14;
+      const marginRight = 14;
+
+      const worker = html2pdf().set({
+        margin: [marginTop, marginRight, marginBottom, marginLeft],
         filename: fileName,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-      }).from(wrapper).save();
+      }).from(wrapper);
+
+      // Use thennable to access jsPDF instance and add footer with page numbers
+      await (worker.toPdf() as any).get('pdf').then((pdf: any) => {
+        const totalPages = pdf.internal.getNumberOfPages();
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        for (let i = 1; i <= totalPages; i++) {
+          pdf.setPage(i);
+
+          // Footer line
+          pdf.setDrawColor(180, 200, 180);
+          pdf.setLineWidth(0.3);
+          pdf.line(marginLeft, pageHeight - 12, pageWidth - marginRight, pageHeight - 12);
+
+          // Footer text - left
+          pdf.setFontSize(7);
+          pdf.setTextColor(120, 120, 120);
+          pdf.text('SiGER - Sistema de Gestão Escolar Reviva', marginLeft, pageHeight - 8);
+
+          // Footer text - center (date)
+          const dateText = dateOnly;
+          const dateWidth = pdf.getStringUnitWidth(dateText) * 7 / pdf.internal.scaleFactor;
+          pdf.text(dateText, (pageWidth - dateWidth) / 2, pageHeight - 8);
+
+          // Footer text - right (page number)
+          const pageText = `Página ${i} de ${totalPages}`;
+          const pageTextWidth = pdf.getStringUnitWidth(pageText) * 7 / pdf.internal.scaleFactor;
+          pdf.text(pageText, pageWidth - marginRight - pageTextWidth, pageHeight - 8);
+        }
+      }).save();
 
       document.body.removeChild(wrapper);
       toast({ title: 'PDF descarregado', description: fileName });
