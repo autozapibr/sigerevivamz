@@ -52,7 +52,7 @@ const systemModules = {
     items: [
       { title: 'Pauta Digital', url: '/avaliacoes', icon: NotebookPen },
       { title: 'Assiduidade', url: '/presencas', icon: ClipboardCheck },
-      { title: 'Calendário de Provas', url: '/calendario-provas', icon: Calendar },
+      { title: 'Calendário', url: '/calendario-provas', icon: Calendar },
       { title: 'Plano de Aulas', url: '/plano-aulas', icon: BookMarked },
       { title: 'Currículo', url: '/curriculo', icon: FileSpreadsheet },
       { title: 'Arquivos', url: '/arquivos', icon: FileCheck },
