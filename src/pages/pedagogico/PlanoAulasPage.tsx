@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import DOMPurify from 'dompurify';
 import { useSearch } from '@/contexts/SearchContext';
+import { toast } from '@/hooks/use-toast';
 
 export default function PlanoAulasPage() {
   const { user } = useAuth();
@@ -58,13 +59,22 @@ export default function PlanoAulasPage() {
     setCurrentClassName(className || '');
     setCurrentSubjectName(subjectName || '');
 
-    const result = await generatePlan.mutateAsync({
-      formData,
-      className,
-      subjectName,
-      teacherName: user?.name || '',
-    });
-    setGeneratedContent(result);
+    try {
+      const result = await generatePlan.mutateAsync({
+        formData,
+        className,
+        subjectName,
+        teacherName: user?.name || '',
+      });
+      setGeneratedContent(result);
+    } catch (error: any) {
+      console.error('Erro ao gerar plano:', error);
+      toast({
+        title: 'Erro ao gerar plano de aula',
+        description: error?.message || 'Tente novamente mais tarde.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleSave = () => {

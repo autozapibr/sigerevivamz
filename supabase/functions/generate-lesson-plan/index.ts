@@ -493,10 +493,12 @@ O plano DEVE conter TODAS as secções abaixo, nesta ordem exacta:
 - NÃO use markdown. Retorne APENAS HTML puro.
 - NÃO envolva em \`\`\`html ou qualquer code fence.
 - O plano deve ser COMPLETO, DETALHADO e pronto para o professor usar directamente em sala de aula.
-- Desenvolva EXTENSIVAMENTE os 4 passos PRRR — eles são o CORAÇÃO do plano.`;
+- Desenvolva EXTENSIVAMENTE os 4 passos PRRR — eles são o CORAÇÃO do plano.
 
-    // Use higher token limit for full plan
-    const fullPlanMaxTokens = Math.max(configMaxTokens, 8192);
+OBRIGATÓRIO: O plano DEVE conter TODAS as 12 secções numeradas acima, de 1 a 12. NÃO termine antes da secção 12 (🎯 CONCLUSÃO — APLICAÇÃO FINAL). A Conclusão é a parte mais importante — deve integrar todo o conteúdo com os princípios AEP de forma transformadora.`;
+
+    // Use higher token limit for full plan to ensure all 12 sections are generated
+    const fullPlanMaxTokens = Math.max(configMaxTokens, 12000);
 
     // Determine API endpoint and key based on provider
     let generatedContent = "";

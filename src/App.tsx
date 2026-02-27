@@ -325,6 +325,14 @@ const AppRoutes = () => {
   );
 };
 
+// Prevent white screen from unhandled promise rejections
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled rejection:', event.reason);
+    event.preventDefault();
+  });
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
