@@ -100,6 +100,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session } }) => {
       handleSession(session);
       if (!session) {
+        // Restore dev bypass user from sessionStorage if available
+        try {
+          const stored = sessionStorage.getItem('sge_dev_user');
+          if (stored) {
+            const devUser = JSON.parse(stored) as User;
+            dispatch({ type: 'DEV_BYPASS', payload: devUser });
+            return;
+          }
+        } catch {}
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     });
@@ -153,6 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
+    try { sessionStorage.removeItem('sge_dev_user'); } catch {}
     await supabase.auth.signOut();
     dispatch({ type: 'LOGOUT' });
   };
@@ -170,6 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+    try { sessionStorage.setItem('sge_dev_user', JSON.stringify(devUser)); } catch {}
     dispatch({ type: 'DEV_BYPASS', payload: devUser });
   };
 
