@@ -154,8 +154,9 @@ export default function PlanoAulasPage() {
       return;
     }
 
-    const temaAula = (currentFormData as Record<string, unknown>)?.['tema_aula'] as string || '';
-    const title = `${currentSubjectName || 'Plano'} - ${currentClassName || 'Turma'} - ${temaAula || 'Sem tema'}`;
+    const temaAula = ((currentFormData as Record<string, unknown>)?.['tema_aula'] as string || '').trim();
+    const datePart = new Date().toLocaleDateString('pt-MZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const title = `${currentSubjectName || 'Plano'} - ${currentClassName || 'Turma'} - ${temaAula || datePart}`;
     savePlan.mutate({
       title,
       class_id: currentClassId || null,

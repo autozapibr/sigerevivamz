@@ -344,7 +344,7 @@ export default function ArquivosPage() {
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{file.file_name}</p>
+                          <p className="text-sm font-medium truncate">{file.file_name.replace(/\.html$/i, '')}</p>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
                             <Badge variant="outline" className={`text-[10px] ${categoryColors[file.category] || ''}`}>
                               {file.category}

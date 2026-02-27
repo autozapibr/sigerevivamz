@@ -136,15 +136,15 @@ body {
   padding: 0;
 }
 h1 { display: none; }
-h2 { font-size: 13px; font-weight: 700; color: hsl(140 37% 28%); margin: 20px 0 8px; border-bottom: 1.5px solid hsl(140 37% 28% / 0.3); padding-bottom: 4px; }
-h3 { font-size: 13px; font-weight: 600; color: hsl(140 25% 39%); margin: 16px 0 6px; }
-h4 { font-size: 12px; font-weight: 600; color: hsl(20 14.3% 12%); margin: 12px 0 5px; }
+h2 { font-size: 13px; font-weight: 700; color: hsl(140 37% 28%); margin: 20px 0 8px; border-bottom: 1.5px solid hsl(140 37% 28% / 0.3); padding-bottom: 4px; page-break-after: avoid; }
+h3 { font-size: 13px; font-weight: 600; color: hsl(140 25% 39%); margin: 16px 0 6px; page-break-after: avoid; }
+h4 { font-size: 12px; font-weight: 600; color: hsl(20 14.3% 12%); margin: 12px 0 5px; page-break-after: avoid; }
 p, li { font-size: 12px; }
 p { margin: 6px 0; }
 ul, ol { padding-left: 22px; margin: 6px 0; }
 li { margin: 4px 0; }
 strong { font-weight: 600; }
-blockquote { border-left: 3px solid hsl(140 37% 28%); margin: 10px 0; padding: 10px 16px; background: hsl(140 25% 96%); font-style: italic; border-radius: 4px; }
+blockquote { border-left: 3px solid hsl(140 37% 28%); margin: 10px 0; padding: 10px 16px; background: hsl(140 25% 96%); font-style: italic; border-radius: 4px; page-break-inside: avoid; }
 table { border-collapse: collapse; width: 100%; margin: 12px 0; }
 th { background: hsl(140 37% 28%); color: white; padding: 7px 10px; text-align: left; font-size: 11px; font-weight: 600; }
 td { border: 1px solid hsl(140 10% 82%); padding: 6px 10px; font-size: 11px; }
@@ -254,7 +254,7 @@ export function LessonPlanPreview({ content, onSave, onClose, isSaving, isSaved 
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+        pagebreak: { mode: ['css', 'legacy'] },
       }).from(wrapper);
 
       // Use thennable to access jsPDF instance and add footer with page numbers
