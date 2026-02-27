@@ -19,8 +19,9 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { EmptyState } from '@/components/shared/EmptyState';
 import {
   FolderOpen, Upload, FileText, Trash2, Download, Search,
-  Filter, User, Calendar, FileSpreadsheet, BookOpen, X
+  Filter, User, Calendar, FileSpreadsheet, BookOpen, X, Eye
 } from 'lucide-react';
+import { ArchivedPlanPreview } from '@/components/lesson-plans/ArchivedPlanPreview';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -61,6 +62,7 @@ export default function ArquivosPage() {
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [filterTeacher, setFilterTeacher] = useState('');
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [previewFile, setPreviewFile] = useState<{ file_path: string; file_name: string; teacher_name: string } | null>(null);
 
   // Upload form state
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -363,15 +365,27 @@ export default function ArquivosPage() {
                         </div>
 
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleDownload(file)}
-                            title="Descarregar"
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
+                          {file.category === 'Plano de Aula' && file.mime_type === 'text/html' ? (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => setPreviewFile({ file_path: file.file_path, file_name: file.file_name, teacher_name: file.teacher_name })}
+                              title="Visualizar Plano"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleDownload(file)}
+                              title="Descarregar"
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          )}
                           {(isTeacher && file.teacher_user_id === user?.id) && (
                             <Button
                               variant="ghost"
@@ -391,6 +405,16 @@ export default function ArquivosPage() {
               </Card>
             ))}
           </div>
+        )}
+
+        {previewFile && (
+          <ArchivedPlanPreview
+            open={!!previewFile}
+            onOpenChange={(open) => !open && setPreviewFile(null)}
+            filePath={previewFile.file_path}
+            fileName={previewFile.file_name}
+            teacherName={previewFile.teacher_name}
+          />
         )}
       </div>
     </MainLayout>
