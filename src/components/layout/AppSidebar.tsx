@@ -94,6 +94,7 @@ const configModule = {
     { title: 'Inteligência Artificial', url: '/configuracoes/ia', icon: Brain },
     { title: 'Plano de Aulas', url: '/configuracoes/plano-aulas', icon: BookMarked },
     { title: 'Integrações', url: '/configuracoes/integracoes', icon: Plug },
+    { title: 'Utilizadores', url: '/configuracoes/utilizadores', icon: UsersRound },
     { title: 'Sistema', url: '/configuracoes/sistema', icon: Database },
   ],
 };
