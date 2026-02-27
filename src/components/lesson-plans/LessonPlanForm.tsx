@@ -301,38 +301,39 @@ REGRAS OBRIGATÓRIAS:
     if (field.field_type === 'textarea') {
       return (
         <div key={field.id} className="space-y-1.5">
-          <Label className="text-xs font-semibold">
-            {field.field_label} {!isOptional && <span className="text-destructive">*</span>}
-          </Label>
-          <div className="relative">
-            <Textarea
-              value={value || ''}
-              onChange={e => handleFieldChange(field.field_name, e.target.value)}
-              placeholder={getPlaceholder(field.field_name)}
-              rows={field.field_name === 'ideia_guia' || field.field_name === 'objetivos_competencias' ? 4 : 3}
-              className={`text-sm ${hasAiAssist ? 'pb-10' : ''}`}
-              disabled={isAiLoading}
-            />
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-semibold">
+              {field.field_label} {!isOptional && <span className="text-destructive">*</span>}
+            </Label>
             {hasAiAssist && (
               <button
                 type="button"
                 onClick={() => handleAiAssist(field.field_name)}
                 disabled={isAiLoading || isGenerating}
-                className="absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-md bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-1 text-[11px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isAiLoading ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Gerando...</span>
+                  </>
                 ) : (
                   <>
-                    <span>auxílio da</span>
-                    <Sparkles className="h-3.5 w-3.5" />
-                    <span>IA</span>
+                    <span>Auxílio da IA</span>
+                    <Sparkles className="h-3 w-3" />
                   </>
                 )}
-                {isAiLoading && <span>Gerando...</span>}
               </button>
             )}
           </div>
+          <Textarea
+            value={value || ''}
+            onChange={e => handleFieldChange(field.field_name, e.target.value)}
+            placeholder={getPlaceholder(field.field_name)}
+            rows={field.field_name === 'ideia_guia' || field.field_name === 'objetivos_competencias' ? 4 : 3}
+            className="text-sm"
+            disabled={isAiLoading}
+          />
           {field.field_name === 'palavras_chave' && (
             <p className="text-[11px] text-muted-foreground">Mínimo 3 palavras separadas por vírgula</p>
           )}
