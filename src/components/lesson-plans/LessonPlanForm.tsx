@@ -423,6 +423,7 @@ REGRAS OBRIGATÓRIAS:
                     mode="multiple"
                     selected={lessonDates}
                     onSelect={handleDateSelection}
+                    locale={pt}
                     className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
