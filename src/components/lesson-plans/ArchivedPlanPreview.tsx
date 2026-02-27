@@ -20,7 +20,7 @@ const A4_STYLES = `
 * { box-sizing: border-box; }
 body {
   font-family: 'Work Sans', sans-serif;
-  font-weight: 300;
+  font-weight: 400;
   color: hsl(20 14.3% 8%);
   margin: 0; padding: 20px;
   font-size: 12px; line-height: 1.7;
@@ -37,20 +37,20 @@ body {
 .page-header-meta { display: flex; gap: 18px; font-size: 10px; color: hsl(20 14.3% 18%); margin-top: 6px; padding-top: 5px; }
 .page-header-meta strong { font-weight: 600; }
 h1 { display: none; }
-h2 { font-size: 13px; font-weight: 700; color: hsl(140 37% 28%); margin: 14px 0 6px; border-bottom: 1.5px solid hsl(140 37% 28% / 0.3); padding-bottom: 3px; }
-h3 { font-size: 12px; font-weight: 600; color: hsl(140 25% 39%); margin: 11px 0 5px; }
-h4 { font-size: 11px; font-weight: 600; color: hsl(20 14.3% 12%); margin: 9px 0 4px; }
-p, li { font-size: 11px; }
-p { margin: 5px 0; }
-ul, ol { padding-left: 20px; margin: 5px 0; }
-li { margin: 3px 0; }
+h2 { font-size: 13px; font-weight: 700; color: hsl(140 37% 28%); margin: 20px 0 8px; border-bottom: 1.5px solid hsl(140 37% 28% / 0.3); padding-bottom: 4px; }
+h3 { font-size: 13px; font-weight: 600; color: hsl(140 25% 39%); margin: 16px 0 6px; }
+h4 { font-size: 12px; font-weight: 600; color: hsl(20 14.3% 12%); margin: 12px 0 5px; }
+p, li { font-size: 12px; }
+p { margin: 6px 0; }
+ul, ol { padding-left: 22px; margin: 6px 0; }
+li { margin: 4px 0; }
 strong { font-weight: 600; }
-blockquote { border-left: 3px solid hsl(140 37% 28%); margin: 7px 0; padding: 7px 12px; background: hsl(140 25% 96%); font-style: italic; }
-table { border-collapse: collapse; width: 100%; margin: 10px 0; }
-th { background: hsl(140 37% 28%); color: white; padding: 6px 8px; text-align: left; font-size: 10px; font-weight: 600; }
-td { border: 1px solid hsl(140 10% 82%); padding: 5px 8px; font-size: 10px; }
+blockquote { border-left: 3px solid hsl(140 37% 28%); margin: 10px 0; padding: 10px 16px; background: hsl(140 25% 96%); font-style: italic; border-radius: 4px; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+th { background: hsl(140 37% 28%); color: white; padding: 7px 10px; text-align: left; font-size: 11px; font-weight: 600; }
+td { border: 1px solid hsl(140 10% 82%); padding: 6px 10px; font-size: 11px; }
 tr:nth-child(even) td { background: hsl(140 10% 97%); }
-hr { border: none; border-top: 1px solid hsl(140 10% 82%); margin: 10px 0; }
+hr { border: none; border-top: 1px solid hsl(140 10% 82%); margin: 12px 0; }
 @media print { .no-print { display: none !important; } }
 `;
 
@@ -183,8 +183,8 @@ export function ArchivedPlanPreview({ open, onOpenChange, filePath, fileName, te
             </div>
           ) : htmlContent ? (
             <div
-              className="p-6"
-              style={{ fontFamily: "'Work Sans', sans-serif", color: '#1a1a1a', fontSize: '12px', lineHeight: '1.7' }}
+              className="px-8 py-8"
+              style={{ fontFamily: "'Work Sans', sans-serif", fontWeight: 400, color: '#1a1a1a', fontSize: '12px', lineHeight: '1.7' }}
               dangerouslySetInnerHTML={{ __html: htmlContent }}
             />
           ) : null}
