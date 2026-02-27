@@ -1,84 +1,62 @@
 
 
-## Problems Identified
+## Problemas Identificados
 
-1. **White text on white background**: The preview uses Tailwind's `prose` classes which inherit the dark theme's foreground color (white). The AI-generated HTML content renders white text on the white paper background.
+1. **"(opcional)" nos labels do formulário** — aparece em 4 locais do `renderField`; remover todos.
+2. **Fontes demasiado grandes na pré-visualização** — o `fontSize: '12px'` no ecrã está correcto mas os `<h1>` a `16px` e o `prose-sm` estão a inflacionar; reduzir h1→13px, h2→12px, h3→11px, body→11px **apenas no ecrã** (manter os tamanhos actuais na folha `@media print`).
+3. **Informações duplicadas no início do plano** — a IA gera um bloco `<div class="header-info">` com Escola/Professor/Turma/Disciplina que já consta no cabeçalho institucional. Solução: (a) instruir a IA no prompt para **não** gerar esse bloco; (b) limpar no frontend com regex caso venha.
+4. **Erro "teacher_id null"** — em modo demo o `supabase.auth.getUser()` retorna `null`. Bloquear o botão Guardar e mostrar toast informativo quando não houver sessão real.
+5. **Linhas divisórias cabeçalho/rodapé** — remover `border-bottom` do cabeçalho institucional e `border-top` do rodapé na pré-visualização (e nos `@page` styles).
+6. **Ecrã branco / refresh inesperado** — o `onAuthStateChange` dispara com `session=null` quando o token anon expira ou uma query falha, causando logout. Solução: ignorar eventos `SIGNED_OUT` quando existe `sge_dev_user` no sessionStorage; adicionar `staleTime` ao QueryClient para reduzir re-fetches agressivos; envolver o `handleSession` numa protecção.
 
-2. **Font sizes too large**: The prose classes use default sizing; need smaller, print-appropriate sizes.
+## Plano de Implementação
 
-3. **Incomplete plan (missing sections 8-12)**: The AI likely hits the token limit or the prompt doesn't enforce completion strongly enough. Need to increase token limit and add a stronger completion instruction.
+### Ficheiro 1: `src/components/lesson-plans/LessonPlanForm.tsx`
+- Remover as 4 instâncias de `{isOptional && <span className="text-muted-foreground font-normal ml-1">(opcional)</span>}` nos blocos select, multiselect, textarea e text input do `renderField`.
 
-4. **Download is HTML, not PDF**: User wants PDF download. Need to generate a proper PDF using the print-to-PDF approach via a hidden iframe.
+### Ficheiro 2: `src/components/lesson-plans/LessonPlanPreview.tsx`
+- **Ecrã**: Reduzir inline style `fontSize` de `12px` → `11px`. Nos `A4_STYLES`, reduzir h1→13px, h2→12px, h3→11px, p/li→11px.
+- **Print styles**: Manter h1 16px, h2 14px, h3 13px, body 12px (bons para impressão). Adicionar bloco `@media print` com tamanhos maiores.
+- Remover `border-bottom` do `.header-bar` e `border-top` do rodapé no ecrã.
+- Na `cleanContent`, adicionar regex para remover blocos `<div class="header-info">...</div>` gerados pela IA.
 
-5. **White screen / redirect to login**: The `devBypassLogin` creates a mock user in memory only. When an unhandled promise rejection occurs (e.g., from a failed Supabase query with no real auth), it crashes the app and the auth state resets, redirecting to login. Need: (a) `try/catch` in `handleGenerate`, (b) global `unhandledrejection` listener, (c) persist dev bypass state in `sessionStorage`.
+### Ficheiro 3: `src/pages/pedagogico/PlanoAulasPage.tsx`
+- No `handleSave`: antes de chamar `savePlan.mutate`, verificar se `user?.id?.startsWith('dev-')`. Se sim, mostrar toast "Funcionalidade disponível apenas com sessão autenticada" e retornar sem salvar.
 
-6. **Action buttons**: User wants only 3 icon buttons (Print, Download PDF, Share) plus Save.
+### Ficheiro 4: `src/contexts/AuthContext.tsx`
+- No listener `onAuthStateChange`: quando `event === 'SIGNED_OUT'`, verificar se existe `sge_dev_user` no sessionStorage; se existir, **restaurar** o dev user em vez de fazer logout. Isto impede o ecrã branco.
+- Adicionar `try/catch` no `handleSession` para evitar que erros inesperados crashem o estado.
 
-## Plan
+### Ficheiro 5: `src/App.tsx`
+- Configurar `QueryClient` com `defaultOptions.queries.staleTime: 5 * 60 * 1000` e `retry: 1` para reduzir re-fetches agressivos que podem disparar erros em cascata.
 
-### Task 1: Fix preview text color and typography
-**File: `src/components/lesson-plans/LessonPlanPreview.tsx`**
-- Force `color: #1a1a1a` on the content div to override dark theme prose colors
-- Reduce font sizes: `prose-sm` with explicit overrides for h1 (14px), h2 (13px), h3 (12px), body text (11px)
-- Ensure all text inside the white paper area is dark-colored regardless of theme
+### Ficheiro 6: `supabase/functions/generate-lesson-plan/index.ts`
+- Na secção `INFORMAÇÕES GERAIS` do prompt, reforçar: **"NÃO crie blocos de dados da escola, professor, turma ou disciplina. NÃO inclua `<div class='header-info'>`. Comece directamente pelo título `<h1>PLANO DE AULA AEP</h1>` seguido de `<h2>1. 📌 INFORMAÇÕES GERAIS</h2>`."**
 
-### Task 2: Fix white screen crash with error handling
-**File: `src/pages/pedagogico/PlanoAulasPage.tsx`**
-- Wrap `handleGenerate` in `try/catch` with toast error feedback
-- Prevent unhandled promise rejection from crashing the app
+### Detalhe Técnico: Protecção contra ecrã branco
 
-**File: `src/App.tsx`**
-- Add global `unhandledrejection` event listener in App component to prevent white screen crashes
-
-**File: `src/contexts/AuthContext.tsx`**
-- Persist dev bypass user in `sessionStorage` so page reloads don't lose the session
-- Restore dev user from `sessionStorage` on mount
-
-### Task 3: PDF download instead of HTML
-**File: `src/components/lesson-plans/LessonPlanPreview.tsx`**
-- Replace HTML download with a PDF generation approach using `window.print()` to a hidden iframe with `@media print` CSS
-- The `handleDownload` function will open the full HTML in a hidden iframe and trigger `print()` with the browser's "Save as PDF" option
-- Alternatively, use a simpler approach: open the HTML in a new window with print dialog (same as print, but user can choose "Save as PDF")
-- Simplify action bar to 3 icon-only buttons (Printer, Download/PDF, Share) + Save button
-
-### Task 4: Ensure complete plan generation
-**File: `supabase/functions/generate-lesson-plan/index.ts`**
-- Increase `fullPlanMaxTokens` to 12000 to ensure all 12 sections are generated
-- Add stronger instruction at the end of the prompt: "OBRIGATÓRIO: O plano DEVE conter TODAS as 12 secções. NÃO termine antes da secção 12 (Conclusão)."
-
-### Technical Details
-
-**Text color fix** (critical):
-```css
-/* Force dark text on white paper */
-.prose { color: #1a1a1a !important; }
-```
-Applied via inline style `color: '#1a1a1a'` on the content wrapper div.
-
-**Session persistence for dev bypass**:
 ```typescript
-// On devBypassLogin: 
-sessionStorage.setItem('dev_user', JSON.stringify(devUser));
-
-// On AuthProvider mount:
-const stored = sessionStorage.getItem('dev_user');
-if (stored) dispatch({ type: 'DEV_BYPASS', payload: JSON.parse(stored) });
-
-// On logout:
-sessionStorage.removeItem('dev_user');
-```
-
-**Error boundary in handleGenerate**:
-```typescript
-const handleGenerate = async (...) => {
-  try {
-    const result = await generatePlan.mutateAsync({...});
-    setGeneratedContent(result);
-  } catch (error) {
-    toast.error('Erro ao gerar plano de aula');
+// AuthContext.tsx — dentro do onAuthStateChange
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT') {
+    try {
+      const stored = sessionStorage.getItem('sge_dev_user');
+      if (stored) {
+        dispatch({ type: 'DEV_BYPASS', payload: JSON.parse(stored) });
+        return; // Não fazer logout
+      }
+    } catch {}
   }
-};
+  handleSession(session);
+});
 ```
 
-**PDF-style download**: Open full HTML in new tab, user uses browser print > Save as PDF. This is the most reliable cross-browser PDF approach without adding heavy dependencies.
+```typescript
+// PlanoAulasPage.tsx — handleSave
+const isDevUser = user?.id?.startsWith('dev-');
+if (isDevUser) {
+  toast({ title: 'Sessão de demonstração', description: 'Guardar planos requer autenticação real. Use Imprimir ou Descarregar PDF.', variant: 'destructive' });
+  return;
+}
+```
 
