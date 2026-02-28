@@ -1,30 +1,33 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-interface ContractRequest {
-  type: "generate" | "customize";
-  category: string;
-  staffInfo?: {
-    name: string;
-    role: string;
-    bi_number?: string;
-    nuit?: string;
-    address?: string;
-    province?: string;
-    district?: string;
-    phone?: string;
-    email?: string;
-    salary?: number;
-    contract_start?: string;
-    contract_end?: string;
-  };
-  customInstructions?: string;
-}
+const StaffInfoSchema = z.object({
+  name: z.string().min(1).max(200),
+  role: z.string().min(1).max(100),
+  bi_number: z.string().max(20).optional(),
+  nuit: z.string().max(15).optional(),
+  address: z.string().max(300).optional(),
+  province: z.string().max(50).optional(),
+  district: z.string().max(50).optional(),
+  phone: z.string().max(20).optional(),
+  email: z.string().email().max(255).optional().or(z.literal("")),
+  salary: z.number().min(0).max(100000000).optional(),
+  contract_start: z.string().max(10).optional(),
+  contract_end: z.string().max(10).optional(),
+}).optional();
+
+const ContractRequestSchema = z.object({
+  type: z.enum(["generate", "customize"]),
+  category: z.string().min(1).max(50),
+  staffInfo: StaffInfoSchema,
+  customInstructions: z.string().max(3000).optional(),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -48,7 +51,6 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } }
     });
 
-    // Validate JWT token
     const token = authHeader.replace('Bearer ', '');
     const { data: claimsData, error: claimsError } = await supabaseClient.auth.getUser(token);
     
@@ -61,14 +63,12 @@ serve(async (req) => {
 
     const userId = claimsData.user.id;
 
-    // Check user role - only DIRETORIA, SECRETARIA, or ADMIN can generate contracts
     const { data: roleData, error: roleError } = await supabaseClient
       .from('user_roles')
       .select('role')
       .eq('user_id', userId);
 
     if (roleError) {
-      console.error('Error checking roles:', roleError);
       return new Response(
         JSON.stringify({ error: 'Erro ao verificar permissões.' }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -76,23 +76,22 @@ serve(async (req) => {
     }
 
     const allowedRoles = ['ADMIN', 'DIRETORIA', 'SECRETARIA'];
-    const userRoles = roleData?.map(r => r.role) || [];
-    const hasPermission = userRoles.some(role => allowedRoles.includes(role));
-
-    if (!hasPermission) {
+    const userRoles = roleData?.map((r: { role: string }) => r.role) || [];
+    if (!userRoles.some((role: string) => allowedRoles.includes(role))) {
       return new Response(
         JSON.stringify({ error: 'Sem permissão para gerar contratos.' }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Proceed with contract generation
+    // --- INPUT VALIDATION ---
+    const rawBody = await req.json();
+    const { type, category, staffInfo, customInstructions } = ContractRequestSchema.parse(rawBody);
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
-
-    const { type, category, staffInfo, customInstructions }: ContractRequest = await req.json();
 
     const categoryDescriptions: Record<string, string> = {
       trabalho: "contrato de trabalho formal com todas as cláusulas laborais obrigatórias",
@@ -158,7 +157,7 @@ Retorne APENAS o HTML do contrato, bem formatado com estilos inline para impress
       userPrompt = `Com base no tipo de contrato "${categoryDescriptions[category] || category}", personalize ou crie cláusulas específicas conforme solicitado:
 
 INSTRUÇÕES DO USUÁRIO:
-${customInstructions}
+${customInstructions || "Sem instruções adicionais."}
 
 ${staffInfo ? `
 DADOS DISPONÍVEIS:
@@ -190,19 +189,13 @@ Retorne APENAS o HTML formatado com as cláusulas ou modificações solicitadas.
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: "Créditos insuficientes. Por favor, adicione créditos à sua conta." }),
-          {
-            status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       const errorText = await response.text();
@@ -214,23 +207,24 @@ Retorne APENAS o HTML formatado com as cláusulas ou modificações solicitadas.
     const generatedContent = data.choices?.[0]?.message?.content || "";
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        content: generatedContent 
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ success: true, content: generatedContent }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({
+          error: "Dados inválidos",
+          details: error.errors.map((e) => ({ field: e.path.join("."), message: e.message })),
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     console.error("Error in generate-contract function:", error);
+    const msg = error instanceof Error ? error.message : "Erro ao processar requisição";
     return new Response(
-      JSON.stringify({ error: error.message || "Erro ao processar requisição" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ error: msg }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
