@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   GraduationCap, Users, BookOpen, CreditCard, BarChart3,
-  Calendar, Shield, Bell, ArrowRight, CheckCircle2
+  Calendar, Shield, Bell, ArrowRight, CheckCircle2, Sun, Moon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import logoReviva from '@/assets/escola-reviva-logo.webp';
@@ -29,6 +29,20 @@ const fadeUp = {
 };
 
 export default function LandingPage() {
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(isDark ? 'dark' : 'light');
+  }, [isDark]);
+
+  // Force dark on mount for landing
+  useEffect(() => {
+    document.documentElement.classList.remove('light');
+    document.documentElement.classList.add('dark');
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Header */}
@@ -42,6 +56,15 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <motion.button
+              onClick={() => setIsDark(!isDark)}
+              className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+              whileTap={{ scale: 0.9, rotate: 180 }}
+              transition={{ duration: 0.3 }}
+              aria-label={isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+            >
+              {isDark ? <Sun className="h-4 w-4 text-foreground" /> : <Moon className="h-4 w-4 text-foreground" />}
+            </motion.button>
             <Button variant="ghost" asChild>
               <Link to="/login">Entrar</Link>
             </Button>

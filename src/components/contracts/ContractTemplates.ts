@@ -218,7 +218,7 @@ export function generateContractHTML(template: string, data: StaffContractData):
         </p>
 
         <p style="margin-top: 30px;">Feito em duplicado, ficando cada parte com um exemplar.</p>
-        <p>Maputo, ${today}</p>
+        <p>Nampula, ${today}</p>
 
         ${signatures}
       `;
@@ -263,7 +263,7 @@ export function generateContractHTML(template: string, data: StaffContractData):
         </p>
 
         <p style="margin-top: 30px;">Feito em duplicado, ficando cada parte com um exemplar.</p>
-        <p>Maputo, ${today}</p>
+        <p>Nampula, ${today}</p>
 
         ${signatures}
       `;
@@ -317,7 +317,7 @@ export function generateContractHTML(template: string, data: StaffContractData):
         </p>
 
         <p style="margin-top: 30px;">Feito em duplicado, ficando cada parte com um exemplar.</p>
-        <p>Maputo, ${today}</p>
+        <p>Nampula, ${today}</p>
 
         ${signatures}
       `;
@@ -363,7 +363,7 @@ export function generateContractHTML(template: string, data: StaffContractData):
         </p>
 
         <p style="margin-top: 30px;">Feito em duplicado, ficando cada parte com um exemplar.</p>
-        <p>Maputo, ${today}</p>
+        <p>Nampula, ${today}</p>
 
         ${signatures}
       `;
@@ -412,7 +412,7 @@ export function generateContractHTML(template: string, data: StaffContractData):
         </p>
 
         <p style="margin-top: 30px;">Feito em duplicado, ficando cada parte com um exemplar.</p>
-        <p>Maputo, ${today}</p>
+        <p>Nampula, ${today}</p>
 
         ${signatures}
       `;

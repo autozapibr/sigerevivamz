@@ -355,7 +355,7 @@ export const generateFinancialPDF = (data: FinancialPDFData): void => {
             <div class="institution-info">
               <strong>${data.schoolName || 'Escola REVIVA'}</strong>
               NUIT: ${data.nuit || 'N/A'}<br>
-              ${data.address || 'Maputo, Moçambique'}
+              ${data.address || 'Nampula, Moçambique'}
             </div>
           </div>
           
@@ -482,7 +482,7 @@ export const exportFinancialPDF = (
     generatedAt: new Date(),
     schoolName: 'Escola REVIVA',
     nuit: '400000000',
-    address: 'Maputo, Moçambique',
+    address: 'Nampula, Moçambique',
     summary: {
       totalReceitas: monthlyData.reduce((acc, m) => acc + m.receitas, 0),
       totalDespesas: monthlyData.reduce((acc, m) => acc + m.despesas, 0),
