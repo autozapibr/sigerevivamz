@@ -10,6 +10,7 @@ import logoReviva from '@/assets/escola-reviva-logo.webp';
 import heroImage from '@/assets/hero-kids.jpg';
 import classroomImage from '@/assets/kids-classroom.jpg';
 import learningImage from '@/assets/kids-learning.jpg';
+import aepLogo from '@/assets/aep-logo.png';
 
 const features = [
   { icon: Users, title: 'Gestão de Educandos', desc: 'Cadastro completo, histórico académico, documentos e acompanhamento individualizado.' },
@@ -127,13 +128,99 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Gallery / About */}
-      <section className="py-20 sm:py-28">
+      {/* AEP Section */}
+      <section className="py-20 sm:py-28 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary mb-6">
+                <BookOpen className="h-3.5 w-3.5" />
+                Nosso Diferencial
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+                Abordagem Educacional por Princípios (AEP)
+              </h2>
+              <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
+                A Escola Reviva adopta a <strong>AEP</strong> — uma abordagem de ensino e aprendizagem que parte do raciocínio sobre verdades bíblicas, identifica os fundamentos do conhecimento e conduz à reflexão de causa-efeito, desenvolvendo <strong>entendimento realizador e caráter cristão</strong>.
+              </p>
+              <p className="text-muted-foreground mb-8 leading-relaxed">
+                Baseada na metodologia <strong>PRRR</strong> — Pesquisar, Raciocinar, Relacionar e Registar — a AEP integra filosofia, currículo e metodologia cristãs num processo educativo que envolve família, igreja e escola.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                {[
+                  { letter: 'P', word: 'Pesquisar', desc: 'Investigar as fontes e definir conceitos' },
+                  { letter: 'R', word: 'Raciocinar', desc: 'Analisar princípios e suas aplicações' },
+                  { letter: 'R', word: 'Relacionar', desc: 'Conectar o aprendizado com a vida' },
+                  { letter: 'R', word: 'Registar', desc: 'Documentar e aplicar o conhecimento' },
+                ].map((step, i) => (
+                  <motion.div
+                    key={step.word}
+                    className="bg-card rounded-lg border border-border p-4"
+                    custom={i}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    variants={fadeUp}
+                  >
+                    <span className="text-2xl font-extrabold text-primary">{step.letter}</span>
+                    <h4 className="font-semibold text-sm mt-1">{step.word}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{step.desc}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              <a
+                href="https://aecep.org.br/aep"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+              >
+                Saiba mais sobre a AEP na AECEP <ArrowRight className="h-3.5 w-3.5" />
+              </a>
+            </motion.div>
+
+            <motion.div
+              className="flex flex-col items-center gap-8"
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <img
+                src={aepLogo}
+                alt="Escola Reviva - Abordagem Educacional por Princípios"
+                className="w-full max-w-sm rounded-2xl shadow-xl"
+              />
+              <div className="grid grid-cols-2 gap-4 w-full">
+                <img
+                  src={classroomImage}
+                  alt="Educandos na sala de aula"
+                  className="rounded-2xl shadow-lg w-full h-40 object-cover"
+                />
+                <img
+                  src={learningImage}
+                  alt="Crianças aprendendo"
+                  className="rounded-2xl shadow-lg w-full h-40 object-cover"
+                />
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* About / Mission */}
+      <section className="py-20 sm:py-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
@@ -156,25 +243,6 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-            </motion.div>
-
-            <motion.div
-              className="grid grid-cols-2 gap-4"
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <img
-                src={classroomImage}
-                alt="Educandos na sala de aula"
-                className="rounded-2xl shadow-xl w-full h-56 object-cover"
-              />
-              <img
-                src={learningImage}
-                alt="Crianças aprendendo"
-                className="rounded-2xl shadow-xl w-full h-56 object-cover mt-8"
-              />
             </motion.div>
           </div>
         </div>
