@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LoginForm } from "./components/auth/LoginForm";
-import { RegisterForm } from "./components/auth/RegisterForm";
+import { InviteRegisterForm } from "./components/auth/InviteRegisterForm";
 import Dashboard from "./pages/Dashboard";
 import { Students } from "./pages/Students";
 import { StudentDetail } from "./pages/StudentDetail";
@@ -86,8 +86,8 @@ const AppRoutes = () => {
         element={!isAuthenticated ? <LoginForm /> : <Navigate to="/dashboard" replace />} 
       />
       <Route 
-        path="/register" 
-        element={!isAuthenticated ? <RegisterForm /> : <Navigate to="/dashboard" replace />} 
+        path="/registar/:token" 
+        element={!isAuthenticated ? <InviteRegisterForm /> : <Navigate to="/dashboard" replace />} 
       />
       <Route path="/" element={<LandingPage />} />
       <Route
