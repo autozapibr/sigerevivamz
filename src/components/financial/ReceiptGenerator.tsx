@@ -33,7 +33,7 @@ interface ReceiptGeneratorProps {
 
 const SCHOOL_INFO = {
   name: 'Escola REVIVA',
-  address: 'Av. Eduardo Mondlane, Maputo, Moçambique',
+  address: 'Av. Eduardo Mondlane, Nampula, Moçambique',
   phone: '+258 84 123 4567',
   nuit: '400000001',
   email: 'info@escolareviva.co.mz',

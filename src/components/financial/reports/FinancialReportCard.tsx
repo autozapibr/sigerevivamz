@@ -146,7 +146,7 @@ function generateReportPDF(
             <div class="institution">
               <strong>Escola REVIVA</strong>
               NUIT: 400000000<br>
-              Maputo, Moçambique
+              Nampula, Moçambique
             </div>
           </div>
           

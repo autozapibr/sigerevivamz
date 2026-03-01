@@ -210,7 +210,7 @@ export function StudentFinancialHistory({
           </table>
           
           <div class="footer">
-            Documento gerado pelo SiGER - Sistema de Gestão Escolar REVIVA | Maputo, Moçambique
+            Documento gerado pelo SiGER - Sistema de Gestão Escolar REVIVA | Nampula, Moçambique
           </div>
         </body>
       </html>
