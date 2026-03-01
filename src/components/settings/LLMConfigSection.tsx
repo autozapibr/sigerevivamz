@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Brain, Save, Loader2, Info, Eye, EyeOff, TestTube,
-  CheckCircle2, XCircle
+  Brain, Save, Loader2, Info, Shield
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,14 +73,12 @@ const LLM_PROVIDERS = [
 ];
 
 export function LLMConfigSection() {
-  const { settings, isLoading, updateSetting, testConnection, getIntegration } = useIntegrationSettings();
+  const { isLoading } = useIntegrationSettings();
   const { data: lessonConfigs } = useLessonPlanConfig();
   const { saveConfig } = useLessonPlanMutations();
 
   const [selectedProvider, setSelectedProvider] = useState('lovable_ai');
   const [selectedModel, setSelectedModel] = useState('google/gemini-3-flash-preview');
-  const [apiKey, setApiKey] = useState('');
-  const [showKey, setShowKey] = useState(false);
   const [tempValue, setTempValue] = useState('0.4');
   const [maxTokensValue, setMaxTokensValue] = useState('4000');
   const [hasUnsaved, setHasUnsaved] = useState(false);
@@ -101,14 +98,7 @@ export function LLMConfigSection() {
     }
   }, [lessonConfigs]);
 
-  useEffect(() => {
-    if (settings) {
-      const openai = getIntegration('openai');
-      if (openai?.api_key && selectedProvider === 'openai') {
-        setApiKey(openai.api_key);
-      }
-    }
-  }, [settings, selectedProvider]);
+  // API keys are now managed via Supabase Secrets, not DB
 
   const currentProvider = LLM_PROVIDERS.find(p => p.id === selectedProvider);
 
@@ -118,25 +108,15 @@ export function LLMConfigSection() {
     if (provider?.models.length) {
       setSelectedModel(provider.models[0].value);
     }
-    setApiKey('');
+    setHasUnsaved(true);
     setHasUnsaved(true);
   };
 
   const handleSave = async () => {
-    // Save LLM provider and model config
     saveConfig.mutate({ key: 'llm_provider', value: selectedProvider });
     saveConfig.mutate({ key: 'model', value: selectedModel });
     saveConfig.mutate({ key: 'temperature', value: tempValue });
     saveConfig.mutate({ key: 'max_tokens', value: maxTokensValue });
-
-    // If provider requires key, save it to integration_settings
-    if (currentProvider?.requiresKey && apiKey) {
-      const integrationName = selectedProvider === 'openai' ? 'openai' : 'google_ai';
-      updateSetting.mutate({
-        integrationName,
-        updates: { api_key: apiKey, is_active: true },
-      });
-    }
 
     setHasUnsaved(false);
     toast.success('Configurações de IA guardadas!');
@@ -191,39 +171,18 @@ export function LLMConfigSection() {
           </RadioGroup>
         </div>
 
-        {/* API Key for external providers */}
+        {/* API Key notice for external providers */}
         {currentProvider?.requiresKey && (
           <>
             <Separator />
-            <div className="space-y-3">
-              <Label>Chave da API ({currentProvider.name})</Label>
-              <div className="relative">
-                <Input
-                  type={showKey ? 'text' : 'password'}
-                  placeholder={currentProvider.keyPlaceholder}
-                  value={apiKey}
-                  onChange={e => { setApiKey(e.target.value); setHasUnsaved(true); }}
-                  className="pr-10"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3"
-                  onClick={() => setShowKey(!showKey)}
-                >
-                  {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertDescription className="text-xs">
-                  {selectedProvider === 'openai'
-                    ? 'Obtenha a chave em platform.openai.com/api-keys'
-                    : 'Obtenha a chave em aistudio.google.com/apikey'}
-                </AlertDescription>
-              </Alert>
-            </div>
+            <Alert>
+              <Shield className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                As chaves da API ({currentProvider.name}) são geridas de forma segura nos{' '}
+                <strong>Supabase Secrets</strong> (OPENAI_API_KEY / GOOGLE_AI_KEY).
+                Para alterar, aceda ao painel Supabase &gt; Settings &gt; Edge Functions &gt; Secrets.
+              </AlertDescription>
+            </Alert>
           </>
         )}
 

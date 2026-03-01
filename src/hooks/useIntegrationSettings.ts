@@ -39,8 +39,6 @@ export function useIntegrationSettings() {
     }: {
       integrationName: string;
       updates: {
-        api_url?: string;
-        api_key?: string;
         instance_name?: string;
         is_active?: boolean;
         last_tested_at?: string;
