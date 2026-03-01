@@ -82,29 +82,31 @@ serve(async (req: Request): Promise<Response> => {
       notifications = [NotificationSchema.parse(rawBody)];
     }
 
-    // --- SERVICE CLIENT (for DB writes and reading integration settings) ---
+    // --- SERVICE CLIENT (for DB writes and reading non-sensitive config) ---
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Fetch Evolution API credentials
-    const { data: integrationData, error: integrationError } = await supabase
-      .from("integration_settings")
-      .select("api_url, api_key, instance_name")
-      .eq("integration_name", "evolution_api")
-      .single();
+    // Read sensitive credentials from Supabase Secrets (env vars)
+    const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL");
+    const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY");
 
-    if (integrationError || !integrationData?.api_url || !integrationData?.api_key) {
+    if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY) {
       return new Response(
         JSON.stringify({
           error: "Configuração da API de mensagens não encontrada",
-          details: "Configure a Evolution API nas Configurações > Integrações",
+          details: "Configure as variáveis EVOLUTION_API_URL e EVOLUTION_API_KEY nos Supabase Secrets",
         }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const EVOLUTION_API_URL = integrationData.api_url;
-    const EVOLUTION_API_KEY = integrationData.api_key;
-    const EVOLUTION_INSTANCE = integrationData.instance_name || "SGE-REVIVA";
+    // Read non-sensitive config (instance name) from DB
+    const { data: integrationData } = await supabase
+      .from("integration_settings")
+      .select("instance_name")
+      .eq("integration_name", "evolution_api")
+      .single();
+
+    const EVOLUTION_INSTANCE = integrationData?.instance_name || "SGE-REVIVA";
 
     const results: Array<{ success: boolean; phone: string; messageId?: string; error?: string }> = [];
 

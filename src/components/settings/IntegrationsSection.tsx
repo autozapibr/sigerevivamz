@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   MessageSquare, CheckCircle2, XCircle, Loader2, 
-  TestTube, Info, Eye, EyeOff, Save
+  TestTube, Info, Save, Shield
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,21 +16,12 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 export function IntegrationsSection() {
   const { settings, isLoading, updateSetting, testConnection, getIntegration } = useIntegrationSettings();
   
-  // Local state for form inputs
-  const [evolutionUrl, setEvolutionUrl] = useState('');
-  const [evolutionKey, setEvolutionKey] = useState('');
   const [evolutionInstance, setEvolutionInstance] = useState('');
-  
-  const [showEvolutionKey, setShowEvolutionKey] = useState(false);
   const [hasUnsavedEvolution, setHasUnsavedEvolution] = useState(false);
 
-  // Initialize form with existing data
   React.useEffect(() => {
     const evolution = getIntegration('evolution_api');
-    
     if (evolution) {
-      setEvolutionUrl(evolution.api_url || '');
-      setEvolutionKey(evolution.api_key || '');
       setEvolutionInstance(evolution.instance_name || 'SGE-REVIVA');
     }
   }, [settings]);
@@ -41,14 +32,11 @@ export function IntegrationsSection() {
     updateSetting.mutate({
       integrationName: 'evolution_api',
       updates: {
-        api_url: evolutionUrl,
-        api_key: evolutionKey,
         instance_name: evolutionInstance,
       },
     });
     setHasUnsavedEvolution(false);
   };
-
 
   const renderStatusBadge = (setting: typeof evolution) => {
     if (!setting) return <Badge variant="secondary">Não configurado</Badge>;
@@ -71,11 +59,7 @@ export function IntegrationsSection() {
       );
     }
     
-    if (setting.api_key) {
-      return <Badge variant="secondary">Configurado</Badge>;
-    }
-    
-    return <Badge variant="outline">Não configurado</Badge>;
+    return <Badge variant="outline">Pendente</Badge>;
   };
 
   if (isLoading) {
@@ -121,53 +105,15 @@ export function IntegrationsSection() {
           </div>
 
           <Alert>
-            <Info className="h-4 w-4" />
+            <Shield className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              Configure a Evolution API para enviar mensagens automáticas via WhatsApp. 
-              Obtenha as credenciais no seu painel Evolution API.
+              As credenciais sensíveis (URL e Chave da API) são geridas de forma segura nos{' '}
+              <strong>Supabase Secrets</strong>. Apenas o nome da instância é configurável aqui.
+              Para alterar a URL ou chave, aceda ao painel Supabase &gt; Settings &gt; Edge Functions &gt; Secrets.
             </AlertDescription>
           </Alert>
 
           <div className="grid gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="evolution-url">URL da API</Label>
-              <Input 
-                id="evolution-url"
-                placeholder="https://sua-evolution-api.com"
-                value={evolutionUrl}
-                onChange={(e) => {
-                  setEvolutionUrl(e.target.value);
-                  setHasUnsavedEvolution(true);
-                }}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="evolution-key">Chave da API</Label>
-              <div className="relative">
-                <Input 
-                  id="evolution-key"
-                  type={showEvolutionKey ? "text" : "password"}
-                  placeholder="Sua API Key"
-                  value={evolutionKey}
-                  onChange={(e) => {
-                    setEvolutionKey(e.target.value);
-                    setHasUnsavedEvolution(true);
-                  }}
-                  className="pr-10"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3"
-                  onClick={() => setShowEvolutionKey(!showEvolutionKey)}
-                >
-                  {showEvolutionKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="evolution-instance">Nome da Instância</Label>
               <Input 
@@ -201,7 +147,7 @@ export function IntegrationsSection() {
             
             <Button 
               onClick={() => testConnection.mutate('evolution_api')}
-              disabled={testConnection.isPending || !evolutionUrl || !evolutionKey}
+              disabled={testConnection.isPending}
               variant="outline"
               className="gap-2"
             >
