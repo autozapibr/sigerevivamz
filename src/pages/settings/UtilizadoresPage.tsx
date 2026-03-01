@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserPlus, Trash2, KeyRound, Shield, Search, Users } from 'lucide-react';
 import { UserRole } from '@/types/auth';
+import { InvitationManager } from '@/components/invitations/InvitationManager';
 
 interface SystemUser {
   id: string;
@@ -327,6 +328,7 @@ export default function UtilizadoresPage() {
             )}
           </CardContent>
         </Card>
+        <InvitationManager />
       </div>
     </MainLayout>
   );

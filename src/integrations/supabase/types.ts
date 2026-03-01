@@ -1248,6 +1248,51 @@ export type Database = {
         }
         Relationships: []
       }
+      registration_invitations: {
+        Row: {
+          created_at: string
+          created_by: string
+          email: string | null
+          expires_at: string
+          id: string
+          intended_name: string | null
+          intended_role: Database["public"]["Enums"]["app_role"]
+          is_used: boolean
+          notes: string | null
+          token: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          intended_name?: string | null
+          intended_role?: Database["public"]["Enums"]["app_role"]
+          is_used?: boolean
+          notes?: string | null
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          intended_name?: string | null
+          intended_role?: Database["public"]["Enums"]["app_role"]
+          is_used?: boolean
+          notes?: string | null
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       scheduled_reminders: {
         Row: {
           agreement_id: number | null
@@ -2275,6 +2320,10 @@ export type Database = {
         Returns: number
       }
       classify_grade: { Args: { _grade: number }; Returns: string }
+      consume_invitation: {
+        Args: { _token: string; _user_id: string }
+        Returns: boolean
+      }
       get_contract_for_signing: {
         Args: { _token: string }
         Returns: {
@@ -2300,6 +2349,16 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      validate_invitation: {
+        Args: { _token: string }
+        Returns: {
+          email: string
+          id: string
+          intended_name: string
+          intended_role: Database["public"]["Enums"]["app_role"]
+          is_valid: boolean
+        }[]
+      }
     }
     Enums: {
       app_role:

@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
 
 export function LoginForm() {
@@ -239,9 +238,9 @@ export function LoginForm() {
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
             Não tem uma conta?{' '}
-            <Link to="/register" className="text-primary font-medium hover:underline">
-              Contacte a administração
-            </Link>
+            <span className="text-primary font-medium">
+              Contacte a administração da escola
+            </span>
           </p>
 
           <p className="mt-6 text-center text-xs text-muted-foreground/60">
