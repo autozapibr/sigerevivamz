@@ -47,6 +47,7 @@ import DocumentacaoPage from "./pages/rh/DocumentacaoPage";
 import ContratosPage from "./pages/rh/ContratosPage";
 import SignContract from "./pages/SignContract";
 import ComunicacaoPage from "./pages/ComunicacaoPage";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -88,7 +89,7 @@ const AppRoutes = () => {
         path="/register" 
         element={!isAuthenticated ? <RegisterForm /> : <Navigate to="/dashboard" replace />} 
       />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<LandingPage />} />
       <Route
         path="/dashboard"
         element={
