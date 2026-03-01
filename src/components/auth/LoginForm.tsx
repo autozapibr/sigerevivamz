@@ -181,7 +181,7 @@ export function LoginForm() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.mz"
+                  placeholder="email@escolareviva.com"
                   className="pl-11 h-12 bg-background border-border focus:border-primary focus:ring-primary/20"
                   disabled={isLoading}
                 />
