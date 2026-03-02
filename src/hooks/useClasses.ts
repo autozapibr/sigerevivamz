@@ -132,7 +132,7 @@ export function useUpdateClass() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...data }: ClassUpdate & { id: number }) => {
+    mutationFn: async ({ id, ...data }: Omit<ClassUpdate, 'id'> & { id: number }) => {
       const { data: updated, error } = await supabase
         .from('classes')
         .update(data)
