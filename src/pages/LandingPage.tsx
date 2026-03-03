@@ -16,7 +16,7 @@ const features = [
   { icon: Users, title: 'Gestão de Educandos', desc: 'Cadastro completo, histórico académico, documentos e acompanhamento individualizado.' },
   { icon: BookOpen, title: 'Gestão Pedagógica', desc: 'Planos de aula com IA, lançamento de notas (0-20), currículo e calendário de provas.' },
   { icon: CreditCard, title: 'Gestão Financeira', desc: 'Propinas, cobranças, caixa, relatórios financeiros e recibos em MZN.' },
-  { icon: BarChart3, title: 'Relatórios MINEDH', desc: 'Relatórios padronizados conforme directrizes do Ministério da Educação de Moçambique.' },
+  { icon: BarChart3, title: 'Relatórios MEC', desc: 'Relatórios padronizados conforme directrizes do Ministério da Educação e Cultura de Moçambique.' },
   { icon: Calendar, title: 'Presenças e Calendário', desc: 'Controlo de frequência, eventos escolares e calendário académico integrado.' },
   { icon: Shield, title: 'Segurança e Controlo', desc: 'Perfis de acesso (Diretoria, Secretaria, Professor, Encarregado) com RLS.' },
   { icon: Bell, title: 'Comunicação', desc: 'Avisos, notificações e comunicação com encarregados de educação.' },
@@ -100,7 +100,7 @@ export default function LandingPage() {
               <span className="text-foreground/90">Gestão Escolar Inteligente</span>
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-lg mb-8 leading-relaxed">
-              Plataforma completa para a gestão da <strong>Escola Reviva</strong>: educandos, professores, avaliações, propinas e relatórios — tudo conforme as directrizes do MINEDH.
+              Plataforma completa para a gestão da <strong>Escola Reviva</strong>: educandos, professores, avaliações, propinas e relatórios — tudo conforme as directrizes do MEC.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button size="lg" asChild className="text-base">
@@ -256,7 +256,7 @@ export default function LandingPage() {
               <ul className="space-y-4">
                 {[
                   'Localizado para Moçambique (MZN, BI, NUIT)',
-                  'Relatórios conforme o MINEDH',
+                  'Relatórios conforme o MEC',
                   'Acessível em qualquer dispositivo',
                   'Segurança com controlo de acesso por perfil',
                 ].map((item) => (

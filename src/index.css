@@ -280,7 +280,7 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* === Grade Classification Colors (MINEDH) === */
+/* === Grade Classification Colors (MEC) === */
 .grade-excelente {
   @apply text-emerald-600 dark:text-emerald-400;
 }

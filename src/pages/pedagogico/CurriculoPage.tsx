@@ -7,7 +7,7 @@ export default function CurriculoPage() {
   return (
     <MainLayout 
       title="Currículo Escolar" 
-      subtitle="Currículo oficial do MINEDH"
+      subtitle="Currículo oficial do MEC"
     >
       <Card>
         <CardHeader>

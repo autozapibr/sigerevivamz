@@ -321,9 +321,9 @@ function GradeEntry({
           </div>
         </CardHeader>
         <CardContent>
-          {/* Legenda MINEDH */}
+          {/* Legenda MEC */}
           <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-            <p className="text-sm font-medium mb-2">Sistema de Avaliação MINEDH (0-20):</p>
+            <p className="text-sm font-medium mb-2">Sistema de Avaliação MEC (0-20):</p>
             <div className="flex flex-wrap gap-4 text-xs">
               <span><strong>ACS</strong> - Avaliação Contínua Sistemática (30%)</span>
               <span><strong>ACP</strong> - Avaliação Contínua Parcial (30%)</span>
@@ -684,7 +684,7 @@ export default function Evaluations() {
                 <h2 className="text-xl font-semibold mb-2">O que é a Pauta Digital?</h2>
                 <p className="text-muted-foreground">
                   A <strong>Pauta Digital</strong> é o sistema de lançamento e gestão de notas dos educandos, 
-                  seguindo o modelo de avaliação do <strong>MINEDH</strong> (Ministério da Educação e Desenvolvimento Humano de Moçambique). 
+                  seguindo o modelo de avaliação do <strong>MEC</strong> (Ministério da Educação e Cultura de Moçambique). 
                   As notas são lançadas numa escala de <strong>0 a 20</strong>, com três componentes de avaliação por trimestre:
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
