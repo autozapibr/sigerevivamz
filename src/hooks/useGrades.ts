@@ -40,7 +40,7 @@ export interface GradeInsert {
   observation?: string;
 }
 
-// Função para calcular média trimestral (MINEDH: ACS 30% + ACP 30% + ACF 40%)
+// Função para calcular média trimestral (MEC: ACS 30% + ACP 30% + ACF 40%)
 export function calculateTrimesterAverage(acs: number | null, acp: number | null, acf: number | null): number | null {
   if (acs === null && acp === null && acf === null) return null;
   return Math.round(((acs || 0) * 0.30 + (acp || 0) * 0.30 + (acf || 0) * 0.40) * 100) / 100;

@@ -28,7 +28,7 @@ Desenvolvido por: [AutoZapi Soluções em TI, AI e Automações](https://autozap
 
 ## 1. Visão Geral
 
-O **SiGER** (Sistema de Gestão Escolar Reviva) é uma plataforma web completa de gestão escolar, desenvolvida especificamente para o contexto educacional de **Moçambique**. O sistema segue as directrizes do **MINEDH** (Ministério da Educação e Desenvolvimento Humano) e utiliza terminologia, moeda (Metical — MZN), sistema de avaliação (0–20) e validações de dados locais (BI, NUIT, telefone +258).
+O **SiGER** (Sistema de Gestão Escolar Reviva) é uma plataforma web completa de gestão escolar, desenvolvida especificamente para o contexto educacional de **Moçambique**. O sistema segue as directrizes do **MEC** (Ministério da Educação e Cultura) e utiliza terminologia, moeda (Metical — MZN), sistema de avaliação (0–20) e validações de dados locais (BI, NUIT, telefone +258).
 
 ### Objectivos Principais
 
@@ -278,7 +278,7 @@ supabase/
 |---------------|--------|-----------|
 | Comunicação | `/comunicacao` | Central de anúncios |
 | Notificações | `/notificacoes` | Centro de notificações |
-| Relatórios | `/relatorios` | Relatórios gerais MINEDH |
+| Relatórios | `/relatorios` | Relatórios gerais MEC |
 
 ### 5.6 Configurações (ADMIN/DIRETORIA)
 | Funcionalidade | Página | Descrição |
@@ -719,7 +719,7 @@ As integrações são configuradas via UI em **Configurações → Integrações
 | **BI** | Bilhete de Identidade (documento moçambicano) |
 | **NUIT** | Número Único de Identificação Tributária |
 | **MZN** | Metical (moeda de Moçambique) |
-| **MINEDH** | Ministério da Educação e Desenvolvimento Humano |
+| **MEC** | Ministério da Educação e Cultura |
 | **RLS** | Row Level Security (segurança a nível de linha) |
 | **RBAC** | Role-Based Access Control |
 | **JWT** | JSON Web Token |

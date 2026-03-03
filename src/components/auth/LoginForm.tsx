@@ -98,7 +98,7 @@ export function LoginForm() {
 
             <div className="space-y-4">
               {[
-                'Pauta Digital conforme MINEDH',
+                'Pauta Digital conforme MEC',
                 'Controlo financeiro em MZN',
                 'Relatórios automáticos',
               ].map((feature, i) => (
