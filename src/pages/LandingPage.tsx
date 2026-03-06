@@ -55,22 +55,18 @@ export default function LandingPage() {
               <p className="text-muted-foreground leading-tight text-sm">Sistema de Gestão Escolar</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <motion.button
               onClick={() => setIsDark(!isDark)}
               className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
               whileTap={{ scale: 0.9, rotate: 180 }}
               transition={{ duration: 0.3 }}
               aria-label={isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro'}>
-              
-              {isDark ? <Sun className="h-4 w-4 text-foreground" /> : <Moon className="h-4 w-4 text-foreground" />}
+              {isDark ? <Sun className="h-5 w-5 text-foreground" /> : <Moon className="h-5 w-5 text-foreground" />}
             </motion.button>
-            <Button variant="ghost" asChild>
-              <Link to="/login">Entrar</Link>
-            </Button>
             <Button asChild>
               <Link to="/login">
-                Aceder ao Sistema <ArrowRight className="ml-1 h-4 w-4" />
+                Entrar <ArrowRight className="ml-1.5 h-4 w-4" />
               </Link>
             </Button>
           </div>
