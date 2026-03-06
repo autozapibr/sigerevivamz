@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   GraduationCap, Users, BookOpen, CreditCard, BarChart3,
-  Calendar, Shield, Bell, ArrowRight, CheckCircle2, Sun, Moon
-} from 'lucide-react';
+  Calendar, Shield, Bell, ArrowRight, CheckCircle2, Sun, Moon } from
+'lucide-react';
 import { Button } from '@/components/ui/button';
 import logoReviva from '@/assets/escola-reviva-logo.webp';
 import heroImage from '@/assets/hero-kids.jpg';
@@ -13,19 +13,19 @@ import learningImage from '@/assets/kids-learning.jpg';
 import aepLogo from '@/assets/aep-logo.png';
 
 const features = [
-  { icon: Users, title: 'Gestão de Educandos', desc: 'Cadastro completo, histórico académico, documentos e acompanhamento individualizado.' },
-  { icon: BookOpen, title: 'Gestão Pedagógica', desc: 'Planos de aula com IA, lançamento de notas (0-20), currículo e calendário de provas.' },
-  { icon: CreditCard, title: 'Gestão Financeira', desc: 'Propinas, cobranças, caixa, relatórios financeiros e recibos em MZN.' },
-  { icon: BarChart3, title: 'Relatórios MEC', desc: 'Relatórios padronizados conforme directrizes do Ministério da Educação e Cultura de Moçambique.' },
-  { icon: Calendar, title: 'Presenças e Calendário', desc: 'Controlo de frequência, eventos escolares e calendário académico integrado.' },
-  { icon: Shield, title: 'Segurança e Controlo', desc: 'Perfis de acesso (Diretoria, Secretaria, Professor, Encarregado) com RLS.' },
-  { icon: Bell, title: 'Comunicação', desc: 'Avisos, notificações e comunicação com encarregados de educação.' },
-  { icon: GraduationCap, title: 'Matrículas Online', desc: 'Processo de matrícula digital com documentos, turmas e propinas integrados.' },
-];
+{ icon: Users, title: 'Gestão de Educandos', desc: 'Cadastro completo, histórico académico, documentos e acompanhamento individualizado.' },
+{ icon: BookOpen, title: 'Gestão Pedagógica', desc: 'Planos de aula com IA, lançamento de notas (0-20), currículo e calendário de provas.' },
+{ icon: CreditCard, title: 'Gestão Financeira', desc: 'Propinas, cobranças, caixa, relatórios financeiros e recibos em MZN.' },
+{ icon: BarChart3, title: 'Relatórios MEC', desc: 'Relatórios padronizados conforme directrizes do Ministério da Educação e Cultura de Moçambique.' },
+{ icon: Calendar, title: 'Presenças e Calendário', desc: 'Controlo de frequência, eventos escolares e calendário académico integrado.' },
+{ icon: Shield, title: 'Segurança e Controlo', desc: 'Perfis de acesso (Diretoria, Secretaria, Professor, Encarregado) com RLS.' },
+{ icon: Bell, title: 'Comunicação', desc: 'Avisos, notificações e comunicação com encarregados de educação.' },
+{ icon: GraduationCap, title: 'Matrículas Online', desc: 'Processo de matrícula digital com documentos, turmas e propinas integrados.' }];
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
-  visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.5 } }),
+  visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.5 } })
 };
 
 export default function LandingPage() {
@@ -47,12 +47,12 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between py-[16px]">
           <div className="flex items-center gap-3">
-            <img src={logoReviva} alt="Escola Reviva" className="h-10 sm:h-12 w-auto" />
+            <img alt="Escola Reviva" className="h-10 sm:h-12 w-auto object-fill" src="/lovable-uploads/aaabc505-1d60-440a-a817-294ee071ab52.png" />
             <div className="hidden sm:block">
-              <span className="text-sm font-bold text-primary">SiGER</span>
-              <p className="text-[10px] text-muted-foreground leading-tight">Sistema de Gestão Escolar</p>
+              <span className="font-bold text-primary text-lg">SiGER</span>
+              <p className="text-muted-foreground leading-tight text-sm">Sistema de Gestão Escolar</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -61,8 +61,8 @@ export default function LandingPage() {
               className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
               whileTap={{ scale: 0.9, rotate: 180 }}
               transition={{ duration: 0.3 }}
-              aria-label={isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
-            >
+              aria-label={isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro'}>
+              
               {isDark ? <Sun className="h-4 w-4 text-foreground" /> : <Moon className="h-4 w-4 text-foreground" />}
             </motion.button>
             <Button variant="ghost" asChild>
@@ -88,8 +88,8 @@ export default function LandingPage() {
             className="max-w-2xl"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-          >
+            transition={{ duration: 0.7 }}>
+            
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary mb-6">
               <GraduationCap className="h-3.5 w-3.5" />
               Escola Reviva · Moçambique
@@ -121,8 +121,8 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+            transition={{ duration: 0.5 }}>
+            
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">Funcionalidades do Sistema</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
               Tudo o que a escola precisa, numa única plataforma moderna e segura.
@@ -130,23 +130,23 @@ export default function LandingPage() {
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((f, i) => (
-              <motion.div
-                key={f.title}
-                className="bg-card rounded-xl border border-border p-6 hover:shadow-lg hover:border-primary/30 transition-all duration-300 group"
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-              >
+            {features.map((f, i) =>
+            <motion.div
+              key={f.title}
+              className="bg-card rounded-xl border border-border p-6 hover:shadow-lg hover:border-primary/30 transition-all duration-300 group"
+              custom={i}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeUp}>
+              
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <f.icon className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="font-semibold text-lg mb-2">{f.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </motion.div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -159,8 +159,8 @@ export default function LandingPage() {
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
+              transition={{ duration: 0.6 }}>
+              
               <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary mb-6">
                 <BookOpen className="h-3.5 w-3.5" />
                 Nosso Diferencial
@@ -177,33 +177,33 @@ export default function LandingPage() {
 
               <div className="grid grid-cols-2 gap-4 mb-8">
                 {[
-                  { letter: 'P', word: 'Pesquisar', desc: 'Investigar as fontes e definir conceitos' },
-                  { letter: 'R', word: 'Raciocinar', desc: 'Analisar princípios e suas aplicações' },
-                  { letter: 'R', word: 'Relacionar', desc: 'Conectar o aprendizado com a vida' },
-                  { letter: 'R', word: 'Registar', desc: 'Documentar e aplicar o conhecimento' },
-                ].map((step, i) => (
-                  <motion.div
-                    key={step.word}
-                    className="bg-card rounded-lg border border-border p-4"
-                    custom={i}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    variants={fadeUp}
-                  >
+                { letter: 'P', word: 'Pesquisar', desc: 'Investigar as fontes e definir conceitos' },
+                { letter: 'R', word: 'Raciocinar', desc: 'Analisar princípios e suas aplicações' },
+                { letter: 'R', word: 'Relacionar', desc: 'Conectar o aprendizado com a vida' },
+                { letter: 'R', word: 'Registar', desc: 'Documentar e aplicar o conhecimento' }].
+                map((step, i) =>
+                <motion.div
+                  key={step.word}
+                  className="bg-card rounded-lg border border-border p-4"
+                  custom={i}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={fadeUp}>
+                  
                     <span className="text-2xl font-extrabold text-primary">{step.letter}</span>
                     <h4 className="font-semibold text-sm mt-1">{step.word}</h4>
                     <p className="text-xs text-muted-foreground mt-1">{step.desc}</p>
                   </motion.div>
-                ))}
+                )}
               </div>
 
               <a
                 href="https://aecep.org.br/aep"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-primary hover:underline inline-flex items-center gap-1"
-              >
+                className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                
                 Saiba mais sobre a AEP na AECEP <ArrowRight className="h-3.5 w-3.5" />
               </a>
             </motion.div>
@@ -213,24 +213,24 @@ export default function LandingPage() {
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
+              transition={{ duration: 0.6 }}>
+              
               <img
                 src={aepLogo}
                 alt="Escola Reviva - Abordagem Educacional por Princípios"
-                className="w-full max-w-sm rounded-2xl shadow-xl"
-              />
+                className="w-full max-w-sm rounded-2xl shadow-xl" />
+              
               <div className="grid grid-cols-2 gap-4 w-full">
                 <img
                   src={classroomImage}
                   alt="Educandos na sala de aula"
-                  className="rounded-2xl shadow-lg w-full h-40 object-cover"
-                />
+                  className="rounded-2xl shadow-lg w-full h-40 object-cover" />
+                
                 <img
                   src={learningImage}
                   alt="Crianças aprendendo"
-                  className="rounded-2xl shadow-lg w-full h-40 object-cover"
-                />
+                  className="rounded-2xl shadow-lg w-full h-40 object-cover" />
+                
               </div>
             </motion.div>
           </div>
@@ -245,8 +245,8 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
+              transition={{ duration: 0.6 }}>
+              
               <h2 className="text-3xl sm:text-4xl font-bold mb-6">
                 Restaurar Vidas e Valores
               </h2>
@@ -255,16 +255,16 @@ export default function LandingPage() {
               </p>
               <ul className="space-y-4">
                 {[
-                  'Localizado para Moçambique (MZN, BI, NUIT)',
-                  'Relatórios conforme o MEC',
-                  'Acessível em qualquer dispositivo',
-                  'Segurança com controlo de acesso por perfil',
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3">
+                'Localizado para Moçambique (MZN, BI, NUIT)',
+                'Relatórios conforme o MEC',
+                'Acessível em qualquer dispositivo',
+                'Segurança com controlo de acesso por perfil'].
+                map((item) =>
+                <li key={item} className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <span className="text-foreground/80">{item}</span>
                   </li>
-                ))}
+                )}
               </ul>
             </motion.div>
           </div>
@@ -278,8 +278,8 @@ export default function LandingPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+            transition={{ duration: 0.5 }}>
+            
             <GraduationCap className="h-12 w-12 text-primary-foreground mx-auto mb-6 opacity-80" />
             <h2 className="text-3xl sm:text-4xl font-bold text-primary-foreground mb-4">
               Pronto para aceder ao SiGER?
@@ -314,6 +314,6 @@ export default function LandingPage() {
           </p>
         </div>
       </footer>
-    </div>
-  );
+    </div>);
+
 }
