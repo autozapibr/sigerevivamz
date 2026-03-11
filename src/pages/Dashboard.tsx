@@ -275,12 +275,7 @@ export default function Dashboard() {
           { title: 'Calendário', icon: Calendar, path: '/calendario', color: 'bg-blue-500 text-white' },
         ];
       case 'ENCARREGADO':
-        return [
-          { title: 'Ver Notas', icon: ClipboardCheck, path: '/avaliacoes', color: 'bg-primary text-primary-foreground' },
-          { title: 'Frequência', icon: UserCheck, path: '/presencas', color: 'bg-amber-500 text-white' },
-          { title: 'Propinas', icon: CreditCard, path: '/financeiro/propinas', color: 'bg-success text-white' },
-          { title: 'Calendário', icon: Calendar, path: '/calendario', color: 'bg-purple-500 text-white' },
-        ];
+        return [];
       default:
         return [
           { title: 'Nova Matrícula', icon: GraduationCap, path: '/matriculas', color: 'bg-primary text-primary-foreground' },
@@ -933,7 +928,7 @@ export default function Dashboard() {
                         <Calendar className="h-5 w-5 text-primary" />
                         Calendário Escolar & Provas
                       </CardTitle>
-                      <CardDescription>Eventos e avaliações do seu educando</CardDescription>
+                      <CardDescription>Eventos e avaliações dos seus educandos (próximos 30 dias)</CardDescription>
                     </div>
                     <Button 
                       variant="outline" 
@@ -982,48 +977,7 @@ export default function Dashboard() {
               </Card>
             </motion.div>
 
-            {/* Quick Links for Guardian */}
-            <motion.div variants={itemVariants}>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Acesso Rápido</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <ModuleQuickAction 
-                      icon={ClipboardCheck} 
-                      label="Notas" 
-                      description="Ver avaliações"
-                      href="/avaliacoes"
-                      color="primary"
-                    />
-                    <ModuleQuickAction 
-                      icon={UserCheck} 
-                      label="Presenças" 
-                      description="Frequência escolar"
-                      href="/presencas"
-                      color="success"
-                    />
-                    <ModuleQuickAction 
-                      icon={CreditCard} 
-                      label="Propinas" 
-                      description="Situação financeira"
-                      href="/financeiro/propinas"
-                      color="warning"
-                    />
-                    <ModuleQuickAction 
-                      icon={Calendar} 
-                      label="Calendário" 
-                      description="Eventos escolares"
-                      href="/calendario"
-                      color="primary"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Guardian Dashboard Content */}
+            {/* Educando Info + Notas */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <motion.div variants={itemVariants}>
                 <Card>
@@ -1056,14 +1010,110 @@ export default function Dashboard() {
                 </Card>
               </motion.div>
 
+              {/* Notas por Disciplina */}
               <motion.div variants={itemVariants}>
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Situação Financeira</CardTitle>
-                    <CardDescription>Propinas do ano lectivo</CardDescription>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <ClipboardCheck className="h-5 w-5 text-primary" />
+                      Notas - 2º Trimestre
+                    </CardTitle>
+                    <CardDescription>Avaliações do seu educando</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
+                    <div className="space-y-3">
+                      {[
+                        { disciplina: 'Matemática', nota: 15, status: 'Bom' },
+                        { disciplina: 'Português', nota: 13, status: 'Suficiente' },
+                        { disciplina: 'Física', nota: 16, status: 'Bom' },
+                        { disciplina: 'Biologia', nota: 12, status: 'Suficiente' },
+                        { disciplina: 'História', nota: 14, status: 'Bom' },
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                          <span className="text-sm font-medium">{item.disciplina}</span>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className={`text-xs ${
+                              item.nota >= 14 ? 'bg-success/20 text-success' :
+                              item.nota >= 10 ? 'bg-warning/20 text-warning' : 'bg-destructive/20 text-destructive'
+                            }`}>
+                              {item.nota}/20
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">{item.status}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="w-full mt-3 gap-2"
+                      onClick={() => navigate('/avaliacoes')}
+                    >
+                      Ver Todas as Notas
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+
+            {/* Assiduidade + Situação Financeira */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Assiduidade */}
+              <motion.div variants={itemVariants}>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <UserCheck className="h-5 w-5 text-primary" />
+                      Assiduidade
+                    </CardTitle>
+                    <CardDescription>Registo de presenças do educando</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      <div className="p-3 rounded-lg bg-success/10 text-center">
+                        <p className="text-2xl font-bold text-success">85</p>
+                        <p className="text-xs text-muted-foreground">Presenças</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-destructive/10 text-center">
+                        <p className="text-2xl font-bold text-destructive">5</p>
+                        <p className="text-xs text-muted-foreground">Faltas</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-warning/10 text-center">
+                        <p className="text-2xl font-bold text-warning">2</p>
+                        <p className="text-xs text-muted-foreground">Atrasos</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Taxa de Presença</span>
+                        <span className="font-medium text-success">92%</span>
+                      </div>
+                      <Progress value={92} className="h-2" />
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="w-full mt-4 gap-2"
+                      onClick={() => navigate('/presencas')}
+                    >
+                      Ver Detalhes Completos
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Situação Financeira */}
+              <motion.div variants={itemVariants}>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                      Situação Financeira
+                    </CardTitle>
+                    <CardDescription>Propinas do ano lectivo - João Carlos</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
                       <div className="flex items-center justify-between p-3 rounded-lg bg-success/10">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-success" />
@@ -1071,24 +1121,37 @@ export default function Dashboard() {
                         </div>
                         <Badge variant="secondary" className="bg-success/20 text-success">Pago</Badge>
                       </div>
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-success/10">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-success" />
+                          <span className="text-sm">Fevereiro 2026</span>
+                        </div>
+                        <Badge variant="secondary" className="bg-success/20 text-success">Pago</Badge>
+                      </div>
                       <div className="flex items-center justify-between p-3 rounded-lg bg-warning/10">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-warning" />
-                          <span className="text-sm">Fevereiro 2026</span>
-                        </div>
-                        <Badge variant="secondary" className="bg-warning/20 text-warning">Pendente</Badge>
-                      </div>
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-muted-foreground" />
                           <span className="text-sm">Março 2026</span>
                         </div>
-                        <Badge variant="secondary">A vencer</Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="bg-warning/20 text-warning">Pendente</Badge>
+                          <span className="text-xs text-muted-foreground">3.500 MZN</span>
+                        </div>
                       </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button 
+                        variant="default" 
+                        className="flex-1 gap-2"
+                        onClick={() => navigate('/financeiro/propinas')}
+                      >
+                        <CreditCard className="h-4 w-4" />
+                        Pagar / Enviar Comprovativo
+                      </Button>
                     </div>
                     <Button 
                       variant="outline" 
-                      className="w-full mt-4 gap-2"
+                      className="w-full mt-2 gap-2"
                       onClick={() => navigate('/financeiro/propinas')}
                     >
                       Ver Histórico Completo
