@@ -171,24 +171,65 @@ export function AppSidebar() {
 
         {/* User Profile Card */}
         {user && !collapsed && (
-          <NavLink to="/dashboard" className="block p-4 border-b border-border/50">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-accent/50 hover:bg-accent transition-colors cursor-pointer">
-              <Avatar className="w-10 h-10 border-2 border-primary/20">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
-                  {getInitials(user.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {user.name}
-                </p>
-                <p className="text-xs text-muted-foreground capitalize">
-                  {user.role.toLowerCase()}
-                </p>
+          <div className="border-b border-border/50">
+            <NavLink to="/dashboard" className="block px-4 pt-4 pb-2">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-accent/50 hover:bg-accent transition-colors cursor-pointer">
+                <Avatar className="w-10 h-10 border-2 border-primary/20">
+                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground capitalize">
+                    {user.role.toLowerCase()}
+                  </p>
+                </div>
               </div>
+            </NavLink>
+            {/* Navigation Icons */}
+            <div className="flex items-center justify-center gap-1 px-4 pb-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                onClick={() => window.history.back()}
+                title="Voltar"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                onClick={() => window.history.forward()}
+                title="Avançar"
+              >
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                onClick={() => window.location.reload()}
+                title="Actualizar"
+              >
+                <RotateCw className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                onClick={() => location.href = '/dashboard'}
+                title="Início"
+              >
+                <Home className="w-4 h-4" />
+              </Button>
             </div>
-          </NavLink>
+          </div>
         )}
 
         {/* Navigation */}
