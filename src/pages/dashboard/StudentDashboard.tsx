@@ -95,29 +95,6 @@ export default function StudentDashboard() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Welcome Banner */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <Card className="bg-gradient-to-r from-primary to-primary-dark border-0 text-white overflow-hidden relative">
-          <CardContent className="p-6 sm:p-8">
-            <div className="relative z-10">
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">
-                Olá, {user?.name?.split(' ')[0] || 'Estudante'}! 👋
-              </h2>
-              <p className="text-white/80 max-w-xl text-sm sm:text-base">
-                Bem-vindo ao Portal do Aluno. Acompanha aqui o calendário escolar, provas e eventos.
-              </p>
-              <Badge variant="secondary" className="mt-3 bg-white/20 text-white hover:bg-white/30">
-                ALUNO
-              </Badge>
-            </div>
-            <div className="absolute right-0 top-0 w-48 h-48 sm:w-64 sm:h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-          </CardContent>
-        </Card>
-      </motion.div>
-
       {/* Exam Notifications */}
       {unreadExamCount > 0 && (
         <motion.div
