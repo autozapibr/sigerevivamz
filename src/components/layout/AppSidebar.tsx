@@ -171,8 +171,8 @@ export function AppSidebar() {
 
         {/* User Profile Card */}
         {user && !collapsed && (
-          <div className="p-4 border-b border-border/50">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-accent/50">
+          <NavLink to="/dashboard" className="block p-4 border-b border-border/50">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-accent/50 hover:bg-accent transition-colors cursor-pointer">
               <Avatar className="w-10 h-10 border-2 border-primary/20">
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
@@ -188,7 +188,7 @@ export function AppSidebar() {
                 </p>
               </div>
             </div>
-          </div>
+          </NavLink>
         )}
 
         {/* Navigation */}
