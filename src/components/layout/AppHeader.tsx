@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Search, Sun, Moon, ChevronDown } from 'lucide-react';
+import { Bell, Search, Sun, Moon, ChevronDown, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -73,6 +73,17 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
 
       {/* Right Actions */}
       <div className="flex items-center gap-2">
+        {/* Home */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate('/dashboard')}
+          className="rounded-lg text-muted-foreground hover:text-foreground"
+          title="Início"
+        >
+          <Home className="w-5 h-5" />
+        </Button>
+
         {/* Theme Toggle */}
         <Button
           variant="ghost"
