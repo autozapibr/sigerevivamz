@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCalendarEventsByMonth, useCreateCalendarEvent, MOZAMBIQUE_HOLIDAYS_2025, CalendarEventType, CalendarEventInsert } from '@/hooks/useCalendarEvents';
+import { useCalendarEventsByMonth, useCreateCalendarEvent, MOZAMBIQUE_HOLIDAYS_2026, CalendarEventType, CalendarEventInsert } from '@/hooks/useCalendarEvents';
 
 type ViewMode = 'month' | 'week';
 
