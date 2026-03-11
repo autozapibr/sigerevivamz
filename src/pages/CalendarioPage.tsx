@@ -66,7 +66,7 @@ export default function CalendarioPage() {
   const getEventsForDay = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     const dbEvents = events.filter(e => e.date === dateStr);
-    const holidays = MOZAMBIQUE_HOLIDAYS_2025.filter(h => h.date === dateStr);
+    const holidays = MOZAMBIQUE_HOLIDAYS_2026.filter(h => h.date === dateStr);
     return [...dbEvents, ...holidays.map(h => ({ ...h, id: h.date, description: null }))];
   };
 
