@@ -229,6 +229,13 @@ function getWelcomeMessage(role: UserRole | undefined): string {
   }
 }
 
+function getTimeGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -240,6 +247,7 @@ export default function Dashboard() {
   const { title, subtitle } = useMemo(() => getDashboardTitle(user?.role), [user?.role]);
   const welcomeMessage = useMemo(() => getWelcomeMessage(user?.role), [user?.role]);
   const defaultTab = availableTabs[0]?.value || 'geral';
+  const greeting = getTimeGreeting();
 
   // Role-specific quick actions
   const quickActions = useMemo(() => {
@@ -297,7 +305,10 @@ export default function Dashboard() {
             <CardContent className="p-6 sm:p-8">
               <div className="relative z-10">
                 <h2 className="text-xl sm:text-2xl font-bold mb-2">
-                  Bom dia, {user?.name?.split(' ')[0] || 'Utilizador'}! 👋
+                  {user?.role === 'ENCARREGADO' 
+                    ? `${greeting}, pai / encarregado da educação! 👋`
+                    : `${greeting}, ${user?.name?.split(' ')[0] || 'Utilizador'}! 👋`
+                  }
                 </h2>
                 <p className="text-white/80 max-w-xl text-sm sm:text-base">
                   {welcomeMessage}
