@@ -549,6 +549,24 @@ export type Database = {
         }
         Relationships: []
       }
+      db_ativo: {
+        Row: {
+          criado_em: string | null
+          id: number
+          num: number
+        }
+        Insert: {
+          criado_em?: string | null
+          id?: never
+          num: number
+        }
+        Update: {
+          criado_em?: string | null
+          id?: never
+          num?: number
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           address: string | null

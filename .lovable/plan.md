@@ -1,37 +1,48 @@
-
-
-## Plano: Criar utilizador administrador inicial
+## Redesign da Visualização do Plano de Aula
 
 ### Problema
-O banco de dados está limpo -- não há utilizadores em `auth.users` nem em `user_roles`. Os logins falham com "Invalid login credentials". A Edge Function `manage-users` exige um caller autenticado com role ADMIN/DIRETORIA/SECRETARIA, criando um problema de "ovo e galinha".
 
-### Solução
-Criar uma Edge Function temporária `bootstrap-admin` que:
-1. Verifica se já existem utilizadores na tabela `user_roles` (se sim, bloqueia -- só funciona uma vez)
-2. Cria um utilizador admin via `supabase.auth.admin.createUser()`
-3. Insere o role ADMIN na tabela `user_roles`
-4. Insere o perfil na tabela `profiles`
+Os tamanhos de fonte estão desequilibrados: h2 a 13px vs body a 11px cria uma hierarquia visual pobre. O layout geral parece "comprimido" e pouco profissional para visualização em ecrã e impressão.
 
-### Implementação
+### Abordagem
 
-**1. Criar Edge Function `supabase/functions/bootstrap-admin/index.ts`**
-- Aceita `email`, `password`, `full_name` no body
-- Usa `SUPABASE_SERVICE_ROLE_KEY` para criar o utilizador
-- Verifica que `user_roles` está vazio (segurança: só permite bootstrap se não houver admins)
-- Cria utilizador em `auth.users`, insere role ADMIN em `user_roles`, e perfil em `profiles`
-- Retorna sucesso com os dados do utilizador criado
+Redesenhar a tipografia e espaçamento em ambos os componentes (`LessonPlanPreview.tsx` e `ArchivedPlanPreview.tsx`) com uma escala tipográfica mais harmoniosa e espaçamento generoso.
 
-**2. Após deploy, o utilizador chama a função uma vez** para criar a conta admin (ex: admin@escolareviva.com)
+### Mudanças Tipográficas (nova escala)
 
-**3. Depois do bootstrap, a função se auto-bloqueia** pois `user_roles` já terá registos
+```text
+ATUAL                    →  NOVO
+body:    11px             →  12px (base legível)
+h2:      13px (700)       →  13px (700) — ratio 1.23x
+h3:      12px (600)       →  13px (600) — ratio 1.12x
+h4:      11px (600)       →  12px (600) — ratio 1.04x
+p, li:   11px             →  12px
+th:      10px             →  11px
+td:      10px             →  11px
+```
 
-### Dados do admin sugerido
-- Email: admin@escolareviva.com
-- Nome: Administrador SIGER
-- Password: definida pelo utilizador
+### Mudanças de Layout (visualização em ecrã)
 
-### Segurança
-- A função só executa se `user_roles` estiver completamente vazia
-- Usa `service_role_key` (server-side only, nunca exposta ao cliente)
-- Após o primeiro admin ser criado, novos utilizadores são geridos pela UI via `manage-users`
+- Aumentar padding interno do conteúdo (de `px-6/px-10` para `px-8/px-12`)
+- Aumentar `py` de 5/6 para 8
+- Remover inline `fontSize: 11px` e `fontWeight: 300` do div de conteúdo; usar `font-normal` (400) como base
+- Melhorar espaçamento entre secções: h2 margin de `14px 0 6px` → `20px 0 8px`
+- Blockquote com padding e border-radius mais generosos
+- Tabelas com padding de células mais confortável
 
+### Mudanças de Layout (PDF / A4_STYLES)
+
+- Aplicar a mesma escala tipográfica no `A4_STYLES` (constante duplicada em ambos os ficheiros)
+- Body font-weight de 300 → 400 para melhor legibilidade impressa
+- Manter line-height 1.7
+
+### Ficheiros a Editar
+
+1. `**src/components/lesson-plans/LessonPlanPreview.tsx**` — A4_STYLES + div de conteúdo inline styles
+2. `**src/components/lesson-plans/ArchivedPlanPreview.tsx**` — A4_STYLES + div de conteúdo inline styles
+
+### Detalhes Técnicos
+
+- A constante `A4_STYLES` está duplicada nos dois ficheiros; ambas serão atualizadas com os mesmos valores
+- O inline style no div `dangerouslySetInnerHTML` será atualizado para `fontSize: 13px` e `fontWeight: 400`
+- Os estilos de `prose prose-sm` no `LessonPlanPreview` serão mantidos mas complementados pela nova escala
