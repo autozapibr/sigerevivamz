@@ -275,12 +275,7 @@ export default function Dashboard() {
           { title: 'Calendário', icon: Calendar, path: '/calendario', color: 'bg-blue-500 text-white' },
         ];
       case 'ENCARREGADO':
-        return [
-          { title: 'Ver Notas', icon: ClipboardCheck, path: '/avaliacoes', color: 'bg-primary text-primary-foreground' },
-          { title: 'Frequência', icon: UserCheck, path: '/presencas', color: 'bg-amber-500 text-white' },
-          { title: 'Propinas', icon: CreditCard, path: '/financeiro/propinas', color: 'bg-success text-white' },
-          { title: 'Calendário', icon: Calendar, path: '/calendario', color: 'bg-purple-500 text-white' },
-        ];
+        return [];
       default:
         return [
           { title: 'Nova Matrícula', icon: GraduationCap, path: '/matriculas', color: 'bg-primary text-primary-foreground' },
