@@ -38,11 +38,36 @@ Deno.serve(async (req) => {
 
     // Optional: allow force re-seed via body param
     let force = false;
+    let action = "seed";
+    let updateData: any = {};
     try {
       const body = await req.json();
       force = body?.force === true;
+      if (body?.action) action = body.action;
+      updateData = body;
     } catch {
       // no body, that's fine
+    }
+
+    // Handle email update action
+    if (action === "update_email" && updateData.user_id) {
+      const updates: any = {};
+      if (updateData.new_email) updates.email = updateData.new_email;
+      if (updateData.new_name) updates.user_metadata = { full_name: updateData.new_name };
+      updates.email_confirm = true;
+
+      const { error: updateErr } = await adminClient.auth.admin.updateUserById(updateData.user_id, updates);
+      if (updateErr) throw updateErr;
+
+      // Update profile name if provided
+      if (updateData.new_name) {
+        await adminClient.from("profiles").update({ full_name: updateData.new_name }).eq("user_id", updateData.user_id);
+      }
+
+      return new Response(
+        JSON.stringify({ status: "updated", user_id: updateData.user_id }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     if (existingRoles && existingRoles.length > 0 && !force) {
