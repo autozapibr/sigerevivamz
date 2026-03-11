@@ -14,7 +14,7 @@ const MASTER_ACCOUNTS = [
   { email: "secretaria@escolareviva.com", full_name: "Secretária Escolar", role: "SECRETARIA" },
   { email: "financeiro@escolareviva.com", full_name: "Gestor Financeiro", role: "FINANCEIRO" },
   { email: "professor@escolareviva.com", full_name: "Professor Exemplo", role: "PROFESSOR" },
-  { email: "responsavel@escolareviva.com", full_name: "Encarregado de Educação", role: "ENCARREGADO" },
+  { email: "pais@escolareviva.com", full_name: "Pais / Encarregado de Educação", role: "ENCARREGADO" },
   { email: "aluno@escolareviva.com", full_name: "Aluno Exemplo", role: "ALUNO" },
 ];
 
