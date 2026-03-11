@@ -305,7 +305,10 @@ export default function Dashboard() {
             <CardContent className="p-6 sm:p-8">
               <div className="relative z-10">
                 <h2 className="text-xl sm:text-2xl font-bold mb-2">
-                  Bom dia, {user?.name?.split(' ')[0] || 'Utilizador'}! 👋
+                  {user?.role === 'ENCARREGADO' 
+                    ? `${greeting}, pai / encarregado da educação! 👋`
+                    : `${greeting}, ${user?.name?.split(' ')[0] || 'Utilizador'}! 👋`
+                  }
                 </h2>
                 <p className="text-white/80 max-w-xl text-sm sm:text-base">
                   {welcomeMessage}
