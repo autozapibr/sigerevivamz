@@ -923,11 +923,70 @@ export default function Dashboard() {
 
           {/* === TAB: ENCARREGADO (Guardian Portal) === */}
           <TabsContent value="encarregado" className="space-y-4 mt-4">
-            {/* Quick Links for Guardian - FIRST */}
+            {/* Calendário Escolar & Provas - TOP */}
             <motion.div variants={itemVariants}>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Acesso Rápido - Portal do Encarregado</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-primary" />
+                        Calendário Escolar & Provas
+                      </CardTitle>
+                      <CardDescription>Eventos e avaliações do seu educando</CardDescription>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="gap-1"
+                      onClick={() => navigate('/calendario')}
+                    >
+                      Ver Completo
+                      <ArrowUpRight className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { evento: 'Prova de Matemática', data: '15 Mar', tipo: 'prova', turma: '10ª Classe A' },
+                      { evento: 'Prova de Português', data: '18 Mar', tipo: 'prova', turma: '10ª Classe A' },
+                      { evento: 'Reunião de Pais', data: '22 Mar', tipo: 'reuniao', turma: 'Geral' },
+                      { evento: 'Feira de Ciências', data: '28 Mar', tipo: 'evento', turma: 'Geral' },
+                      { evento: 'Prova de Física', data: '02 Abr', tipo: 'prova', turma: '10ª Classe A' },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                        <div className={`p-2 rounded-lg ${
+                          item.tipo === 'prova' ? 'bg-warning/10' :
+                          item.tipo === 'reuniao' ? 'bg-blue-500/10' : 'bg-primary/10'
+                        }`}>
+                          <Calendar className={`h-4 w-4 ${
+                            item.tipo === 'prova' ? 'text-warning' :
+                            item.tipo === 'reuniao' ? 'text-blue-500' : 'text-primary'
+                          }`} />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{item.evento}</p>
+                          <p className="text-xs text-muted-foreground">{item.turma}</p>
+                        </div>
+                        <Badge variant="secondary" className={`text-xs ${
+                          item.tipo === 'prova' ? 'bg-warning/20 text-warning' :
+                          item.tipo === 'reuniao' ? 'bg-blue-500/20 text-blue-500' : ''
+                        }`}>
+                          {item.data}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Quick Links for Guardian */}
+            <motion.div variants={itemVariants}>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Acesso Rápido</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1039,40 +1098,6 @@ export default function Dashboard() {
                 </Card>
               </motion.div>
             </div>
-
-            {/* Upcoming Events */}
-            <motion.div variants={itemVariants}>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Próximos Eventos</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {[
-                      { evento: 'Reunião de Pais', data: '28 Jan', tipo: 'reuniao' },
-                      { evento: 'Prova de Matemática', data: '02 Fev', tipo: 'prova' },
-                      { evento: 'Feira de Ciências', data: '15 Fev', tipo: 'evento' },
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                        <div className={`p-2 rounded-lg ${
-                          item.tipo === 'reuniao' ? 'bg-blue-500/10' :
-                          item.tipo === 'prova' ? 'bg-warning/10' : 'bg-primary/10'
-                        }`}>
-                          <Calendar className={`h-4 w-4 ${
-                            item.tipo === 'reuniao' ? 'text-blue-500' :
-                            item.tipo === 'prova' ? 'text-warning' : 'text-primary'
-                          }`} />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{item.evento}</p>
-                        </div>
-                        <Badge variant="secondary" className="text-xs">{item.data}</Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
           </TabsContent>
 
           {/* === TAB: ALUNO (Student Portal) === */}

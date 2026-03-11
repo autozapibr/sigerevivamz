@@ -266,7 +266,7 @@ export function AppSidebar() {
               {!collapsed && 'Sistema'}
             </p>
             <div className="space-y-1">
-              {systemItems.map((item) => {
+              {systemItems.filter(item => !item.roles || (user && item.roles.includes(user.role))).map((item) => {
                 const ItemIcon = item.icon;
                 return (
                   <NavLink
