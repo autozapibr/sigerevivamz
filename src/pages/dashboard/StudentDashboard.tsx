@@ -66,7 +66,7 @@ export default function StudentDashboard() {
     
     // Include holidays only if Feriado filter is active
     const holidays = activeFilters.includes('Feriado') 
-      ? MOZAMBIQUE_HOLIDAYS_2025.filter(h => h.date === dateStr).map(h => ({ ...h, id: h.date, description: null }))
+      ? MOZAMBIQUE_HOLIDAYS_2026.filter(h => h.date === dateStr).map(h => ({ ...h, id: h.date, description: null }))
       : [];
     
     return [...dbEvents, ...holidays];
