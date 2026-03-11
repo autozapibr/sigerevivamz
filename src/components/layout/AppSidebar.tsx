@@ -7,7 +7,7 @@ import {
   Bell, LogOut, Wallet, TrendingUp, CreditCard, UsersRound, LibraryBig,
   CalendarDays, ChartBar, BookMarked, NotebookPen, FileSpreadsheet,
   FileCheck, Briefcase, ChevronRight, MessageSquare, Palette, User,
-  Brain, Plug, Database
+  Brain, Plug, Database, ArrowLeft, ArrowRight, RotateCw
 } from 'lucide-react';
 
 import {
