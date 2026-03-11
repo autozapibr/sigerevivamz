@@ -133,42 +133,6 @@ export default function StudentDashboard() {
           </Card>
         </motion.div>
       )}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Card className="border-warning/50 bg-warning/5">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Bell className="h-4 w-4 text-warning" />
-                Provas Agendadas ({unreadExamCount})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {examNotifications.slice(0, 5).map((notification) => (
-                <div
-                  key={notification.id}
-                  className="flex items-center justify-between p-2 rounded-lg bg-background border"
-                >
-                  <div className="flex items-center gap-2">
-                    <GraduationCap className="h-4 w-4 text-orange-500" />
-                    <span className="text-sm">{notification.message}</span>
-                  </div>
-                  {!notification.is_read && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => markAsRead.mutate(notification.id)}
-                    >
-                      Marcar como lida
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
 
       {/* Calendar Header */}
       <Card>
