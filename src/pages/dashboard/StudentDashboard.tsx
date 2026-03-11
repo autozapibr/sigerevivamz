@@ -95,31 +95,44 @@ export default function StudentDashboard() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Welcome Banner */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <Card className="bg-gradient-to-r from-primary to-primary-dark border-0 text-white overflow-hidden relative">
-          <CardContent className="p-6 sm:p-8">
-            <div className="relative z-10">
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">
-                Olá, {user?.name?.split(' ')[0] || 'Estudante'}! 👋
-              </h2>
-              <p className="text-white/80 max-w-xl text-sm sm:text-base">
-                Bem-vindo ao Portal do Aluno. Acompanha aqui o calendário escolar, provas e eventos.
-              </p>
-              <Badge variant="secondary" className="mt-3 bg-white/20 text-white hover:bg-white/30">
-                ALUNO
-              </Badge>
-            </div>
-            <div className="absolute right-0 top-0 w-48 h-48 sm:w-64 sm:h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-          </CardContent>
-        </Card>
-      </motion.div>
-
       {/* Exam Notifications */}
       {unreadExamCount > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <Card className="border-warning/50 bg-warning/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Bell className="h-4 w-4 text-warning" />
+                Provas Agendadas ({unreadExamCount})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {examNotifications.slice(0, 5).map((notification) => (
+                <div
+                  key={notification.id}
+                  className="flex items-center justify-between p-2 rounded-lg bg-background border"
+                >
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4 text-orange-500" />
+                    <span className="text-sm">{notification.message}</span>
+                  </div>
+                  {!notification.is_read && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => markAsRead.mutate(notification.id)}
+                    >
+                      Marcar como lida
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
