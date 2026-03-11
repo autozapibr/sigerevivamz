@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useCalendarEventsByMonth, MOZAMBIQUE_HOLIDAYS_2025, CalendarEventType } from '@/hooks/useCalendarEvents';
+import { useCalendarEventsByMonth, MOZAMBIQUE_HOLIDAYS_2026, CalendarEventType } from '@/hooks/useCalendarEvents';
 import { useExamNotifications, useMarkExamNotificationRead } from '@/hooks/useExamNotifications';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -66,7 +66,7 @@ export default function StudentDashboard() {
     
     // Include holidays only if Feriado filter is active
     const holidays = activeFilters.includes('Feriado') 
-      ? MOZAMBIQUE_HOLIDAYS_2025.filter(h => h.date === dateStr).map(h => ({ ...h, id: h.date, description: null }))
+      ? MOZAMBIQUE_HOLIDAYS_2026.filter(h => h.date === dateStr).map(h => ({ ...h, id: h.date, description: null }))
       : [];
     
     return [...dbEvents, ...holidays];

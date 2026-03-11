@@ -171,16 +171,16 @@ export function useDeleteCalendarEvent() {
   });
 }
 
-// Feriados oficiais de Moçambique
-export const MOZAMBIQUE_HOLIDAYS_2025 = [
-  { date: '2025-01-01', title: 'Ano Novo', type: 'Feriado' as const },
-  { date: '2025-02-03', title: 'Dia dos Heróis Moçambicanos', type: 'Feriado' as const },
-  { date: '2025-04-07', title: 'Dia da Mulher Moçambicana', type: 'Feriado' as const },
-  { date: '2025-04-18', title: 'Sexta-feira Santa', type: 'Feriado' as const },
-  { date: '2025-05-01', title: 'Dia Internacional do Trabalhador', type: 'Feriado' as const },
-  { date: '2025-06-25', title: 'Dia da Independência Nacional', type: 'Feriado' as const },
-  { date: '2025-09-07', title: 'Dia da Vitória', type: 'Feriado' as const },
-  { date: '2025-09-25', title: 'Dia das Forças Armadas', type: 'Feriado' as const },
-  { date: '2025-10-04', title: 'Dia da Paz e Reconciliação', type: 'Feriado' as const },
-  { date: '2025-12-25', title: 'Dia da Família', type: 'Feriado' as const },
+// Feriados oficiais de Moçambique 2026
+export const MOZAMBIQUE_HOLIDAYS_2026 = [
+  { date: '2026-01-01', title: 'Ano Novo', type: 'Feriado' as const },
+  { date: '2026-02-03', title: 'Dia dos Heróis Moçambicanos', type: 'Feriado' as const },
+  { date: '2026-04-07', title: 'Dia da Mulher Moçambicana', type: 'Feriado' as const },
+  { date: '2026-04-03', title: 'Sexta-feira Santa', type: 'Feriado' as const },
+  { date: '2026-05-01', title: 'Dia Internacional do Trabalhador', type: 'Feriado' as const },
+  { date: '2026-06-25', title: 'Dia da Independência Nacional', type: 'Feriado' as const },
+  { date: '2026-09-07', title: 'Dia da Vitória', type: 'Feriado' as const },
+  { date: '2026-09-25', title: 'Dia das Forças Armadas', type: 'Feriado' as const },
+  { date: '2026-10-04', title: 'Dia da Paz e Reconciliação', type: 'Feriado' as const },
+  { date: '2026-12-25', title: 'Dia da Família', type: 'Feriado' as const },
 ];
