@@ -306,7 +306,7 @@ export default function Dashboard() {
               <div className="relative z-10">
                 <h2 className="text-xl sm:text-2xl font-bold mb-2">
                   {user?.role === 'ENCARREGADO' 
-                    ? `${greeting}, pai / encarregado da educação! 👋`
+                    ? `${greeting}, Pais! Que bom ter vocês aqui! 👋`
                     : `${greeting}, ${user?.name?.split(' ')[0] || 'Utilizador'}! 👋`
                   }
                 </h2>
