@@ -100,9 +100,9 @@ const configModule = {
 };
 
 const systemItems = [
-  { title: 'Comunicação', url: '/comunicacao', icon: MessageSquare, restricted: false },
-  { title: 'Notificações', url: '/notificacoes', icon: Bell, restricted: false },
-  { title: 'Relatórios', url: '/relatorios', icon: BarChart3, restricted: false },
+  { title: 'Comunicação', url: '/comunicacao', icon: MessageSquare, roles: null },
+  { title: 'Notificações', url: '/notificacoes', icon: Bell, roles: null },
+  { title: 'Relatórios', url: '/relatorios', icon: BarChart3, roles: ['ADMIN', 'DIRETORIA', 'SECRETARIA'] as string[] },
 ];
 
 export function AppSidebar() {
