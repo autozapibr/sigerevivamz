@@ -229,6 +229,13 @@ function getWelcomeMessage(role: UserRole | undefined): string {
   }
 }
 
+function getTimeGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -240,6 +247,7 @@ export default function Dashboard() {
   const { title, subtitle } = useMemo(() => getDashboardTitle(user?.role), [user?.role]);
   const welcomeMessage = useMemo(() => getWelcomeMessage(user?.role), [user?.role]);
   const defaultTab = availableTabs[0]?.value || 'geral';
+  const greeting = getTimeGreeting();
 
   // Role-specific quick actions
   const quickActions = useMemo(() => {
