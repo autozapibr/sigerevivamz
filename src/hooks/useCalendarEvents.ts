@@ -184,6 +184,3 @@ export const MOZAMBIQUE_HOLIDAYS_2026 = [
   { date: '2026-10-04', title: 'Dia da Paz e Reconciliação', type: 'Feriado' as const },
   { date: '2026-12-25', title: 'Dia da Família', type: 'Feriado' as const },
 ];
-
-// Keep backward compatibility
-export const MOZAMBIQUE_HOLIDAYS_2025 = MOZAMBIQUE_HOLIDAYS_2026;
