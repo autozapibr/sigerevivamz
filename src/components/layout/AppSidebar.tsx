@@ -223,7 +223,7 @@ export function AppSidebar() {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                onClick={() => location.href = '/dashboard'}
+                onClick={() => window.location.href = '/dashboard'}
                 title="Início"
               >
                 <Home className="w-4 h-4" />
