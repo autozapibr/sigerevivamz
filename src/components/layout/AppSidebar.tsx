@@ -233,7 +233,7 @@ export function AppSidebar() {
         )}
 
         {/* Navigation */}
-        <ScrollArea className="flex-1 px-3 py-4">
+        <div className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
           <div className="space-y-2">
             {accessibleModules.map(([key, module]) => {
               const isOpen = openModules.includes(key) || isModuleActive(module.items);
@@ -393,7 +393,7 @@ export function AppSidebar() {
               })()}
             </div>
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Logout Button */}
         <div className="p-4 border-t border-border/50">
