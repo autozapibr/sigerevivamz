@@ -111,6 +111,31 @@ export function AppSidebar() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [openModules, setOpenModules] = React.useState<string[]>(['gestao_escolar']);
+  const sidebarScrollRef = React.useRef<HTMLDivElement | null>(null);
+
+  const saveSidebarScroll = React.useCallback(() => {
+    if (typeof window === 'undefined' || !sidebarScrollRef.current) return;
+    sessionStorage.setItem('siger_sidebar_scroll_top', String(sidebarScrollRef.current.scrollTop));
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const savedScrollTop = sessionStorage.getItem('siger_sidebar_scroll_top');
+    if (!savedScrollTop) return;
+
+    requestAnimationFrame(() => {
+      if (sidebarScrollRef.current) {
+        sidebarScrollRef.current.scrollTop = Number(savedScrollTop);
+      }
+    });
+  }, [location.pathname]);
+
+  React.useEffect(() => {
+    return () => {
+      saveSidebarScroll();
+    };
+  }, [saveSidebarScroll]);
 
   const hasPermission = (permission: string) => {
     if (!user) return false;
