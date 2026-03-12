@@ -154,6 +154,11 @@ export default function PropinasPage() {
   const payTuition = usePayTuition();
   const generateFees = useGenerateMonthlyFees();
 
+  // Block parents and students from accessing this page
+  if (user?.role === 'ENCARREGADO' || user?.role === 'ALUNO') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const handlePayment = () => {
     if (!paymentDialog.fee) return;
     
