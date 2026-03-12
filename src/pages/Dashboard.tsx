@@ -24,6 +24,7 @@ import {
 } from '@/components/dashboard/DashboardCharts';
 import { UserRole } from '@/types/auth';
 import StudentDashboard from '@/pages/dashboard/StudentDashboard';
+import { PaymentProofDialog } from '@/components/financial/PaymentProofDialog';
 
 const containerVariants = {
   hidden: { opacity: 0 },
