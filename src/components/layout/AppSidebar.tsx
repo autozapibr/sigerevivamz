@@ -393,7 +393,7 @@ export function AppSidebar() {
               })()}
             </div>
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Logout Button */}
         <div className="p-4 border-t border-border/50">
