@@ -1146,24 +1146,27 @@ export default function Dashboard() {
                       <Button 
                         variant="default" 
                         className="flex-1 gap-2"
-                        onClick={() => navigate('/financeiro/propinas')}
+                        onClick={() => {
+                          setPaymentProofContext({ student: 'João Carlos Mondlane', month: 'Março 2026', amount: 3500 });
+                          setPaymentProofOpen(true);
+                        }}
                       >
                         <CreditCard className="h-4 w-4" />
                         Pagar / Enviar Comprovativo
                       </Button>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      className="w-full mt-2 gap-2"
-                      onClick={() => navigate('/financeiro/propinas')}
-                    >
-                      Ver Histórico Completo
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Button>
                   </CardContent>
                 </Card>
               </motion.div>
             </div>
+
+            <PaymentProofDialog 
+              open={paymentProofOpen} 
+              onOpenChange={setPaymentProofOpen}
+              studentName={paymentProofContext.student}
+              month={paymentProofContext.month}
+              amount={paymentProofContext.amount}
+            />
           </TabsContent>
 
           {/* === TAB: ALUNO (Student Portal) === */}
