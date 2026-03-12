@@ -1,8 +1,10 @@
 -- ============================================================
 -- SGE REVIVA - MIGRAÇÃO COMPLETA - PARTE 3: DADOS
--- Data: 2026-03-01
--- Nota: Os IDs são gerados automaticamente (IDENTITY), então usamos
--- OVERRIDING SYSTEM VALUE para preservar as referências.
+-- Data: 2026-03-12
+-- Projecto Supabase: ghwhbdpdkstxejofztny (siger-cloud)
+-- ============================================================
+-- INSTRUÇÕES: Executar DEPOIS de 01-schema.sql e 02-rls-policies.sql
+-- NOTA: Os IDs são preservados com OVERRIDING SYSTEM VALUE
 -- ============================================================
 
 -- ===================== academic_years =====================
@@ -89,10 +91,6 @@ INSERT INTO public.subjects OVERRIDING SYSTEM VALUE VALUES
 SELECT setval(pg_get_serial_sequence('subjects', 'id'), (SELECT MAX(id) FROM subjects));
 
 -- ===================== students =====================
--- Nota: Devido ao volume (41 educandos), incluímos os dados principais.
--- Os dados completos dos educandos devem ser inseridos via Edge Function seed-data
--- ou executando o script completo no SQL Editor do Supabase.
-
 INSERT INTO public.students OVERRIDING SYSTEM VALUE (id, name, phone, guardian, age, class_id, status, gender, nationality, province, district, enrollment_status) VALUES
 (1, 'Ana Silva', '84 123 4567', 'João Silva', 10, 1, 'Ativo', NULL, 'Moçambicana', NULL, NULL, 'PENDENTE'),
 (2, 'Bruno Costa', '82 987 6543', 'Maria Costa', 12, 2, 'Ativo', NULL, 'Moçambicana', NULL, NULL, 'PENDENTE'),
@@ -268,20 +266,20 @@ INSERT INTO public.announcements OVERRIDING SYSTEM VALUE (id, title, content, ty
 SELECT setval(pg_get_serial_sequence('announcements', 'id'), (SELECT MAX(id) FROM announcements));
 
 -- ===================== integration_settings =====================
+-- NOTA: As API keys abaixo são de exemplo. Substituir pelas chaves reais no novo projecto.
 INSERT INTO public.integration_settings OVERRIDING SYSTEM VALUE (id, integration_name, api_key, api_url, instance_name, is_active, additional_config) VALUES
-(1, 'evolution_api', '6AA838DDF630-4921-975A-0E662FA46B5F', 'https://evoapi.autozapi.com', 'SGE-REVIVA', true, '{"description":"WhatsApp Business API"}'),
-(2, 'openai', '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', NULL, NULL, true, '{"description":"OpenAI GPT API para geração de contratos"}'),
-(3, 'google_ai', 'AIzaSyCu9xvlkpU4xda2f36OfHGgJaU85f9TDpA', NULL, NULL, true, '{"description":"Google AI Studio (Gemini)"}');
+(1, 'evolution_api', NULL, 'https://evoapi.autozapi.com', 'SGE-REVIVA', false, '{"description":"WhatsApp Business API"}'),
+(2, 'openai', NULL, NULL, NULL, false, '{"description":"OpenAI GPT API para geração de contratos"}'),
+(3, 'google_ai', NULL, NULL, NULL, false, '{"description":"Google AI Studio (Gemini)"}');
 SELECT setval(pg_get_serial_sequence('integration_settings', 'id'), (SELECT MAX(id) FROM integration_settings));
 
 -- ===================== lesson_plan_config =====================
--- Nota: O system_prompt é muito longo. Inserir manualmente via SQL Editor.
+-- NOTA: O system_prompt (id=1) é muito longo e deve ser inserido manualmente via SQL Editor.
 INSERT INTO public.lesson_plan_config OVERRIDING SYSTEM VALUE (id, config_key, config_value, description) VALUES
 (2, 'model', 'google/gemini-2.5-flash', 'Modelo de IA a utilizar'),
 (3, 'temperature', '0.2', 'Temperatura da geração (0-1)'),
 (4, 'max_tokens', '16000', 'Máximo de tokens na resposta'),
 (5, 'llm_provider', 'google', 'Provedor de IA (lovable_ai, openai, google)');
--- O system_prompt (id=1) deve ser inserido separadamente devido ao tamanho.
 SELECT setval(pg_get_serial_sequence('lesson_plan_config', 'id'), (SELECT MAX(id) FROM lesson_plan_config));
 
 -- ===================== lesson_plan_fields =====================
@@ -296,13 +294,21 @@ INSERT INTO public.lesson_plan_fields OVERRIDING SYSTEM VALUE (id, field_name, f
 (16, 'ferramentas_aep', 'Ferramentas da AEP', 'multiselect', ARRAY['Fichário','Estudo de palavras (Webster)','Ensaio (produção textual)','Belas Artes','Clássicos literários','Biografias','Linha do tempo','Memoriais','Celebração','Avaliações e Revisões','Oportunidade de Serviço'], true, true, 8);
 SELECT setval(pg_get_serial_sequence('lesson_plan_fields', 'id'), (SELECT MAX(id) FROM lesson_plan_fields));
 
--- ===================== NOTA IMPORTANTE =====================
--- Os seguintes dados volumosos (grades: 610 registos, attendance: 1026 registos,
--- tuition_fees: 125 registos, transactions: 46 registos) devem ser 
--- re-criados via Edge Function seed-data ou inseridos via SQL Editor do Supabase.
--- 
--- Os dados de lesson_plans (5 registos com conteúdo HTML grande) e 
--- contract_signatures (2 registos com HTML) também devem ser inseridos manualmente.
+-- ===================== db_ativo =====================
+INSERT INTO public.db_ativo OVERRIDING SYSTEM VALUE VALUES (1, 1, now());
+SELECT setval(pg_get_serial_sequence('db_ativo', 'id'), (SELECT MAX(id) FROM db_ativo));
+
+-- ===================== DADOS VOLUMOSOS =====================
+-- Os seguintes dados devem ser re-criados via Edge Function seed-data
+-- ou inseridos manualmente via SQL Editor:
+--
+-- • grades (610+ registos) — re-gerar via seed-data
+-- • attendance (1026+ registos) — re-gerar via seed-data
+-- • tuition_fees (125+ registos) — re-gerar via seed-data
+-- • transactions (46+ registos) — re-gerar via seed-data
+-- • lesson_plans (5 registos com HTML grande)
+-- • contract_signatures (2 registos com HTML grande)
+-- • lesson_plan_config system_prompt (id=1, texto muito grande)
 --
 -- Os utilizadores (auth.users), profiles e user_roles serão criados
 -- via Edge Function seed-users no novo projecto Supabase.

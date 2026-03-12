@@ -1,11 +1,21 @@
 -- ============================================================
 -- SGE REVIVA - MIGRAÇÃO COMPLETA - PARTE 1: SCHEMA
--- Data: 2026-03-01
+-- Data: 2026-03-12
+-- Projecto Supabase: ghwhbdpdkstxejofztny (siger-cloud)
+-- ============================================================
+-- INSTRUÇÕES:
+-- 1. Executar este script PRIMEIRO no SQL Editor do novo projecto
+-- 2. Depois executar 02-rls-policies.sql
+-- 3. Por fim executar 03-data.sql
 -- ============================================================
 
 -- ===================== ENUMS =====================
 
-CREATE TYPE public.app_role AS ENUM ('ADMIN','DIRETORIA','SECRETARIA','FINANCEIRO','PROFESSOR','PEDAGOGICO','ENCARREGADO','ALUNO');
+CREATE TYPE public.app_role AS ENUM (
+  'ADMIN','DIRETORIA','SECRETARIA','FINANCEIRO',
+  'PROFESSOR','PEDAGOGICO','ENCARREGADO','ALUNO'
+);
+
 CREATE TYPE public.student_status AS ENUM ('Ativo','Inativo');
 CREATE TYPE public.payment_status AS ENUM ('Pago','Pendente');
 CREATE TYPE public.enrollment_status AS ENUM ('PENDENTE','EM_ANALISE','APROVADA','REJEITADA','CANCELADA');
@@ -13,12 +23,21 @@ CREATE TYPE public.calendar_event_type AS ENUM ('Feriado','Evento','Prova','Praz
 CREATE TYPE public.transaction_type AS ENUM ('Receita','Despesa');
 CREATE TYPE public.communication_type AS ENUM ('WHATSAPP','SMS','TELEFONE','EMAIL','PRESENCIAL');
 CREATE TYPE public.communication_status AS ENUM ('ENVIADO','ENTREGUE','LIDO','FALHOU','AGENDADO');
-CREATE TYPE public.document_type AS ENUM ('BI','NUIT','CERTIDAO_NASCIMENTO','CERTIFICADO_HABILITACOES','DECLARACAO_ESCOLA_ANTERIOR','ATESTADO_MEDICO','FOTO','OUTRO');
+CREATE TYPE public.document_type AS ENUM (
+  'BI','NUIT','CERTIDAO_NASCIMENTO','CERTIFICADO_HABILITACOES',
+  'DECLARACAO_ESCOLA_ANTERIOR','ATESTADO_MEDICO','FOTO','OUTRO'
+);
 CREATE TYPE public.scholarship_type AS ENUM ('Percentagem','Valor Fixo');
 CREATE TYPE public.payment_agreement_status AS ENUM ('PENDENTE','ATIVO','CUMPRIDO','QUEBRADO','CANCELADO');
-CREATE TYPE public.reminder_type AS ENUM ('VENCIMENTO_PROXIMO','DIA_VENCIMENTO','ATRASO_LEVE','ATRASO_MODERADO','ATRASO_GRAVE','PARCELA_ACORDO');
+CREATE TYPE public.reminder_type AS ENUM (
+  'VENCIMENTO_PROXIMO','DIA_VENCIMENTO','ATRASO_LEVE',
+  'ATRASO_MODERADO','ATRASO_GRAVE','PARCELA_ACORDO'
+);
 CREATE TYPE public.gender_type AS ENUM ('MASCULINO','FEMININO');
-CREATE TYPE public.ticket_category AS ENUM ('RECLAMACAO','INFORMACAO','SUGESTAO','SUPORTE','FINANCEIRO','PEDAGOGICO','RH','OUTRO','SECRETARIA');
+CREATE TYPE public.ticket_category AS ENUM (
+  'RECLAMACAO','INFORMACAO','SUGESTAO','SUPORTE',
+  'FINANCEIRO','PEDAGOGICO','RH','OUTRO','SECRETARIA'
+);
 CREATE TYPE public.ticket_priority AS ENUM ('BAIXA','NORMAL','ALTA','URGENTE');
 CREATE TYPE public.ticket_status AS ENUM ('ABERTO','EM_ANDAMENTO','AGUARDANDO','RESOLVIDO','FECHADO');
 CREATE TYPE public.teacher_status AS ENUM ('Ativo','Inativo');
@@ -26,7 +45,7 @@ CREATE TYPE public.tuition_status AS ENUM ('Pago','Atrasado','Pendente');
 
 -- ===================== TABLES =====================
 
--- profiles
+-- 1. profiles
 CREATE TABLE public.profiles (
   user_id UUID NOT NULL PRIMARY KEY,
   full_name TEXT,
@@ -35,14 +54,15 @@ CREATE TABLE public.profiles (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- user_roles
+-- 2. user_roles
 CREATE TABLE public.user_roles (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL,
-  role public.app_role NOT NULL DEFAULT 'PROFESSOR'
+  role public.app_role NOT NULL DEFAULT 'PROFESSOR',
+  UNIQUE (user_id, role)
 );
 
--- academic_years
+-- 3. academic_years
 CREATE TABLE public.academic_years (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL,
@@ -52,7 +72,7 @@ CREATE TABLE public.academic_years (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- teachers
+-- 4. teachers
 CREATE TABLE public.teachers (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL,
@@ -78,14 +98,14 @@ CREATE TABLE public.teachers (
   emergency_phone TEXT,
   bank_name TEXT,
   bank_account TEXT,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
   payment_method TEXT DEFAULT 'bank',
   mobile_money_provider TEXT,
-  mobile_money_number TEXT
+  mobile_money_number TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- classes
+-- 5. classes
 CREATE TABLE public.classes (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL,
@@ -93,7 +113,7 @@ CREATE TABLE public.classes (
   teacher_id BIGINT REFERENCES public.teachers(id)
 );
 
--- subjects
+-- 6. subjects
 CREATE TABLE public.subjects (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL,
@@ -101,7 +121,7 @@ CREATE TABLE public.subjects (
   workload INTEGER
 );
 
--- students
+-- 7. students
 CREATE TABLE public.students (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL,
@@ -127,7 +147,7 @@ CREATE TABLE public.students (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- guardians
+-- 8. guardians
 CREATE TABLE public.guardians (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   full_name TEXT NOT NULL,
@@ -147,7 +167,7 @@ CREATE TABLE public.guardians (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- student_guardians
+-- 9. student_guardians
 CREATE TABLE public.student_guardians (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   student_id BIGINT NOT NULL REFERENCES public.students(id),
@@ -156,7 +176,7 @@ CREATE TABLE public.student_guardians (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- employees
+-- 10. employees
 CREATE TABLE public.employees (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL,
@@ -190,14 +210,14 @@ CREATE TABLE public.employees (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- financial_categories
+-- 11. financial_categories
 CREATE TABLE public.financial_categories (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL,
   type public.transaction_type NOT NULL
 );
 
--- transactions
+-- 12. transactions
 CREATE TABLE public.transactions (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   date DATE NOT NULL,
@@ -207,7 +227,7 @@ CREATE TABLE public.transactions (
   amount NUMERIC NOT NULL
 );
 
--- tuition_fees
+-- 13. tuition_fees
 CREATE TABLE public.tuition_fees (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   student_id BIGINT NOT NULL REFERENCES public.students(id),
@@ -218,7 +238,7 @@ CREATE TABLE public.tuition_fees (
   paid_at TIMESTAMPTZ
 );
 
--- enrollments
+-- 14. enrollments
 CREATE TABLE public.enrollments (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   student_name TEXT,
@@ -228,7 +248,7 @@ CREATE TABLE public.enrollments (
   status public.payment_status
 );
 
--- student_enrollments
+-- 15. student_enrollments
 CREATE TABLE public.student_enrollments (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   student_id BIGINT NOT NULL REFERENCES public.students(id),
@@ -247,7 +267,7 @@ CREATE TABLE public.student_enrollments (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- grades
+-- 16. grades (chave composta)
 CREATE TABLE public.grades (
   student_id BIGINT NOT NULL REFERENCES public.students(id),
   subject_id BIGINT NOT NULL REFERENCES public.subjects(id),
@@ -269,7 +289,7 @@ CREATE TABLE public.grades (
   PRIMARY KEY (student_id, subject_id)
 );
 
--- attendance
+-- 17. attendance
 CREATE TABLE public.attendance (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   student_id BIGINT NOT NULL REFERENCES public.students(id),
@@ -283,7 +303,7 @@ CREATE TABLE public.attendance (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- scholarships
+-- 18. scholarships
 CREATE TABLE public.scholarships (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL,
@@ -291,14 +311,14 @@ CREATE TABLE public.scholarships (
   value NUMERIC NOT NULL
 );
 
--- student_scholarships
+-- 19. student_scholarships (chave composta)
 CREATE TABLE public.student_scholarships (
   student_id BIGINT NOT NULL REFERENCES public.students(id),
   scholarship_id BIGINT NOT NULL REFERENCES public.scholarships(id),
   PRIMARY KEY (student_id, scholarship_id)
 );
 
--- class_curriculum
+-- 20. class_curriculum (chave composta)
 CREATE TABLE public.class_curriculum (
   class_id BIGINT NOT NULL REFERENCES public.classes(id),
   subject_id BIGINT NOT NULL REFERENCES public.subjects(id),
@@ -306,7 +326,7 @@ CREATE TABLE public.class_curriculum (
   PRIMARY KEY (class_id, subject_id)
 );
 
--- announcements
+-- 21. announcements
 CREATE TABLE public.announcements (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   title TEXT NOT NULL,
@@ -323,7 +343,7 @@ CREATE TABLE public.announcements (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- announcement_reads
+-- 22. announcement_reads
 CREATE TABLE public.announcement_reads (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   announcement_id BIGINT NOT NULL REFERENCES public.announcements(id),
@@ -331,7 +351,7 @@ CREATE TABLE public.announcement_reads (
   read_at TIMESTAMPTZ DEFAULT now()
 );
 
--- calendar_events
+-- 23. calendar_events
 CREATE TABLE public.calendar_events (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   title TEXT NOT NULL,
@@ -351,7 +371,7 @@ CREATE TABLE public.calendar_events (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- contract_signatures
+-- 24. contract_signatures
 CREATE TABLE public.contract_signatures (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   staff_id BIGINT NOT NULL,
@@ -375,7 +395,7 @@ CREATE TABLE public.contract_signatures (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- student_documents
+-- 25. student_documents
 CREATE TABLE public.student_documents (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   student_id BIGINT NOT NULL REFERENCES public.students(id),
@@ -392,7 +412,7 @@ CREATE TABLE public.student_documents (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- staff_documents
+-- 26. staff_documents
 CREATE TABLE public.staff_documents (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   staff_id BIGINT NOT NULL,
@@ -411,7 +431,7 @@ CREATE TABLE public.staff_documents (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- communication_history
+-- 27. communication_history
 CREATE TABLE public.communication_history (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   student_id BIGINT REFERENCES public.students(id),
@@ -434,7 +454,7 @@ CREATE TABLE public.communication_history (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- payment_agreements
+-- 28. payment_agreements
 CREATE TABLE public.payment_agreements (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   student_id BIGINT NOT NULL REFERENCES public.students(id),
@@ -453,7 +473,7 @@ CREATE TABLE public.payment_agreements (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- agreement_installments
+-- 29. agreement_installments
 CREATE TABLE public.agreement_installments (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   agreement_id BIGINT NOT NULL REFERENCES public.payment_agreements(id),
@@ -466,7 +486,7 @@ CREATE TABLE public.agreement_installments (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- scheduled_reminders
+-- 30. scheduled_reminders
 CREATE TABLE public.scheduled_reminders (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   student_id BIGINT NOT NULL REFERENCES public.students(id),
@@ -481,7 +501,7 @@ CREATE TABLE public.scheduled_reminders (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- exam_notifications
+-- 31. exam_notifications
 CREATE TABLE public.exam_notifications (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   calendar_event_id BIGINT NOT NULL REFERENCES public.calendar_events(id),
@@ -497,7 +517,7 @@ CREATE TABLE public.exam_notifications (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- integration_settings
+-- 32. integration_settings
 CREATE TABLE public.integration_settings (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   integration_name TEXT NOT NULL,
@@ -514,7 +534,7 @@ CREATE TABLE public.integration_settings (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- lesson_plan_config
+-- 33. lesson_plan_config
 CREATE TABLE public.lesson_plan_config (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   config_key TEXT NOT NULL,
@@ -525,7 +545,7 @@ CREATE TABLE public.lesson_plan_config (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- lesson_plan_fields
+-- 34. lesson_plan_fields
 CREATE TABLE public.lesson_plan_fields (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   field_name TEXT NOT NULL,
@@ -539,7 +559,7 @@ CREATE TABLE public.lesson_plan_fields (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- lesson_plan_training_docs
+-- 35. lesson_plan_training_docs
 CREATE TABLE public.lesson_plan_training_docs (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   file_name TEXT NOT NULL,
@@ -552,7 +572,7 @@ CREATE TABLE public.lesson_plan_training_docs (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- lesson_plans
+-- 36. lesson_plans
 CREATE TABLE public.lesson_plans (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   teacher_id UUID NOT NULL,
@@ -567,7 +587,7 @@ CREATE TABLE public.lesson_plans (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- registration_invitations
+-- 37. registration_invitations
 CREATE TABLE public.registration_invitations (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   token UUID NOT NULL DEFAULT gen_random_uuid(),
@@ -583,7 +603,7 @@ CREATE TABLE public.registration_invitations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- tickets
+-- 38. tickets
 CREATE TABLE public.tickets (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   ticket_number TEXT,
@@ -605,7 +625,7 @@ CREATE TABLE public.tickets (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- ticket_messages
+-- 39. ticket_messages
 CREATE TABLE public.ticket_messages (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   ticket_id BIGINT NOT NULL REFERENCES public.tickets(id),
@@ -617,7 +637,7 @@ CREATE TABLE public.ticket_messages (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- ticket_notifications
+-- 40. ticket_notifications
 CREATE TABLE public.ticket_notifications (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   ticket_id BIGINT NOT NULL REFERENCES public.tickets(id),
@@ -629,7 +649,7 @@ CREATE TABLE public.ticket_notifications (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- teacher_files
+-- 41. teacher_files
 CREATE TABLE public.teacher_files (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   teacher_user_id UUID NOT NULL,
@@ -646,30 +666,47 @@ CREATE TABLE public.teacher_files (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- 42. db_ativo (tabela de controle)
+CREATE TABLE public.db_ativo (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  num BIGINT NOT NULL,
+  criado_em TIMESTAMPTZ DEFAULT now()
+);
+
 -- ===================== VIEWS =====================
 
+-- View: Estatísticas de presença por aluno
 CREATE OR REPLACE VIEW public.student_attendance_stats AS
-SELECT s.id AS student_id,
-    s.name AS student_name,
-    c.id AS class_id,
-    c.name AS class_name,
-    count(*) FILTER (WHERE (a.status = 'PRESENTE')) AS presencas,
-    count(*) FILTER (WHERE (a.status = 'FALTA')) AS faltas,
-    count(*) FILTER (WHERE (a.status = 'FALTA_JUSTIFICADA')) AS faltas_justificadas,
-    count(*) FILTER (WHERE (a.status = 'ATRASO')) AS atrasos,
-    count(*) AS total_dias,
-    round(((count(*) FILTER (WHERE (a.status = 'PRESENTE')))::numeric / NULLIF(count(*), 0)::numeric * 100), 2) AS taxa_presenca
+SELECT 
+  s.id AS student_id,
+  s.name AS student_name,
+  c.id AS class_id,
+  c.name AS class_name,
+  count(*) FILTER (WHERE a.status = 'PRESENTE') AS presencas,
+  count(*) FILTER (WHERE a.status = 'FALTA') AS faltas,
+  count(*) FILTER (WHERE a.status = 'FALTA_JUSTIFICADA') AS faltas_justificadas,
+  count(*) FILTER (WHERE a.status = 'ATRASO') AS atrasos,
+  count(*) AS total_dias,
+  round(
+    (count(*) FILTER (WHERE a.status = 'PRESENTE'))::numeric / 
+    NULLIF(count(*), 0)::numeric * 100, 2
+  ) AS taxa_presenca
 FROM students s
 LEFT JOIN classes c ON s.class_id = c.id
 LEFT JOIN attendance a ON s.id = a.student_id
 GROUP BY s.id, s.name, c.id, c.name;
 
+-- View: Informação pública de funcionários (sem dados sensíveis)
 CREATE OR REPLACE VIEW public.employees_public_info AS
-SELECT id, name, email, phone, role, department, status, photo_url, gender, hire_date, contract_type, province, district, created_at, updated_at
+SELECT id, name, email, phone, role, department, status, photo_url, 
+       gender, hire_date, contract_type, province, district, 
+       created_at, updated_at
 FROM employees;
 
+-- View: Contratos para assinatura (sem expor dados sensíveis)
 CREATE OR REPLACE VIEW public.contract_signatures_signing AS
-SELECT id, staff_name, contract_type, contract_html, status, signature_token, token_expires_at
+SELECT id, staff_name, contract_type, contract_html, status, 
+       signature_token, token_expires_at
 FROM contract_signatures
 WHERE signature_token IS NOT NULL
   AND status = ANY (ARRAY['pending', 'sent'])
@@ -677,6 +714,7 @@ WHERE signature_token IS NOT NULL
 
 -- ===================== FUNCTIONS =====================
 
+-- Trigger helper: auto-update updated_at
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER LANGUAGE plpgsql SET search_path TO 'public' AS $$
 BEGIN
@@ -685,16 +723,23 @@ BEGIN
 END;
 $$;
 
+-- RBAC: verificar se utilizador tem role específica
 CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role app_role)
 RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public' AS $$
-  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role);
+  SELECT EXISTS (
+    SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role
+  );
 $$;
 
+-- RBAC: verificar se utilizador tem qualquer uma das roles
 CREATE OR REPLACE FUNCTION public.has_any_role(_user_id uuid, _roles app_role[])
 RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public' AS $$
-  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = ANY(_roles));
+  SELECT EXISTS (
+    SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = ANY(_roles)
+  );
 $$;
 
+-- RBAC: verificar se é staff (qualquer perfil administrativo)
 CREATE OR REPLACE FUNCTION public.is_staff(_user_id uuid)
 RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public' AS $$
   SELECT EXISTS (
@@ -703,11 +748,13 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public'
   );
 $$;
 
+-- Avaliação: média trimestral (ACS 30% + ACP 30% + ACF 40%)
 CREATE OR REPLACE FUNCTION public.calculate_trimester_average(_acs numeric, _acp numeric, _acf numeric)
 RETURNS numeric LANGUAGE sql IMMUTABLE SET search_path TO 'public' AS $$
   SELECT ROUND(COALESCE(_acs, 0) * 0.30 + COALESCE(_acp, 0) * 0.30 + COALESCE(_acf, 0) * 0.40, 2);
 $$;
 
+-- Avaliação: média final dos trimestres
 CREATE OR REPLACE FUNCTION public.calculate_final_average(_t1 numeric, _t2 numeric, _t3 numeric)
 RETURNS numeric LANGUAGE sql IMMUTABLE SET search_path TO 'public' AS $$
   SELECT ROUND(
@@ -715,9 +762,12 @@ RETURNS numeric LANGUAGE sql IMMUTABLE SET search_path TO 'public' AS $$
     NULLIF(
       CASE WHEN _t1 IS NOT NULL THEN 1 ELSE 0 END +
       CASE WHEN _t2 IS NOT NULL THEN 1 ELSE 0 END +
-      CASE WHEN _t3 IS NOT NULL THEN 1 ELSE 0 END, 0), 2);
+      CASE WHEN _t3 IS NOT NULL THEN 1 ELSE 0 END, 0
+    ), 2
+  );
 $$;
 
+-- Avaliação: classificação da nota (escala 0-20 Moçambique)
 CREATE OR REPLACE FUNCTION public.classify_grade(_grade numeric)
 RETURNS text LANGUAGE sql IMMUTABLE SET search_path TO 'public' AS $$
   SELECT CASE
@@ -729,6 +779,7 @@ RETURNS text LANGUAGE sql IMMUTABLE SET search_path TO 'public' AS $$
   END;
 $$;
 
+-- Auto-gerar número de matrícula (MAT-YYYY-XXXXX)
 CREATE OR REPLACE FUNCTION public.generate_enrollment_number()
 RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public' AS $$
 DECLARE
@@ -744,6 +795,7 @@ BEGIN
 END;
 $$;
 
+-- Auto-gerar número de ticket (TKT-YYYY-XXXXX)
 CREATE OR REPLACE FUNCTION public.generate_ticket_number()
 RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public' AS $$
 DECLARE
@@ -759,6 +811,7 @@ BEGIN
 END;
 $$;
 
+-- Convites: validar token de convite
 CREATE OR REPLACE FUNCTION public.validate_invitation(_token uuid)
 RETURNS TABLE(id uuid, email text, intended_role app_role, intended_name text, is_valid boolean)
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public' AS $$
@@ -767,6 +820,7 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public' AS $$
   FROM public.registration_invitations ri WHERE ri.token = _token LIMIT 1;
 $$;
 
+-- Convites: consumir token após registo
 CREATE OR REPLACE FUNCTION public.consume_invitation(_token uuid, _user_id uuid)
 RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $$
 BEGIN
@@ -776,6 +830,7 @@ BEGIN
 END;
 $$;
 
+-- Contratos: obter contrato para assinatura remota (SECURITY DEFINER)
 CREATE OR REPLACE FUNCTION public.get_contract_for_signing(_token uuid)
 RETURNS TABLE(id bigint, staff_name text, contract_type text, contract_html text, status text)
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public' AS $$
@@ -785,6 +840,7 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public' AS $$
     AND (cs.token_expires_at IS NULL OR cs.token_expires_at > now()) LIMIT 1;
 $$;
 
+-- Notificações: criar notificação ao agendar prova
 CREATE OR REPLACE FUNCTION public.notify_exam_created()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $$
 DECLARE
@@ -794,15 +850,18 @@ BEGIN
   IF NEW.type != 'Prova' THEN RETURN NEW; END IF;
   SELECT name INTO class_name_var FROM classes WHERE id = NEW.class_id;
   SELECT name INTO subject_name_var FROM subjects WHERE id = NEW.subject_id;
+  -- Notificar professores
   INSERT INTO exam_notifications (calendar_event_id, recipient_role, recipient_class_id, notification_type, message)
   VALUES (NEW.id, 'PROFESSOR', NEW.class_id, 'NEW_EXAM',
     'Nova prova agendada: ' || NEW.title || COALESCE(' - Turma: ' || class_name_var, '') ||
     COALESCE(' - Disciplina: ' || subject_name_var, '') || ' - Data: ' || to_char(NEW.date, 'DD/MM/YYYY'));
   IF NEW.class_id IS NOT NULL THEN
+    -- Notificar encarregados
     INSERT INTO exam_notifications (calendar_event_id, recipient_role, recipient_class_id, notification_type, message)
     VALUES (NEW.id, 'ENCARREGADO', NEW.class_id, 'NEW_EXAM',
       'Prova agendada para seu educando: ' || NEW.title || COALESCE(' - Turma: ' || class_name_var, '') ||
       COALESCE(' - Disciplina: ' || subject_name_var, '') || ' - Data: ' || to_char(NEW.date, 'DD/MM/YYYY'));
+    -- Notificar alunos
     INSERT INTO exam_notifications (calendar_event_id, recipient_role, recipient_class_id, notification_type, message)
     VALUES (NEW.id, 'ALUNO', NEW.class_id, 'NEW_EXAM',
       'Prova agendada: ' || NEW.title || COALESCE(' - Disciplina: ' || subject_name_var, '') ||
@@ -812,6 +871,7 @@ BEGIN
 END;
 $$;
 
+-- Tickets: notificar ao receber mensagem
 CREATE OR REPLACE FUNCTION public.notify_ticket_message()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $$
 DECLARE
@@ -836,6 +896,7 @@ $$;
 
 -- ===================== TRIGGERS =====================
 
+-- Auto-update updated_at
 CREATE TRIGGER update_students_updated_at BEFORE UPDATE ON public.students
 FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
@@ -860,12 +921,14 @@ FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 CREATE TRIGGER update_calendar_events_updated_at BEFORE UPDATE ON public.calendar_events
 FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+-- Auto-gerar números
 CREATE TRIGGER generate_enrollment_number_trigger BEFORE INSERT ON public.student_enrollments
 FOR EACH ROW WHEN (NEW.enrollment_number IS NULL) EXECUTE FUNCTION public.generate_enrollment_number();
 
 CREATE TRIGGER generate_ticket_number_trigger BEFORE INSERT ON public.tickets
 FOR EACH ROW WHEN (NEW.ticket_number IS NULL) EXECUTE FUNCTION public.generate_ticket_number();
 
+-- Notificações automáticas
 CREATE TRIGGER notify_exam_created_trigger AFTER INSERT ON public.calendar_events
 FOR EACH ROW EXECUTE FUNCTION public.notify_exam_created();
 
