@@ -169,7 +169,7 @@ const AppRoutes = () => {
         path="/financeiro"
         element={
           <ProtectedRoute>
-            <Financial />
+            <FinancialRoute><Financial /></FinancialRoute>
           </ProtectedRoute>
         }
       />
