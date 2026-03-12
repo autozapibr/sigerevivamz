@@ -222,12 +222,12 @@ const AppRoutes = () => {
       <Route path="/configuracoes/integracoes" element={<ProtectedRoute><IntegracoesPage /></ProtectedRoute>} />
       <Route path="/configuracoes/sistema" element={<ProtectedRoute><SistemaPage /></ProtectedRoute>} />
       <Route path="/rh/utilizadores" element={<ProtectedRoute><UtilizadoresPage /></ProtectedRoute>} />
-      {/* Rotas de Gestão Financeira */}
+      {/* Rotas de Gestão Financeira - bloqueadas para ENCARREGADO e ALUNO */}
       <Route
         path="/financeiro/dashboard"
         element={
           <ProtectedRoute>
-            <FinancialDashboard />
+            <FinancialRoute><FinancialDashboard /></FinancialRoute>
           </ProtectedRoute>
         }
       />
@@ -235,7 +235,7 @@ const AppRoutes = () => {
         path="/financeiro/caixa"
         element={
           <ProtectedRoute>
-            <CaixaPage />
+            <FinancialRoute><CaixaPage /></FinancialRoute>
           </ProtectedRoute>
         }
       />
@@ -243,7 +243,7 @@ const AppRoutes = () => {
         path="/financeiro/propinas"
         element={
           <ProtectedRoute>
-            <PropinasPage />
+            <FinancialRoute><PropinasPage /></FinancialRoute>
           </ProtectedRoute>
         }
       />
@@ -251,7 +251,7 @@ const AppRoutes = () => {
         path="/financeiro/cobrancas"
         element={
           <ProtectedRoute>
-            <CobrancasPage />
+            <FinancialRoute><CobrancasPage /></FinancialRoute>
           </ProtectedRoute>
         }
       />
@@ -259,7 +259,7 @@ const AppRoutes = () => {
         path="/financeiro/relatorios"
         element={
           <ProtectedRoute>
-            <RelatoriosFinanceirosPage />
+            <FinancialRoute><RelatoriosFinanceirosPage /></FinancialRoute>
           </ProtectedRoute>
         }
       />
