@@ -249,6 +249,8 @@ export default function Dashboard() {
   const welcomeMessage = useMemo(() => getWelcomeMessage(user?.role), [user?.role]);
   const defaultTab = availableTabs[0]?.value || 'geral';
   const greeting = getTimeGreeting();
+  const [paymentProofOpen, setPaymentProofOpen] = useState(false);
+  const [paymentProofContext, setPaymentProofContext] = useState<{ student?: string; month?: string; amount?: number }>({});
 
   // Role-specific quick actions
   const quickActions = useMemo(() => {
