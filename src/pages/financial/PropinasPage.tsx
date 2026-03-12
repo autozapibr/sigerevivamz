@@ -131,13 +131,6 @@ function TuitionCard({ fee, onPay }: { fee: TuitionFee; onPay: (fee: TuitionFee)
 
 export default function PropinasPage() {
   const { user } = useAuth();
-  const navigateTo = useNavigate();
-
-  // Block parents and students from accessing this page
-  if (user?.role === 'ENCARREGADO' || user?.role === 'ALUNO') {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const { searchQuery: searchTerm, setPlaceholder } = useSearch();
