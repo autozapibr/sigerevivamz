@@ -258,7 +258,11 @@ export function AppSidebar() {
         )}
 
         {/* Navigation */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+        <div
+          ref={sidebarScrollRef}
+          onScroll={saveSidebarScroll}
+          className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
+        >
           <div className="space-y-2">
             {accessibleModules.map(([key, module]) => {
               const isOpen = openModules.includes(key) || isModuleActive(module.items);
