@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, GraduationCap, BookOpen, 
@@ -24,6 +24,7 @@ import {
 } from '@/components/dashboard/DashboardCharts';
 import { UserRole } from '@/types/auth';
 import StudentDashboard from '@/pages/dashboard/StudentDashboard';
+import { PaymentProofDialog } from '@/components/financial/PaymentProofDialog';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -248,6 +249,8 @@ export default function Dashboard() {
   const welcomeMessage = useMemo(() => getWelcomeMessage(user?.role), [user?.role]);
   const defaultTab = availableTabs[0]?.value || 'geral';
   const greeting = getTimeGreeting();
+  const [paymentProofOpen, setPaymentProofOpen] = useState(false);
+  const [paymentProofContext, setPaymentProofContext] = useState<{ student?: string; month?: string; amount?: number }>({});
 
   // Role-specific quick actions
   const quickActions = useMemo(() => {
@@ -1143,24 +1146,27 @@ export default function Dashboard() {
                       <Button 
                         variant="default" 
                         className="flex-1 gap-2"
-                        onClick={() => navigate('/financeiro/propinas')}
+                        onClick={() => {
+                          setPaymentProofContext({ student: 'João Carlos Mondlane', month: 'Março 2026', amount: 3500 });
+                          setPaymentProofOpen(true);
+                        }}
                       >
                         <CreditCard className="h-4 w-4" />
                         Pagar / Enviar Comprovativo
                       </Button>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      className="w-full mt-2 gap-2"
-                      onClick={() => navigate('/financeiro/propinas')}
-                    >
-                      Ver Histórico Completo
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Button>
                   </CardContent>
                 </Card>
               </motion.div>
             </div>
+
+            <PaymentProofDialog 
+              open={paymentProofOpen} 
+              onOpenChange={setPaymentProofOpen}
+              studentName={paymentProofContext.student}
+              month={paymentProofContext.month}
+              amount={paymentProofContext.amount}
+            />
           </TabsContent>
 
           {/* === TAB: ALUNO (Student Portal) === */}
