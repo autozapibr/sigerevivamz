@@ -128,7 +128,6 @@ function TuitionCard({ fee, onPay }: { fee: TuitionFee; onPay: (fee: TuitionFee)
 }
 
 export default function PropinasPage() {
-  const { user } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const { searchQuery: searchTerm, setPlaceholder } = useSearch();
@@ -151,11 +150,6 @@ export default function PropinasPage() {
   const { data: summary } = useFinancialSummary(selectedMonth);
   const payTuition = usePayTuition();
   const generateFees = useGenerateMonthlyFees();
-
-  // Block parents and students from accessing this page
-  if (user?.role === 'ENCARREGADO' || user?.role === 'ALUNO') {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   const handlePayment = () => {
     if (!paymentDialog.fee) return;
