@@ -25,7 +25,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ROLE_PERMISSIONS } from '@/types/auth';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 
@@ -111,6 +110,31 @@ export function AppSidebar() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [openModules, setOpenModules] = React.useState<string[]>(['gestao_escolar']);
+  const sidebarScrollRef = React.useRef<HTMLDivElement | null>(null);
+
+  const saveSidebarScroll = React.useCallback(() => {
+    if (typeof window === 'undefined' || !sidebarScrollRef.current) return;
+    sessionStorage.setItem('siger_sidebar_scroll_top', String(sidebarScrollRef.current.scrollTop));
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const savedScrollTop = sessionStorage.getItem('siger_sidebar_scroll_top');
+    if (!savedScrollTop) return;
+
+    requestAnimationFrame(() => {
+      if (sidebarScrollRef.current) {
+        sidebarScrollRef.current.scrollTop = Number(savedScrollTop);
+      }
+    });
+  }, [location.pathname]);
+
+  React.useEffect(() => {
+    return () => {
+      saveSidebarScroll();
+    };
+  }, [saveSidebarScroll]);
 
   const hasPermission = (permission: string) => {
     if (!user) return false;
@@ -233,7 +257,11 @@ export function AppSidebar() {
         )}
 
         {/* Navigation */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+        <div
+          ref={sidebarScrollRef}
+          onScroll={saveSidebarScroll}
+          className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
+        >
           <div className="space-y-2">
             {accessibleModules.map(([key, module]) => {
               const isOpen = openModules.includes(key) || isModuleActive(module.items);
