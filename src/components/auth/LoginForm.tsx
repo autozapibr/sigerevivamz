@@ -128,7 +128,7 @@ export function LoginForm() {
 
       {/* Right Panel - Login Form */}
       <motion.div 
-        className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-background relative"
+        className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 md:p-12 bg-background relative"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
@@ -145,16 +145,16 @@ export function LoginForm() {
         </Button>
 
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
+          {/* Mobile/Tablet Logo */}
           <motion.div 
-            className="lg:hidden flex flex-col items-start gap-3 mb-8 px-4"
+            className="lg:hidden flex flex-col items-start gap-2 mb-6 sm:mb-8"
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
           >
-            <img src={logoReviva} alt="Escola Reviva" className="w-28 h-18 sm:w-32 sm:h-20 object-contain" />
-            <div className="text-left">
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">SiGER</h1>
-              <p className="text-xs sm:text-sm text-muted-foreground">Sistema de Gestão Escolar Reviva</p>
+            <img src={logoReviva} alt="Escola Reviva" className="w-36 h-auto sm:w-44 md:w-48 object-contain" />
+            <div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-tight">SiGER</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">Sistema de Gestão Escolar Reviva</p>
             </div>
           </motion.div>
 
@@ -163,8 +163,8 @@ export function LoginForm() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <h2 className="text-2xl font-bold text-foreground mb-2">Bem-vindo de volta</h2>
-            <p className="text-muted-foreground mb-8">Entre na sua conta para continuar</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-1 sm:mb-2">Bem-vindo de volta</h2>
+            <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">Entre na sua conta para continuar</p>
           </motion.div>
 
           {/* Login Form */}
