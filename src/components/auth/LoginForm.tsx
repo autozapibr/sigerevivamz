@@ -76,11 +76,11 @@ export function LoginForm() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            <div className="flex items-center gap-4 mb-8">
-              <img src={logoReviva} alt="Escola Reviva" className="w-24 h-24 object-contain" />
-              <div>
-                <h1 className="text-3xl font-bold">SiGER</h1>
-                <p className="text-white/70 text-sm">Sistema de Gestão Escolar</p>
+            <div className="flex flex-col items-center gap-4 mb-8">
+              <img src={logoReviva} alt="Escola Reviva" className="w-32 h-32 object-contain" />
+              <div className="text-center">
+                <h1 className="text-4xl font-bold mb-1">SiGER</h1>
+                <p className="text-white/80 text-base">Sistema de Gestão Escolar Reviva</p>
               </div>
             </div>
 
@@ -147,14 +147,14 @@ export function LoginForm() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <motion.div 
-            className="lg:hidden flex items-center justify-center gap-3 mb-8"
+            className="lg:hidden flex flex-col items-center gap-3 mb-8"
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
           >
-            <img src={logoReviva} alt="Escola Reviva" className="w-16 h-16 object-contain" />
-            <div>
+            <img src={logoReviva} alt="Escola Reviva" className="w-20 h-20 object-contain" />
+            <div className="text-center">
               <h1 className="text-2xl font-bold text-foreground">SiGER</h1>
-              <p className="text-xs text-muted-foreground">Gestão Escolar</p>
+              <p className="text-sm text-muted-foreground">Sistema de Gestão Escolar Reviva</p>
             </div>
           </motion.div>
 
