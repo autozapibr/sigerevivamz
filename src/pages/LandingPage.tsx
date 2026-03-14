@@ -11,6 +11,7 @@ import heroImage from '@/assets/hero-kids.jpg';
 import classroomImage from '@/assets/kids-classroom.jpg';
 import learningImage from '@/assets/kids-learning.jpg';
 import aepLogo from '@/assets/aep-logo.png';
+import sigerLogo from '@/assets/siger-logo-transparent.png';
 
 const features = [
 { icon: Users, title: 'Gestão de Educandos', desc: 'Cadastro completo, histórico académico, documentos e acompanhamento individualizado.' },
