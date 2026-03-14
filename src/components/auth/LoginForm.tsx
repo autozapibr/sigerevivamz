@@ -151,7 +151,7 @@ export function LoginForm() {
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
           >
-            <img src={logoReviva} alt="Escola Reviva" className="w-24 h-16 object-contain" />
+            <img src={logoReviva} alt="Escola Reviva" className="w-32 h-20 object-contain" />
             <div className="text-left">
               <h1 className="text-2xl font-bold text-foreground">SiGER</h1>
               <p className="text-sm text-muted-foreground">Sistema de Gestão Escolar Reviva</p>
