@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useTheme } from '@/hooks/useTheme';
+import logoReviva from '@/assets/escola-reviva-logo.png';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -76,9 +77,7 @@ export function LoginForm() {
             transition={{ delay: 0.3, duration: 0.6 }}
           >
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                <GraduationCap className="w-9 h-9 text-white" />
-              </div>
+              <img src={logoReviva} alt="Escola Reviva" className="w-16 h-16 object-contain" />
               <div>
                 <h1 className="text-3xl font-bold">SiGER</h1>
                 <p className="text-white/70 text-sm">Sistema de Gestão Escolar</p>
@@ -152,9 +151,7 @@ export function LoginForm() {
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
           >
-            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-primary-foreground" />
-            </div>
+            <img src={logoReviva} alt="Escola Reviva" className="w-12 h-12 object-contain" />
             <div>
               <h1 className="text-2xl font-bold text-foreground">SiGER</h1>
               <p className="text-xs text-muted-foreground">Gestão Escolar</p>
