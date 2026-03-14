@@ -49,7 +49,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between py-[16px]">
           <div className="flex items-center gap-3">
-            <img alt="Escola Reviva" className="h-10 sm:h-12 w-auto object-fill" src="/lovable-uploads/aaabc505-1d60-440a-a817-294ee071ab52.png" />
+            <img alt="Escola Reviva" className="h-10 sm:h-12 w-auto object-fill" src={sigerLogo} />
             <div className="hidden sm:block">
               <span className="font-bold text-primary text-lg">SiGER</span>
               <p className="text-muted-foreground leading-tight text-sm">Sistema de Gestão Escolar</p>
