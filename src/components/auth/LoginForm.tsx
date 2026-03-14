@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useTheme } from '@/hooks/useTheme';
+import logoReviva from '@/assets/escola-reviva-logo.png';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
