@@ -6,7 +6,7 @@ import {
   Calendar, Shield, Bell, ArrowRight, CheckCircle2, Sun, Moon } from
 'lucide-react';
 import { Button } from '@/components/ui/button';
-import logoReviva from '@/assets/escola-reviva-logo.webp';
+import logoReviva from '@/assets/escola-reviva-logo.png';
 import heroImage from '@/assets/hero-kids.jpg';
 import classroomImage from '@/assets/kids-classroom.jpg';
 import learningImage from '@/assets/kids-learning.jpg';
