@@ -77,7 +77,7 @@ export function LoginForm() {
             transition={{ delay: 0.3, duration: 0.6 }}
           >
             <div className="flex items-center gap-4 mb-8">
-              <img src={logoReviva} alt="Escola Reviva" className="w-16 h-16 object-contain" />
+              <img src={logoReviva} alt="Escola Reviva" className="w-24 h-24 object-contain" />
               <div>
                 <h1 className="text-3xl font-bold">SiGER</h1>
                 <p className="text-white/70 text-sm">Sistema de Gestão Escolar</p>
