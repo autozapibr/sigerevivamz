@@ -151,9 +151,7 @@ export function LoginForm() {
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
           >
-            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-primary-foreground" />
-            </div>
+            <img src={logoReviva} alt="Escola Reviva" className="w-12 h-12 object-contain" />
             <div>
               <h1 className="text-2xl font-bold text-foreground">SiGER</h1>
               <p className="text-xs text-muted-foreground">Gestão Escolar</p>
