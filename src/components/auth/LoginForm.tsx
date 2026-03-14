@@ -77,10 +77,10 @@ export function LoginForm() {
             transition={{ delay: 0.3, duration: 0.6 }}
           >
             <div className="flex flex-col items-start gap-4 mb-8">
-              <img src={logoReviva} alt="Escola Reviva" className="w-40 h-24 object-contain" />
+              <img src={logoReviva} alt="Escola Reviva" className="w-32 h-20 sm:w-36 sm:h-22 md:w-40 md:h-24 object-contain" />
               <div className="text-left">
-                <h1 className="text-4xl font-bold mb-1">SiGER</h1>
-                <p className="text-white/80 text-base">Sistema de Gestão Escolar Reviva</p>
+                <h1 className="text-3xl sm:text-4xl font-bold mb-1">SiGER</h1>
+                <p className="text-white/80 text-sm sm:text-base">Sistema de Gestão Escolar Reviva</p>
               </div>
             </div>
 
