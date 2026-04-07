@@ -1304,6 +1304,33 @@ export type Database = {
         }
         Relationships: []
       }
+      role_module_access: {
+        Row: {
+          id: number
+          is_enabled: boolean
+          module_key: string
+          role: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: never
+          is_enabled?: boolean
+          module_key: string
+          role: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: never
+          is_enabled?: boolean
+          module_key?: string
+          role?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       scheduled_reminders: {
         Row: {
           agreement_id: number | null
