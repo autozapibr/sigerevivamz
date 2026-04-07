@@ -88,6 +88,7 @@ const configModule = {
   label: 'Configurações',
   icon: Settings,
   items: [
+    { title: 'Perfis e Utilizadores', url: '/configuracoes/perfis-utilizadores', icon: Users },
     { title: 'Aparência', url: '/configuracoes/aparencia', icon: Palette },
     { title: 'Perfil & Região', url: '/configuracoes/perfil', icon: User },
     { title: 'Notificações', url: '/configuracoes/notificacoes', icon: Bell },
