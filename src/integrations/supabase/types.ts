@@ -2360,6 +2360,8 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      supaon_cleanup_if_due: { Args: never; Returns: undefined }
+      supaon_insert_next: { Args: never; Returns: undefined }
       validate_invitation: {
         Args: { _token: string }
         Returns: {
