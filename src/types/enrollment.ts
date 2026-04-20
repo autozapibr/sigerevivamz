@@ -134,7 +134,9 @@ export interface EnrollmentFormData {
     bi_number?: string;
     nuit?: string;
     phone: string;
+    phone_is_whatsapp?: boolean;
     phone_alt?: string;
+    phone_alt_is_whatsapp?: boolean;
     email?: string;
     occupation?: string;
     workplace?: string;

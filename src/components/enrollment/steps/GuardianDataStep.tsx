@@ -87,6 +87,11 @@ export function GuardianDataStep({ form }: GuardianDataStepProps) {
                     mask="PHONE"
                     value={field.value || ''}
                     onChange={field.onChange}
+                    showWhatsappToggle
+                    isWhatsapp={form.watch('guardian.phone_is_whatsapp') ?? true}
+                    onWhatsappChange={(checked) =>
+                      form.setValue('guardian.phone_is_whatsapp', checked)
+                    }
                   />
                 </FormControl>
                 <FormMessage />
@@ -106,6 +111,11 @@ export function GuardianDataStep({ form }: GuardianDataStepProps) {
                     mask="PHONE"
                     value={field.value || ''}
                     onChange={field.onChange}
+                    showWhatsappToggle
+                    isWhatsapp={form.watch('guardian.phone_alt_is_whatsapp') ?? false}
+                    onWhatsappChange={(checked) =>
+                      form.setValue('guardian.phone_alt_is_whatsapp', checked)
+                    }
                   />
                 </FormControl>
                 <FormMessage />
@@ -147,13 +157,13 @@ export function GuardianDataStep({ form }: GuardianDataStepProps) {
             )}
           />
           
-          {/* NUIT */}
+          {/* NUIT / Outro Documento */}
           <FormField
             control={form.control}
             name="guardian.nuit"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>NUIT</FormLabel>
+                <FormLabel>NUIT / Outro Documento</FormLabel>
                 <FormControl>
                   <MozambiqueInput
                     mask="NUIT"
