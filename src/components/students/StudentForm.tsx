@@ -39,7 +39,9 @@ export interface StudentFormData {
   guardian_bi: string;
   guardian_nuit: string;
   guardian_phone: string;
+  guardian_phone_is_whatsapp: boolean;
   guardian_phone_alt: string;
+  guardian_phone_alt_is_whatsapp: boolean;
   guardian_email: string;
   guardian_occupation: string;
   guardian_workplace: string;
@@ -81,7 +83,9 @@ export const initialStudentFormData: StudentFormData = {
   guardian_bi: '',
   guardian_nuit: '',
   guardian_phone: '',
+  guardian_phone_is_whatsapp: true,
   guardian_phone_alt: '',
+  guardian_phone_alt_is_whatsapp: false,
   guardian_email: '',
   guardian_occupation: '',
   guardian_workplace: '',
@@ -183,7 +187,7 @@ export function StudentForm({ formData, onChange, classes, isEdit }: StudentForm
             onChange={(v) => onChange({ ...formData, bi_number: v })}
           />
           <MozambiqueInput
-            label="NUIT"
+            label="NUIT / Outro Documento"
             mask="NUIT"
             value={formData.nuit}
             onChange={(v) => onChange({ ...formData, nuit: v })}
@@ -290,7 +294,7 @@ export function StudentForm({ formData, onChange, classes, isEdit }: StudentForm
             onChange={(v) => onChange({ ...formData, guardian_bi: v })}
           />
           <MozambiqueInput
-            label="NUIT do Encarregado"
+            label="NUIT / Outro Documento do Encarregado"
             mask="NUIT"
             value={formData.guardian_nuit}
             onChange={(v) => onChange({ ...formData, guardian_nuit: v })}
@@ -308,12 +312,18 @@ export function StudentForm({ formData, onChange, classes, isEdit }: StudentForm
             mask="PHONE"
             value={formData.guardian_phone}
             onChange={(v) => onChange({ ...formData, guardian_phone: v })}
+            showWhatsappToggle
+            isWhatsapp={formData.guardian_phone_is_whatsapp}
+            onWhatsappChange={(checked) => onChange({ ...formData, guardian_phone_is_whatsapp: checked })}
           />
           <MozambiqueInput
             label="Telefone Alternativo"
             mask="PHONE"
             value={formData.guardian_phone_alt}
             onChange={(v) => onChange({ ...formData, guardian_phone_alt: v })}
+            showWhatsappToggle
+            isWhatsapp={formData.guardian_phone_alt_is_whatsapp}
+            onWhatsappChange={(checked) => onChange({ ...formData, guardian_phone_alt_is_whatsapp: checked })}
           />
         </div>
 
