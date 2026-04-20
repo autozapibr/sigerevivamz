@@ -25,8 +25,9 @@ export function ProvinceSelector({
   const districts = selectedProvince ? DISTRICTS_BY_PROVINCE[selectedProvince] : [];
 
   const handleProvinceChange = (value: string) => {
+    // Parents are responsible for resetting the district when province changes
+    // (calling onDistrictChange here would use stale formData and revert the province).
     onProvinceChange(value as Province);
-    onDistrictChange(''); // Reset district when province changes
   };
 
   return (
