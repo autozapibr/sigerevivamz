@@ -558,6 +558,12 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
                 Dinheiro Móvel (M-Pesa, e-Mola, m-Kesh)
               </Label>
             </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="cash" id="payment-cash" />
+              <Label htmlFor="payment-cash" className="font-normal cursor-pointer">
+                Numerário (Dinheiro/Cash)
+              </Label>
+            </div>
           </RadioGroup>
         </div>
 
