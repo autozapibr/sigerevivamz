@@ -110,13 +110,13 @@ export function StudentDataStep({ form }: StudentDataStepProps) {
             )}
           />
           
-          {/* NUIT */}
+          {/* NUIT / Outro Documento */}
           <FormField
             control={form.control}
             name="nuit"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>NUIT</FormLabel>
+                <FormLabel>NUIT / Outro Documento</FormLabel>
                 <FormControl>
                   <MozambiqueInput
                     mask="NUIT"

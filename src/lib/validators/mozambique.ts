@@ -19,17 +19,14 @@ export const PATTERNS = {
 
 // Máscaras de formatação
 export const MASKS = {
+  // BI agora aceita letras e números (livre, até 20 caracteres)
   BI: (value: string): string => {
-    const numbers = value.replace(/\D/g, '').slice(0, 13);
-    if (numbers.length <= 5) return numbers;
-    if (numbers.length <= 10) return `${numbers.slice(0, 5)} ${numbers.slice(5)}`;
-    return `${numbers.slice(0, 5)} ${numbers.slice(5, 10)} ${numbers.slice(10)}`;
+    return value.replace(/[^0-9A-Za-z\s]/g, '').toUpperCase().slice(0, 20);
   },
 
+  // NUIT / Outro Documento: livre alfanumérico, facultativo
   NUIT: (value: string): string => {
-    const alphanumeric = value.replace(/[^0-9A-Z]/gi, '').toUpperCase().slice(0, 10);
-    if (alphanumeric.length <= 9) return alphanumeric;
-    return `${alphanumeric.slice(0, 9)}${alphanumeric.slice(9)}`;
+    return value.replace(/[^0-9A-Za-z\s\-\/]/g, '').toUpperCase().slice(0, 20);
   },
 
   PHONE: (value: string): string => {
@@ -56,13 +53,13 @@ export const MASKS = {
 // Validadores Zod customizados
 export const biValidator = z
   .string()
-  .regex(PATTERNS.BI, 'Formato de BI inválido. Use: ##### ##### ###')
+  .max(20, 'BI deve ter no máximo 20 caracteres')
   .optional()
   .or(z.literal(''));
 
 export const nuitValidator = z
   .string()
-  .regex(PATTERNS.NUIT, 'Formato de NUIT inválido. Use: #########X')
+  .max(20, 'NUIT/Documento deve ter no máximo 20 caracteres')
   .optional()
   .or(z.literal(''));
 

@@ -316,7 +316,7 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
             onChange={(value) => onChange({ ...formData, bi_number: value })}
           />
           <MozambiqueInput
-            label="NUIT"
+            label="NUIT / Outro Documento"
             mask="NUIT"
             value={formData.nuit}
             onChange={(value) => onChange({ ...formData, nuit: value })}
