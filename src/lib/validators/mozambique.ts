@@ -53,13 +53,13 @@ export const MASKS = {
 // Validadores Zod customizados
 export const biValidator = z
   .string()
-  .regex(PATTERNS.BI, 'Formato de BI inválido. Use: ##### ##### ###')
+  .max(20, 'BI deve ter no máximo 20 caracteres')
   .optional()
   .or(z.literal(''));
 
 export const nuitValidator = z
   .string()
-  .regex(PATTERNS.NUIT, 'Formato de NUIT inválido. Use: #########X')
+  .max(20, 'NUIT/Documento deve ter no máximo 20 caracteres')
   .optional()
   .or(z.literal(''));
 
