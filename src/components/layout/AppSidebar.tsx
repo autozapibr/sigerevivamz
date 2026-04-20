@@ -76,7 +76,6 @@ const systemModules = {
     items: [
       { title: 'Professores', url: '/teachers', icon: UserCheck },
       { title: 'Colaboradores', url: '/colaboradores', icon: UsersRound },
-      { title: 'Utilizadores', url: '/rh/utilizadores', icon: Users },
       { title: 'Documentação', url: '/rh/documentacao', icon: FileCheck },
       { title: 'Contratos', url: '/rh/contratos', icon: Briefcase },
     ],
