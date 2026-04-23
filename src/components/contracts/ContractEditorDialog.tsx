@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -517,12 +518,11 @@ export function ContractEditorDialog({
                           />
                         </div>
                         <div>
-                          <Label className="text-xs">Salário (MZN)</Label>
-                          <Input
-                            value={editableFields.salario}
-                            onChange={(e) => handleFieldChange('salario', e.target.value)}
-                            placeholder="0.00"
-                            type="number"
+                          <CurrencyInput
+                            label="Salário (MZN)"
+                            value={editableFields.salario || ''}
+                            onChange={(val) => handleFieldChange('salario', val)}
+                            placeholder="0,00"
                           />
                         </div>
                         <div>
