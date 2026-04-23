@@ -223,7 +223,7 @@ export function StudentForm({ formData, onChange, classes, isEdit }: StudentForm
         />
 
         <ProvinceSelector
-          selectedProvince={formData.province as any}
+          selectedProvince={formData.province}
           selectedDistrict={formData.district}
           onProvinceChange={(v) => onChange({ ...formData, province: v, district: '' })}
           onDistrictChange={(v) => onChange({ ...formData, district: v })}
@@ -351,7 +351,7 @@ export function StudentForm({ formData, onChange, classes, isEdit }: StudentForm
         <p className="text-sm font-medium text-muted-foreground">Endereço do Encarregado</p>
 
         <ProvinceSelector
-          selectedProvince={formData.guardian_province as any}
+          selectedProvince={formData.guardian_province}
           selectedDistrict={formData.guardian_district}
           onProvinceChange={(v) => onChange({ ...formData, guardian_province: v, guardian_district: '' })}
           onDistrictChange={(v) => onChange({ ...formData, guardian_district: v })}

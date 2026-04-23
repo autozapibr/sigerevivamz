@@ -348,7 +348,7 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
 
         {/* Province & District */}
         <ProvinceSelector
-          selectedProvince={formData.province as any}
+          selectedProvince={formData.province}
           selectedDistrict={formData.district}
           onProvinceChange={(v) => onChange({ ...formData, province: v, district: '' })}
           onDistrictChange={(v) => onChange({ ...formData, district: v })}
