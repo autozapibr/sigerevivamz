@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -574,13 +575,10 @@ export default function PropinasPage() {
             </div>
 
             <div>
-              <Label htmlFor="default-amount">Valor Padrão (MZN)</Label>
-              <Input
-                id="default-amount"
-                type="number"
+              <CurrencyInput
+                label="Valor Padrão (MZN)"
                 value={defaultAmount}
-                onChange={(e) => setDefaultAmount(e.target.value)}
-                className="mt-1.5"
+                onChange={(val) => setDefaultAmount(val)}
               />
               <p className="text-xs text-muted-foreground mt-1">
                 Este valor será aplicado a todos os educandos sem valor definido
