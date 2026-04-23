@@ -11,6 +11,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import {
   Select,
   SelectContent,
@@ -102,20 +103,12 @@ export function ClassFeeStep({ form }: ClassFeeStepProps) {
               <FormItem>
                 <FormLabel>Taxa de Matrícula (MZN)</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      MT
-                    </span>
-                    <Input
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      className="pl-10"
-                      placeholder="0.00"
-                      {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
+                  <CurrencyInput
+                    label=""
+                    value={field.value ?? ''}
+                    onChange={(val) => field.onChange(parseFloat(val) || 0)}
+                    placeholder="0,00"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -130,20 +123,12 @@ export function ClassFeeStep({ form }: ClassFeeStepProps) {
               <FormItem>
                 <FormLabel>Propina Mensal (MZN)</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      MT
-                    </span>
-                    <Input
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      className="pl-10"
-                      placeholder="0.00"
-                      {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
+                  <CurrencyInput
+                    label=""
+                    value={field.value ?? ''}
+                    onChange={(val) => field.onChange(parseFloat(val) || 0)}
+                    placeholder="0,00"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
