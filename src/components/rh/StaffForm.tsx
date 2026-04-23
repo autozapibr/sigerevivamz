@@ -3,6 +3,7 @@ import { Camera, Upload, X, User, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -527,13 +528,11 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
       <TabsContent value="financial" className="space-y-4">
         {/* Salary */}
         <div className="space-y-2">
-          <Label htmlFor="salary">Salário (MZN)</Label>
-          <Input
-            id="salary"
-            type="number"
-            placeholder="0.00"
+          <CurrencyInput
+            label="Salário (MZN)"
             value={formData.salary}
-            onChange={(e) => onChange({ ...formData, salary: e.target.value })}
+            onChange={(val) => onChange({ ...formData, salary: val })}
+            placeholder="0,00"
           />
         </div>
 
