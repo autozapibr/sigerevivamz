@@ -100,7 +100,11 @@ export function FinancialForm({ open, onOpenChange, onSubmit, isLoading }: Finan
                   <FormItem>
                     <FormLabel>Valor (MZN)</FormLabel>
                     <FormControl>
-                      <CurrencyInput {...field} />
+                      <CurrencyInput
+                        label=""
+                        value={field.value ?? ''}
+                        onChange={(val) => field.onChange(val)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

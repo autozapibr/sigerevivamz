@@ -18,8 +18,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MozambiqueInput } from '@/components/shared/MozambiqueInput';
-import { ProvinceSelector } from '@/components/shared/ProvinceSelector';
-import { PROVINCES, DISTRICTS_BY_PROVINCE, type Province } from '@/lib/validators/mozambique';
 import type { EnrollmentFormData } from '@/types/enrollment';
 
 interface StudentDataStepProps {
@@ -27,9 +25,6 @@ interface StudentDataStepProps {
 }
 
 export function StudentDataStep({ form }: StudentDataStepProps) {
-  const selectedProvince = form.watch('province') as Province;
-  const districts = selectedProvince ? DISTRICTS_BY_PROVINCE[selectedProvince] || [] : [];
-  
   return (
     <Form {...form}>
       <div className="space-y-6">
@@ -185,26 +180,9 @@ export function StudentDataStep({ form }: StudentDataStepProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Província *</FormLabel>
-                <Select 
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    form.setValue('district', '');
-                  }} 
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione a província" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {PROVINCES.map(province => (
-                      <SelectItem key={province} value={province}>
-                        {province}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <Input placeholder="Ex: Nampula" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -217,26 +195,9 @@ export function StudentDataStep({ form }: StudentDataStepProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Distrito *</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  value={field.value}
-                  disabled={!selectedProvince}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder={
-                        selectedProvince ? "Seleccione o distrito" : "Seleccione primeiro a província"
-                      } />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {districts.map(district => (
-                      <SelectItem key={district} value={district}>
-                        {district}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <Input placeholder="Ex: Cidade de Nampula" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
