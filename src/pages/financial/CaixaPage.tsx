@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -500,14 +501,11 @@ export default function CaixaPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                <Label htmlFor="amount">Valor (MZN)</Label>
-                <Input
-                  id="amount"
-                  type="number"
+                <CurrencyInput
+                  label="Valor (MZN)"
                   value={formData.amount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
-                  placeholder="0.00"
-                  className="mt-1.5"
+                  onChange={(val) => setFormData(prev => ({ ...prev, amount: val }))}
+                  placeholder="0,00"
                 />
               </div>
 
