@@ -12,50 +12,108 @@ interface CurrencyInputProps {
   placeholder?: string;
 }
 
+/**
+ * Extrai apenas dígitos e vírgula de uma string,
+ * retornando o valor numérico normalizado (ponto decimal) para o banco.
+ * Formato de exibição: padrão moçambicano (1.234,56)
+ */
+function parseToRaw(display: string): string {
+  // Remove tudo excepto dígitos e vírgula
+  const clean = display.replace(/[^\d,]/g, '');
+  // Separa parte inteira e decimal pela vírgula
+  const parts = clean.split(',');
+  const intPart = parts[0] || '0';
+  const decPart = parts.length > 1 ? parts[1].slice(0, 2) : '';
+  if (!decPart) return intPart;
+  return `${intPart}.${decPart}`;
+}
+
+function formatDisplay(raw: string): string {
+  // raw is the user's typed digits + optional comma
+  // Remove tudo excepto dígitos e vírgula
+  let clean = raw.replace(/[^\d,]/g, '');
+
+  // Permitir apenas uma vírgula
+  const commaIdx = clean.indexOf(',');
+  if (commaIdx !== -1) {
+    const before = clean.slice(0, commaIdx).replace(/,/g, '');
+    const after = clean.slice(commaIdx + 1).replace(/,/g, '').slice(0, 2);
+    clean = before + ',' + after;
+  }
+
+  // Separar inteira e decimal
+  const parts = clean.split(',');
+  let intPart = parts[0].replace(/^0+(?=\d)/, '') || '0';
+
+  // Adicionar pontos de milhar
+  intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+  if (parts.length > 1) {
+    return intPart + ',' + parts[1];
+  }
+  return intPart;
+}
+
 export function CurrencyInput({
   label = 'Valor',
   value,
   onChange,
   error,
   disabled = false,
-  placeholder = '0.00',
+  placeholder = '0,00',
 }: CurrencyInputProps) {
-  const [displayValue, setDisplayValue] = React.useState(String(value || ''));
+  const [displayValue, setDisplayValue] = React.useState('');
+  const [isFocused, setIsFocused] = React.useState(false);
 
+  // Sync from external value when not focused
   React.useEffect(() => {
-    setDisplayValue(String(value || ''));
-  }, [value]);
+    if (isFocused) return;
+    const num = parseFloat(String(value));
+    if (!isNaN(num) && num > 0) {
+      // Convert 1234.56 -> "1.234,56"
+      const [intStr, decStr] = num.toFixed(2).split('.');
+      const intFormatted = intStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      setDisplayValue(intFormatted + ',' + decStr);
+    } else if (String(value) === '' || String(value) === '0') {
+      setDisplayValue('');
+    }
+  }, [value, isFocused]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    
-    // Allow only numbers and decimal point
-    const sanitized = inputValue.replace(/[^\d.]/g, '');
-    
-    // Prevent multiple decimal points
-    const parts = sanitized.split('.');
-    const formatted = parts.length > 2 
-      ? `${parts[0]}.${parts.slice(1).join('')}`
-      : sanitized;
-    
+    const raw = e.target.value;
+    const formatted = formatDisplay(raw);
     setDisplayValue(formatted);
-    onChange(formatted);
+
+    // Enviar valor normalizado (ponto decimal) para o form
+    const normalized = parseToRaw(raw);
+    onChange(normalized);
   };
 
+  const handleFocus = () => setIsFocused(true);
+
   const handleBlur = () => {
-    const numValue = parseFloat(String(value));
-    if (!isNaN(numValue) && numValue > 0) {
-      setDisplayValue(numValue.toFixed(2));
+    setIsFocused(false);
+    const num = parseFloat(parseToRaw(displayValue));
+    if (!isNaN(num) && num > 0) {
+      const [intStr, decStr] = num.toFixed(2).split('.');
+      const intFormatted = intStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      setDisplayValue(intFormatted + ',' + decStr);
+      onChange(num.toFixed(2));
+    } else {
+      setDisplayValue('');
+      onChange('');
     }
   };
+
+  const numericValue = parseFloat(String(value));
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <Label>{label}</Label>
-        {parseFloat(String(value)) > 0 && (
+        {!isNaN(numericValue) && numericValue > 0 && (
           <span className="text-sm font-semibold text-green-600">
-            {formatMZN(parseFloat(String(value)))}
+            {formatMZN(numericValue)}
           </span>
         )}
       </div>
@@ -66,8 +124,10 @@ export function CurrencyInput({
         </span>
         <Input
           type="text"
+          inputMode="decimal"
           value={displayValue}
           onChange={handleChange}
+          onFocus={handleFocus}
           onBlur={handleBlur}
           disabled={disabled}
           placeholder={placeholder}
