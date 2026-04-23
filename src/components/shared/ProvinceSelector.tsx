@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PROVINCES, DISTRICTS_BY_PROVINCE, Province } from '@/lib/validators/mozambique';
+import { Input } from '@/components/ui/input';
 
 interface ProvinceSelectorProps {
-  selectedProvince: Province | '';
+  selectedProvince: string;
   selectedDistrict: string;
-  onProvinceChange: (province: Province) => void;
+  onProvinceChange: (province: string) => void;
   onDistrictChange: (district: string) => void;
   provinceLabel?: string;
   districtLabel?: string;
@@ -22,14 +21,6 @@ export function ProvinceSelector({
   districtLabel = 'Distrito',
   required = false,
 }: ProvinceSelectorProps) {
-  const districts = selectedProvince ? DISTRICTS_BY_PROVINCE[selectedProvince] : [];
-
-  const handleProvinceChange = (value: string) => {
-    // Parents are responsible for resetting the district when province changes
-    // (calling onDistrictChange here would use stale formData and revert the province).
-    onProvinceChange(value as Province);
-  };
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-2">
@@ -37,18 +28,11 @@ export function ProvinceSelector({
           {provinceLabel}
           {required && <span className="text-destructive ml-1">*</span>}
         </Label>
-        <Select value={selectedProvince} onValueChange={handleProvinceChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Seleccionar província" />
-          </SelectTrigger>
-          <SelectContent>
-            {PROVINCES.map((province) => (
-              <SelectItem key={province} value={province}>
-                {province}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Input
+          placeholder="Ex: Nampula"
+          value={selectedProvince}
+          onChange={(e) => onProvinceChange(e.target.value)}
+        />
       </div>
 
       <div className="space-y-2">
@@ -56,22 +40,11 @@ export function ProvinceSelector({
           {districtLabel}
           {required && <span className="text-destructive ml-1">*</span>}
         </Label>
-        <Select
+        <Input
+          placeholder="Ex: Cidade de Nampula"
           value={selectedDistrict}
-          onValueChange={onDistrictChange}
-          disabled={!selectedProvince}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={selectedProvince ? "Seleccionar distrito" : "Primeiro seleccione a província"} />
-          </SelectTrigger>
-          <SelectContent>
-            {districts.map((district) => (
-              <SelectItem key={district} value={district}>
-                {district}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onChange={(e) => onDistrictChange(e.target.value)}
+        />
       </div>
     </div>
   );

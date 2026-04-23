@@ -17,7 +17,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MozambiqueInput } from '@/components/shared/MozambiqueInput';
-import { PROVINCES, DISTRICTS_BY_PROVINCE, type Province } from '@/lib/validators/mozambique';
 import { RELATIONSHIP_OPTIONS, type EnrollmentFormData } from '@/types/enrollment';
 
 interface GuardianDataStepProps {
@@ -25,9 +24,6 @@ interface GuardianDataStepProps {
 }
 
 export function GuardianDataStep({ form }: GuardianDataStepProps) {
-  const selectedProvince = form.watch('guardian.province') as Province | undefined;
-  const districts = selectedProvince ? DISTRICTS_BY_PROVINCE[selectedProvince] || [] : [];
-  
   return (
     <Form {...form}>
       <div className="space-y-6">
