@@ -37,9 +37,10 @@ body {
 .page-header-meta { display: flex; gap: 18px; font-size: 10px; color: hsl(20 14.3% 18%); margin-top: 6px; padding-top: 5px; }
 .page-header-meta strong { font-weight: 600; }
 h1 { display: none; }
-h2 { font-size: 13px; font-weight: 700; color: hsl(140 37% 28%); margin: 20px 0 8px; border-bottom: 1.5px solid hsl(140 37% 28% / 0.3); padding-bottom: 4px; page-break-after: avoid; }
-h3 { font-size: 13px; font-weight: 600; color: hsl(140 25% 39%); margin: 16px 0 6px; page-break-after: avoid; }
-h4 { font-size: 12px; font-weight: 600; color: hsl(20 14.3% 12%); margin: 12px 0 5px; page-break-after: avoid; }
+* { orphans: 3; widows: 3; }
+h2 { font-size: 13px; font-weight: 700; color: hsl(140 37% 28%); margin: 20px 0 8px; border-bottom: 1.5px solid hsl(140 37% 28% / 0.3); padding-bottom: 4px; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
+h3 { font-size: 13px; font-weight: 600; color: hsl(140 25% 39%); margin: 16px 0 6px; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
+h4 { font-size: 12px; font-weight: 600; color: hsl(20 14.3% 12%); margin: 12px 0 5px; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
 p, li { font-size: 12px; }
 p { margin: 6px 0; }
 ul, ol { padding-left: 22px; margin: 6px 0; }
