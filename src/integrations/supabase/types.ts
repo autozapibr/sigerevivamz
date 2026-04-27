@@ -1304,6 +1304,54 @@ export type Database = {
         }
         Relationships: []
       }
+      roadmap_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          display_order: number
+          done_at: string | null
+          done_by: string | null
+          id: string
+          is_done: boolean
+          notes: string | null
+          phase: string
+          priority: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          done_at?: string | null
+          done_by?: string | null
+          id: string
+          is_done?: boolean
+          notes?: string | null
+          phase: string
+          priority?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          done_at?: string | null
+          done_by?: string | null
+          id?: string
+          is_done?: boolean
+          notes?: string | null
+          phase?: string
+          priority?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       role_module_access: {
         Row: {
           id: number

@@ -8,6 +8,7 @@ import {
   CalendarDays, ChartBar, BookMarked, NotebookPen, FileSpreadsheet,
   FileCheck, Briefcase, ChevronRight, MessageSquare, Palette, User,
   Brain, Plug, Database, ArrowLeft, ArrowRight, RotateCw
+  , Map as MapIcon
 } from 'lucide-react';
 
 import {
@@ -95,6 +96,7 @@ const configModule = {
     { title: 'Plano de Aula', url: '/configuracoes/plano-aulas', icon: BookMarked },
     { title: 'Integrações', url: '/configuracoes/integracoes', icon: Plug },
     { title: 'Sistema', url: '/configuracoes/sistema', icon: Database },
+    { title: 'Roadmap', url: '/configuracoes/roadmap', icon: MapIcon },
   ],
 };
 
