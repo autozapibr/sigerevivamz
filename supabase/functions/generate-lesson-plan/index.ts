@@ -573,6 +573,24 @@ FORMATO DE SAÍDA:
 
       const googleData = await googleResponse.json();
       generatedContent = extractGoogleGeneratedText(googleData);
+    } else if (llmProvider === "deepseek") {
+      try {
+        generatedContent = await callDeepSeek(fullSystemPrompt, userPrompt, fullPlanMaxTokens, temperature, cleanModel);
+      } catch (err: any) {
+        if (err.message === "RATE_LIMIT") {
+          return new Response(
+            JSON.stringify({ error: "Limite de requisições DeepSeek excedido. Tente novamente em alguns segundos." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        if (err.message === "PAYMENT_REQUIRED") {
+          return new Response(
+            JSON.stringify({ error: "Créditos insuficientes na conta DeepSeek." }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        throw err;
+      }
     } else {
       // Lovable AI Gateway
       try {
