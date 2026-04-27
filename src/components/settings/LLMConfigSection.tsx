@@ -70,6 +70,17 @@ const LLM_PROVIDERS = [
       { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite' },
     ],
   },
+  {
+    id: 'deepseek',
+    name: 'DeepSeek (Directo)',
+    description: 'Conecte directamente à API da DeepSeek (alternativa económica e potente).',
+    requiresKey: true,
+    keyPlaceholder: 'sk-...',
+    models: [
+      { value: 'deepseek-chat', label: 'DeepSeek Chat (V3 — Recomendado)' },
+      { value: 'deepseek-reasoner', label: 'DeepSeek Reasoner (R1 — Raciocínio profundo)' },
+    ],
+  },
 ];
 
 export function LLMConfigSection() {
@@ -179,7 +190,7 @@ export function LLMConfigSection() {
               <Shield className="h-4 w-4" />
               <AlertDescription className="text-xs">
                 As chaves da API ({currentProvider.name}) são geridas de forma segura nos{' '}
-                <strong>Supabase Secrets</strong> (OPENAI_API_KEY / GOOGLE_AI_KEY).
+                <strong>Supabase Secrets</strong> (OPENAI_API_KEY / GOOGLE_AI_KEY / DEEPSEEK_API_KEY).
                 Para alterar, aceda ao painel Supabase &gt; Settings &gt; Edge Functions &gt; Secrets.
               </AlertDescription>
             </Alert>

@@ -112,6 +112,40 @@ async function callLovableAi(systemPrompt: string, userPrompt: string, maxTokens
   return extractOpenAiCompatibleText(data?.choices?.[0]?.message?.content);
 }
 
+async function callDeepSeek(systemPrompt: string, userPrompt: string, maxTokens: number, temperature: number, model: string): Promise<string> {
+  const apiKey = Deno.env.get("DEEPSEEK_API_KEY") || "";
+  if (!apiKey) throw new Error("DEEPSEEK_API_KEY não configurada.");
+
+  const resp = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature,
+      max_tokens: maxTokens,
+      stream: false,
+    }),
+  });
+
+  if (!resp.ok) {
+    if (resp.status === 429) throw new Error("RATE_LIMIT");
+    if (resp.status === 402) throw new Error("PAYMENT_REQUIRED");
+    const errText = await resp.text();
+    console.error("DeepSeek error:", resp.status, errText);
+    throw new Error("Erro ao gerar conteúdo com DeepSeek: " + errText);
+  }
+
+  const data = await resp.json();
+  return extractOpenAiCompatibleText(data?.choices?.[0]?.message?.content);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -272,6 +306,8 @@ REGRAS ABSOLUTAS:
           if (!resp.ok) throw new Error("OpenAI error");
           const data = await resp.json();
           generatedContent = extractOpenAiCompatibleText(data?.choices?.[0]?.message?.content);
+        } else if (llmProvider === "deepseek") {
+          generatedContent = await callDeepSeek(assistSystemPrompt, assistUserPrompt, assistMaxTokens, 0.3, cleanModel);
         } else {
           // Lovable AI
           generatedContent = await callLovableAi(assistSystemPrompt, assistUserPrompt, assistMaxTokens, 0.3, model);
@@ -537,6 +573,24 @@ FORMATO DE SAÍDA:
 
       const googleData = await googleResponse.json();
       generatedContent = extractGoogleGeneratedText(googleData);
+    } else if (llmProvider === "deepseek") {
+      try {
+        generatedContent = await callDeepSeek(fullSystemPrompt, userPrompt, fullPlanMaxTokens, temperature, cleanModel);
+      } catch (err: any) {
+        if (err.message === "RATE_LIMIT") {
+          return new Response(
+            JSON.stringify({ error: "Limite de requisições DeepSeek excedido. Tente novamente em alguns segundos." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        if (err.message === "PAYMENT_REQUIRED") {
+          return new Response(
+            JSON.stringify({ error: "Créditos insuficientes na conta DeepSeek." }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        throw err;
+      }
     } else {
       // Lovable AI Gateway
       try {
