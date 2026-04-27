@@ -306,6 +306,8 @@ REGRAS ABSOLUTAS:
           if (!resp.ok) throw new Error("OpenAI error");
           const data = await resp.json();
           generatedContent = extractOpenAiCompatibleText(data?.choices?.[0]?.message?.content);
+        } else if (llmProvider === "deepseek") {
+          generatedContent = await callDeepSeek(assistSystemPrompt, assistUserPrompt, assistMaxTokens, 0.3, cleanModel);
         } else {
           // Lovable AI
           generatedContent = await callLovableAi(assistSystemPrompt, assistUserPrompt, assistMaxTokens, 0.3, model);
