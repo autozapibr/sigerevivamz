@@ -190,7 +190,7 @@ export function LLMConfigSection() {
               <Shield className="h-4 w-4" />
               <AlertDescription className="text-xs">
                 As chaves da API ({currentProvider.name}) são geridas de forma segura nos{' '}
-                <strong>Supabase Secrets</strong> (OPENAI_API_KEY / GOOGLE_AI_KEY).
+                <strong>Supabase Secrets</strong> (OPENAI_API_KEY / GOOGLE_AI_KEY / DEEPSEEK_API_KEY).
                 Para alterar, aceda ao painel Supabase &gt; Settings &gt; Edge Functions &gt; Secrets.
               </AlertDescription>
             </Alert>
