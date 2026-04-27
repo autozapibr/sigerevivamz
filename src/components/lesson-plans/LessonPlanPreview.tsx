@@ -136,16 +136,19 @@ body {
   padding: 0;
 }
 h1 { display: none; }
-h2 { font-size: 13px; font-weight: 700; color: hsl(140 37% 28%); margin: 20px 0 8px; border-bottom: 1.5px solid hsl(140 37% 28% / 0.3); padding-bottom: 4px; page-break-after: avoid; }
-h3 { font-size: 13px; font-weight: 600; color: hsl(140 25% 39%); margin: 16px 0 6px; page-break-after: avoid; }
-h4 { font-size: 12px; font-weight: 600; color: hsl(20 14.3% 12%); margin: 12px 0 5px; page-break-after: avoid; }
-p, li { font-size: 12px; }
+* { orphans: 3; widows: 3; }
+h2 { font-size: 13px; font-weight: 700; color: hsl(140 37% 28%); margin: 20px 0 8px; border-bottom: 1.5px solid hsl(140 37% 28% / 0.3); padding-bottom: 4px; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
+h3 { font-size: 13px; font-weight: 600; color: hsl(140 25% 39%); margin: 16px 0 6px; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
+h4 { font-size: 12px; font-weight: 600; color: hsl(20 14.3% 12%); margin: 12px 0 5px; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
+p, li { font-size: 12px; page-break-inside: avoid; break-inside: avoid; }
 p { margin: 6px 0; }
-ul, ol { padding-left: 22px; margin: 6px 0; }
+ul, ol { padding-left: 22px; margin: 6px 0; page-break-inside: avoid; break-inside: avoid; }
 li { margin: 4px 0; }
 strong { font-weight: 600; }
-blockquote { border-left: 3px solid hsl(140 37% 28%); margin: 10px 0; padding: 10px 16px; background: hsl(140 25% 96%); font-style: italic; border-radius: 4px; page-break-inside: avoid; }
-table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+blockquote { border-left: 3px solid hsl(140 37% 28%); margin: 10px 0; padding: 10px 16px; background: hsl(140 25% 96%); font-style: italic; border-radius: 4px; page-break-inside: avoid; break-inside: avoid; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; page-break-inside: avoid; break-inside: avoid; }
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; break-inside: avoid; }
 th { background: hsl(140 37% 28%); color: white; padding: 7px 10px; text-align: left; font-size: 11px; font-weight: 600; }
 td { border: 1px solid hsl(140 10% 82%); padding: 6px 10px; font-size: 11px; }
 tr:nth-child(even) td { background: hsl(140 10% 97%); }
