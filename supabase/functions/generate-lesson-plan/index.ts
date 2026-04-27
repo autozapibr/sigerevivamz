@@ -112,6 +112,40 @@ async function callLovableAi(systemPrompt: string, userPrompt: string, maxTokens
   return extractOpenAiCompatibleText(data?.choices?.[0]?.message?.content);
 }
 
+async function callDeepSeek(systemPrompt: string, userPrompt: string, maxTokens: number, temperature: number, model: string): Promise<string> {
+  const apiKey = Deno.env.get("DEEPSEEK_API_KEY") || "";
+  if (!apiKey) throw new Error("DEEPSEEK_API_KEY não configurada.");
+
+  const resp = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature,
+      max_tokens: maxTokens,
+      stream: false,
+    }),
+  });
+
+  if (!resp.ok) {
+    if (resp.status === 429) throw new Error("RATE_LIMIT");
+    if (resp.status === 402) throw new Error("PAYMENT_REQUIRED");
+    const errText = await resp.text();
+    console.error("DeepSeek error:", resp.status, errText);
+    throw new Error("Erro ao gerar conteúdo com DeepSeek: " + errText);
+  }
+
+  const data = await resp.json();
+  return extractOpenAiCompatibleText(data?.choices?.[0]?.message?.content);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
