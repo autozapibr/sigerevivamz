@@ -77,8 +77,10 @@ const LLM_PROVIDERS = [
     requiresKey: true,
     keyPlaceholder: 'sk-...',
     models: [
-      { value: 'deepseek-chat', label: 'DeepSeek Chat (V3 — Recomendado)' },
-      { value: 'deepseek-reasoner', label: 'DeepSeek Reasoner (R1 — Raciocínio profundo)' },
+      { value: 'deepseek-v4-pro', label: 'DeepSeek V4 Pro (Mais potente)' },
+      { value: 'deepseek-v4-flash', label: 'DeepSeek V4 Flash (Rápido — Recomendado)' },
+      { value: 'deepseek-chat', label: 'DeepSeek Chat (Legado — descontinuado 2026/07/24)' },
+      { value: 'deepseek-reasoner', label: 'DeepSeek Reasoner (Legado — descontinuado 2026/07/24)' },
     ],
   },
 ];
