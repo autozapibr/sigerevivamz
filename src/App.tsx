@@ -32,6 +32,8 @@ import SistemaPage from "./pages/settings/SistemaPage";
 import UtilizadoresPage from "./pages/settings/UtilizadoresPage";
 import PerfisUtilizadoresPage from "./pages/settings/PerfisUtilizadoresPage";
 import RoadmapPage from "./pages/settings/RoadmapPage";
+import AuditoriaPage from "./pages/settings/AuditoriaPage";
+import { ErrorBoundary } from "./components/shared/ErrorBoundary";
 
 import CaixaPage from "./pages/financial/CaixaPage";
 import PropinasPage from "./pages/financial/PropinasPage";
@@ -55,7 +57,13 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
       retry: 1,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      retry: 0,
     },
   },
 });
@@ -224,6 +232,7 @@ const AppRoutes = () => {
       <Route path="/configuracoes/integracoes" element={<ProtectedRoute><IntegracoesPage /></ProtectedRoute>} />
       <Route path="/configuracoes/sistema" element={<ProtectedRoute><SistemaPage /></ProtectedRoute>} />
       <Route path="/configuracoes/roadmap" element={<ProtectedRoute><RoadmapPage /></ProtectedRoute>} />
+      <Route path="/configuracoes/auditoria" element={<ProtectedRoute><AuditoriaPage /></ProtectedRoute>} />
       <Route path="/rh/utilizadores" element={<ProtectedRoute><UtilizadoresPage /></ProtectedRoute>} />
       <Route path="/configuracoes/perfis-utilizadores" element={<ProtectedRoute><PerfisUtilizadoresPage /></ProtectedRoute>} />
       {/* Rotas de Gestão Financeira - bloqueadas para ENCARREGADO e ALUNO */}
@@ -367,17 +376,19 @@ if (typeof window !== 'undefined') {
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

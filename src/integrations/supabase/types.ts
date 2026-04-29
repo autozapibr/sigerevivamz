@@ -237,6 +237,48 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          actor_role: string | null
+          diff: Json | null
+          id: number
+          new_data: Json | null
+          occurred_at: string
+          old_data: Json | null
+          record_id: string | null
+          table_name: string
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          actor_role?: string | null
+          diff?: Json | null
+          id?: never
+          new_data?: Json | null
+          occurred_at?: string
+          old_data?: Json | null
+          record_id?: string | null
+          table_name: string
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          actor_role?: string | null
+          diff?: Json | null
+          id?: never
+          new_data?: Json | null
+          occurred_at?: string
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           class_id: number | null
