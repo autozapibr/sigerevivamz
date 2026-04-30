@@ -29,6 +29,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useTransactions, useCreateTransaction, useDeleteTransaction, useFinancialSummary } from '@/hooks/useFinancial';
+import { useUndoableDelete } from '@/hooks/useUndoableDelete';
 import { CategorySelect } from '@/components/financial/CategorySelect';
 import { formatMZN } from '@/lib/validators/mozambique';
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
@@ -143,6 +144,16 @@ export default function CaixaPage() {
   const { data: summary } = useFinancialSummary(selectedMonth);
   const createTransaction = useCreateTransaction();
   const deleteTransaction = useDeleteTransaction();
+  const undoableDelete = useUndoableDelete<{ id: number; description?: string | null; amount: number; type: string }>();
+
+  const handleDelete = (tx: { id: number; description?: string | null; amount: number; type: string }) => {
+    undoableDelete(tx, {
+      message: `${tx.type === 'Receita' ? 'Receita' : 'Despesa'} eliminada`,
+      description: tx.description ?? `Movimento #${tx.id}`,
+      delay: 6000,
+      commit: async (item) => { await new Promise<void>((res, rej) => deleteTransaction.mutate(item.id, { onSuccess: () => res(), onError: (e) => rej(e) })); },
+    });
+  };
 
   const filteredTransactions = transactions.filter(t => {
     if (searchTerm && !t.description?.toLowerCase().includes(searchTerm.toLowerCase())) return false;
@@ -388,7 +399,7 @@ export default function CaixaPage() {
                       <TransactionCard 
                         key={tx.id} 
                         tx={tx} 
-                        onDelete={(id) => deleteTransaction.mutate(id)}
+                        onDelete={(id) => { const tx = transactionsWithBalance.find(t => t.id === id); if (tx) handleDelete(tx); }}
                       />
                     ))}
                   </AnimatePresence>
@@ -464,7 +475,7 @@ export default function CaixaPage() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                onClick={() => deleteTransaction.mutate(tx.id)}
+                                onClick={() => handleDelete(tx)}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>

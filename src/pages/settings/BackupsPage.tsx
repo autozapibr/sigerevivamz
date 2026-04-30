@@ -16,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useUndoableDelete } from "@/hooks/useUndoableDelete";
 import { supabase } from "@/integrations/supabase/client";
 
 const PROJECT_REF = "ghwhbdpdkstxejofztny";
@@ -50,6 +51,7 @@ export default function BackupsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const undoableDelete = useUndoableDelete<{ name: string }>();
   const [running, setRunning] = useState(false);
 
   const isAuthorized = user?.role === "ADMIN" || user?.role === "DIRETORIA";
@@ -345,9 +347,19 @@ export default function BackupsPage() {
                         size="sm"
                         variant="ghost"
                         onClick={() => {
-                          if (confirm(`Eliminar definitivamente "${b.name}"?`)) {
-                            deleteBackup.mutate(b.name);
-                          }
+                          undoableDelete({ name: b.name }, {
+                            message: "Backup eliminado",
+                            description: b.name,
+                            delay: 6000,
+                            commit: async (item) => {
+                              await new Promise<void>((res, rej) =>
+                                deleteBackup.mutate(item.name, {
+                                  onSuccess: () => res(),
+                                  onError: (e) => rej(e),
+                                }),
+                              );
+                            },
+                          });
                         }}
                         className="text-destructive hover:text-destructive"
                       >
