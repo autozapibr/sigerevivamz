@@ -8,7 +8,7 @@ import {
   CalendarDays, ChartBar, BookMarked, NotebookPen, FileSpreadsheet,
   FileCheck, Briefcase, ChevronRight, MessageSquare, Palette, User,
   Brain, Plug, Database, ArrowLeft, ArrowRight, RotateCw
-  , Map as MapIcon, Shield
+  , Map as MapIcon, Shield, HardDrive
 } from 'lucide-react';
 
 import {
@@ -98,6 +98,7 @@ const configModule = {
     { title: 'Sistema', url: '/configuracoes/sistema', icon: Database },
     { title: 'Roadmap', url: '/configuracoes/roadmap', icon: MapIcon },
     { title: 'Auditoria', url: '/configuracoes/auditoria', icon: Shield },
+    { title: 'Backups', url: '/configuracoes/backups', icon: HardDrive },
   ],
 };
 
