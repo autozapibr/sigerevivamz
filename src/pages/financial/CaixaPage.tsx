@@ -30,7 +30,6 @@ import {
 } from 'lucide-react';
 import { useTransactions, useCreateTransaction, useDeleteTransaction, useFinancialSummary } from '@/hooks/useFinancial';
 import { useUndoableDelete } from '@/hooks/useUndoableDelete';
-import { formatMZN as _fmtMZN } from '@/lib/utils';
 import { CategorySelect } from '@/components/financial/CategorySelect';
 import { formatMZN } from '@/lib/validators/mozambique';
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
