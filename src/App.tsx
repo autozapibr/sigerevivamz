@@ -33,6 +33,7 @@ import UtilizadoresPage from "./pages/settings/UtilizadoresPage";
 import PerfisUtilizadoresPage from "./pages/settings/PerfisUtilizadoresPage";
 import RoadmapPage from "./pages/settings/RoadmapPage";
 import AuditoriaPage from "./pages/settings/AuditoriaPage";
+import BackupsPage from "./pages/settings/BackupsPage";
 import { ErrorBoundary } from "./components/shared/ErrorBoundary";
 
 import CaixaPage from "./pages/financial/CaixaPage";
@@ -232,6 +233,7 @@ const AppRoutes = () => {
       <Route path="/configuracoes/integracoes" element={<ProtectedRoute><IntegracoesPage /></ProtectedRoute>} />
       <Route path="/configuracoes/sistema" element={<ProtectedRoute><SistemaPage /></ProtectedRoute>} />
       <Route path="/configuracoes/roadmap" element={<ProtectedRoute><RoadmapPage /></ProtectedRoute>} />
+      <Route path="/configuracoes/backups" element={<ProtectedRoute><BackupsPage /></ProtectedRoute>} />
       <Route path="/configuracoes/auditoria" element={<ProtectedRoute><AuditoriaPage /></ProtectedRoute>} />
       <Route path="/rh/utilizadores" element={<ProtectedRoute><UtilizadoresPage /></ProtectedRoute>} />
       <Route path="/configuracoes/perfis-utilizadores" element={<ProtectedRoute><PerfisUtilizadoresPage /></ProtectedRoute>} />
