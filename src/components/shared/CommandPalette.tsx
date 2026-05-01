@@ -100,9 +100,6 @@ export function CommandPalette() {
     return base.filter((it) => !it.roles || (role && it.roles.includes(role)));
   }, [user, navigate, logout, setTheme]);
 
-  // Não mostrar palette em contextos sem auth
-  if (!isAuthenticated) return null;
-
   // Agrupar
   const groups = useMemo(() => {
     const map = new Map<string, PaletteItem[]>();
@@ -112,6 +109,9 @@ export function CommandPalette() {
     });
     return Array.from(map.entries());
   }, [items]);
+
+  // Não mostrar palette em contextos sem auth
+  if (!isAuthenticated) return null;
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>

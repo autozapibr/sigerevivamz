@@ -1,48 +1,33 @@
-## Redesign da Visualização do Plano de Aula
+# Correção do crash na Landing Page (React error #310)
 
-### Problema
+## Causa
 
-Os tamanhos de fonte estão desequilibrados: h2 a 13px vs body a 11px cria uma hierarquia visual pobre. O layout geral parece "comprimido" e pouco profissional para visualização em ecrã e impressão.
+O componente `CommandPalette` (montado globalmente em `App.tsx`) viola as **Rules of Hooks**:
 
-### Abordagem
-
-Redesenhar a tipografia e espaçamento em ambos os componentes (`LessonPlanPreview.tsx` e `ArchivedPlanPreview.tsx`) com uma escala tipográfica mais harmoniosa e espaçamento generoso.
-
-### Mudanças Tipográficas (nova escala)
-
-```text
-ATUAL                    →  NOVO
-body:    11px             →  12px (base legível)
-h2:      13px (700)       →  13px (700) — ratio 1.23x
-h3:      12px (600)       →  13px (600) — ratio 1.12x
-h4:      11px (600)       →  12px (600) — ratio 1.04x
-p, li:   11px             →  12px
-th:      10px             →  11px
-td:      10px             →  11px
+```tsx
+const items = useMemo(...)           // ✅ hook 1
+if (!isAuthenticated) return null;   // ❌ early return ANTES de todos os hooks
+const groups = useMemo(...)          // ❌ hook 2 — só corre se autenticado
 ```
 
-### Mudanças de Layout (visualização em ecrã)
+Quando o `AuthContext` resolve o estado (de `isLoading` → `isAuthenticated=false` ou vice-versa), o número de hooks chamados muda entre renders → React lança o erro **#310** ("Rendered more hooks than during the previous render"). É isto que faz a LandingPage rebentar com "Algo correu mal".
 
-- Aumentar padding interno do conteúdo (de `px-6/px-10` para `px-8/px-12`)
-- Aumentar `py` de 5/6 para 8
-- Remover inline `fontSize: 11px` e `fontWeight: 300` do div de conteúdo; usar `font-normal` (400) como base
-- Melhorar espaçamento entre secções: h2 margin de `14px 0 6px` → `20px 0 8px`
-- Blockquote com padding e border-radius mais generosos
-- Tabelas com padding de células mais confortável
+## Correção
 
-### Mudanças de Layout (PDF / A4_STYLES)
+**Ficheiro:** `src/components/shared/CommandPalette.tsx`
 
-- Aplicar a mesma escala tipográfica no `A4_STYLES` (constante duplicada em ambos os ficheiros)
-- Body font-weight de 300 → 400 para melhor legibilidade impressa
-- Manter line-height 1.7
+1. Mover o `useMemo` de `groups` para **antes** do `if (!isAuthenticated) return null;`.
+2. Mover também o atalho global `Cmd+K` para só registar listener quando autenticado (opcional mas limpo) — manter como está está OK desde que continue a ser um `useEffect` antes do return.
+3. Manter a ordem: todos os hooks (`useState`, `useEffect`, `useMemo` items, `useMemo` groups) → depois o `if (!isAuthenticated) return null;` → depois o JSX.
 
-### Ficheiros a Editar
+Resultado: ordem dos hooks fica estável entre renders autenticados e não autenticados, eliminando o erro #310 e restaurando a Landing Page.
 
-1. `**src/components/lesson-plans/LessonPlanPreview.tsx**` — A4_STYLES + div de conteúdo inline styles
-2. `**src/components/lesson-plans/ArchivedPlanPreview.tsx**` — A4_STYLES + div de conteúdo inline styles
+## Verificação
 
-### Detalhes Técnicos
+- Abrir `/` (landing) sem sessão → deve carregar normalmente.
+- Fazer login → `Cmd+K` continua a abrir a palette.
+- Fazer logout no dashboard → não deve crashar.
 
-- A constante `A4_STYLES` está duplicada nos dois ficheiros; ambas serão atualizadas com os mesmos valores
-- O inline style no div `dangerouslySetInnerHTML` será atualizado para `fontSize: 13px` e `fontWeight: 400`
-- Os estilos de `prose prose-sm` no `LessonPlanPreview` serão mantidos mas complementados pela nova escala
+## Fora de âmbito
+
+Nenhuma outra alteração à Fase 2 — apenas hotfix de regressão introduzida pelo CommandPalette.
