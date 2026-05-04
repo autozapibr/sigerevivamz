@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeErrorMessage } from '@/lib/sanitizeError';
 
 // Generic hook for Supabase queries
 export function useSupabaseQuery<T>(
@@ -50,10 +51,10 @@ export function useSupabaseMutation<T, V>(
       }
     },
     onError: (error) => {
-      console.error('Mutation error:', error);
+      if (import.meta.env.DEV) console.error('Mutation error:', error);
       toast({
         title: 'Erro',
-        description: error.message || 'Ocorreu um erro inesperado',
+        description: sanitizeErrorMessage(error),
         variant: 'destructive',
       });
       options?.onError?.(error);
