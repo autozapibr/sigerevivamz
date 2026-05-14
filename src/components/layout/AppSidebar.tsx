@@ -400,7 +400,7 @@ export function AppSidebar() {
               {/* Configurações - collapsible, apenas ADMIN/DIRETORIA */}
               {(user?.role === 'ADMIN' || user?.role === 'DIRETORIA') && (() => {
                 const configIsActive = isModuleActive(configModule.items);
-                const configIsOpen = openModules.includes('configuracoes') || (openModules.length === 0 && configIsActive);
+                const configIsOpen = openModules.includes('configuracoes');
                 const ConfigIcon = configModule.icon;
 
                 return (
