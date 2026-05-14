@@ -206,14 +206,19 @@ function GradeEntry({
     placeholder: string;
   }) => (
     <Input
-      type="number"
-      min="0"
-      max="20"
-      step="0.5"
+      type="text"
+      inputMode="decimal"
       value={value ?? ''}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => {
+        const val = e.target.value.replace(',', '.');
+        if (val === '' || /^\d*\.?\d*$/.test(val)) {
+          if (val.length <= 4) {
+            onChange(val);
+          }
+        }
+      }}
       placeholder={placeholder}
-      className="w-16 text-center"
+      className="w-16 text-center font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
     />
   );
 
@@ -344,11 +349,11 @@ function GradeEntry({
                <span className="text-muted-foreground ml-2">Fórmula: (Média ACS * 2 + AT) / 3</span>
              </div>
             <div className="flex flex-wrap gap-2 mt-2">
-              <Badge className="grade-excelente">18-20 Excelente</Badge>
-              <Badge className="grade-bom">14-17 Bom</Badge>
-              <Badge className="grade-suficiente">10-13 Suficiente</Badge>
-              <Badge className="grade-insuficiente">5-9 Insuficiente</Badge>
-              <Badge className="grade-mau">0-4 Mau</Badge>
+              <Badge variant="outline" className="grade-excelente">18-20 Excelente</Badge>
+              <Badge variant="outline" className="grade-bom">14-17 Bom</Badge>
+              <Badge variant="outline" className="grade-suficiente">10-13 Suficiente</Badge>
+              <Badge variant="outline" className="grade-insuficiente">5-9 Insuficiente</Badge>
+              <Badge variant="outline" className="grade-mau">0-4 Mau</Badge>
             </div>
           </div>
 
@@ -984,36 +989,42 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
    const [selectedTrimestre, setSelectedTrimestre] = useState<number>(1);
    const [activeTab, setActiveTab] = useState('lancamento');
  
-   const { data: teacher } = useCurrentTeacher();
-   const { data: assignments } = useTeacherAssignments(teacher?.id || null);
- 
-   const { data: allClasses = [], isLoading: classesLoading } = useClasses();
-   const { data: allSubjects = [] } = useSubjects();
- 
-   // Filter classes and subjects if user is a teacher
-   const classes = useMemo(() => {
-     if (!teacher) return allClasses;
-     return assignments?.classes || [];
-   }, [teacher, assignments, allClasses]);
- 
-   const subjects = useMemo(() => {
-     if (!teacher) return allSubjects;
-     // Filter subjects assigned to this teacher for the selected class
-     if (!selectedClassId) return [];
-     return assignments?.subjects
-       .filter(s => s.class_id === selectedClassId)
-       .map(s => ({ 
-         id: s.subject_id, 
-         name: s.subject_name,
-         code: allSubjects.find(as => as.id === s.subject_id)?.code 
-       })) || [];
-   }, [teacher, assignments, allSubjects, selectedClassId]);
+  const { user } = useAuth();
+  const { data: teacher } = useCurrentTeacher();
+  const { data: assignments } = useTeacherAssignments(teacher?.id || null);
+
+  const { data: allClasses = [], isLoading: classesLoading } = useClasses();
+  const { data: allSubjects = [] } = useSubjects();
+
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
+  const isProfessor = user?.role === 'PROFESSOR';
+
+  // Filter classes and subjects if user is a teacher
+  const classes = useMemo(() => {
+    if (isAdmin) return allClasses;
+    if (isProfessor) return assignments?.classes || [];
+    return allClasses;
+  }, [allClasses, assignments, isAdmin, isProfessor]);
+
+  const subjects = useMemo(() => {
+    if (isAdmin) return allSubjects;
+    if (isProfessor) {
+      if (!selectedClassId) return [];
+      return assignments?.subjects
+        .filter((s: any) => s.class_id === selectedClassId)
+        .map((s: any) => ({ 
+          id: s.subject_id, 
+          name: s.subject_name,
+          code: allSubjects.find(as => as.id === s.subject_id)?.code 
+        })) || [];
+    }
+    return allSubjects;
+  }, [allSubjects, assignments, isAdmin, isProfessor, selectedClassId]);
  
    const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
    const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
  
-   const { user } = useAuth();
-   const isPedagogical = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
+    const isPedagogical = isAdmin;
 
   return (
     <MainLayout title="Pauta Digital" subtitle="Sistema de avaliação e lançamento de notas">

@@ -186,12 +186,27 @@
     @apply bg-success/10 text-success border-success/20;
   }
 
-  /* === Grade Colors (0-20 Scale) === */
-  .grade-excelente { @apply text-emerald-600 dark:text-emerald-400 font-bold; }
-  .grade-bom { @apply text-blue-600 dark:text-blue-400 font-bold; }
-  .grade-suficiente { @apply text-amber-600 dark:text-amber-400 font-bold; }
-  .grade-insuficiente { @apply text-orange-600 dark:text-orange-400 font-bold; }
-  .grade-mau { @apply text-red-600 dark:text-red-400 font-bold; }
+  /* === Grade Colors (0-20 Scale) - Enhanced for contrast === */
+  .grade-excelente { 
+    @apply bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 font-bold border-emerald-200 dark:border-emerald-800 px-2 py-0.5; 
+    font-size: 0.8rem;
+  }
+  .grade-bom { 
+    @apply bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300 font-bold border-sky-200 dark:border-sky-800 px-2 py-0.5;
+    font-size: 0.8rem;
+  }
+  .grade-suficiente { 
+    @apply bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-bold border-amber-200 dark:border-amber-800 px-2 py-0.5;
+    font-size: 0.8rem;
+  }
+  .grade-insuficiente { 
+    @apply bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 font-bold border-orange-200 dark:border-orange-800 px-2 py-0.5;
+    font-size: 0.8rem;
+  }
+  .grade-mau { 
+    @apply bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 font-bold border-red-200 dark:border-red-800 px-2 py-0.5;
+    font-size: 0.8rem;
+  }
 
   /* === Interactive Elements === */
   .interactive-hover {
@@ -280,26 +295,6 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* === Grade Classification Colors (MEC) === */
-.grade-excelente {
-  @apply text-emerald-600 dark:text-emerald-400;
-}
-
-.grade-bom {
-  @apply text-sky-600 dark:text-sky-400;
-}
-
-.grade-suficiente {
-  @apply text-amber-600 dark:text-amber-400;
-}
-
-.grade-insuficiente {
-  @apply text-orange-600 dark:text-orange-400;
-}
-
-.grade-mau {
-  @apply text-red-600 dark:text-red-400;
-}
 
 /* === Print Styles === */
 @media print {
