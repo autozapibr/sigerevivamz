@@ -69,6 +69,7 @@ export default function UtilizadoresPage() {
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState<string | null>(null);
+  const [linkOpen, setLinkOpen] = useState<SystemUser | null>(null);
   const [newPassword, setNewPassword] = useState('');
 
   // Form state
