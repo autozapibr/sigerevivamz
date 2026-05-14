@@ -231,13 +231,13 @@
                    <TableRow key={row.subject.id}>
                      <TableCell className="font-medium">{row.subject.name}</TableCell>
                      <TableCell className={`text-center ${classifyGrade(row.t1).className}`}>
-                       {row.t1 ?? '-'}
+                       {isReleased(1) ? (row.t1 ?? '-') : <span className="text-[10px] text-muted-foreground italic">Não Publicado</span>}
                      </TableCell>
                      <TableCell className={`text-center ${classifyGrade(row.t2).className}`}>
-                       {row.t2 ?? '-'}
+                       {isReleased(2) ? (row.t2 ?? '-') : <span className="text-[10px] text-muted-foreground italic">Não Publicado</span>}
                      </TableCell>
                      <TableCell className={`text-center ${classifyGrade(row.t3).className}`}>
-                       {row.t3 ?? '-'}
+                       {isReleased(3) ? (row.t3 ?? '-') : <span className="text-[10px] text-muted-foreground italic">Não Publicado</span>}
                      </TableCell>
                      <TableCell className={`text-center font-bold ${classifyGrade(row.mediaAnual).className}`}>
                        {row.mediaAnual ?? '-'}
