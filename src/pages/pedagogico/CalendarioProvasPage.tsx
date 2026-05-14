@@ -25,8 +25,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useCalendarEventsByMonth, useCreateCalendarEvent, CalendarEvent, CalendarEventInsert } from '@/hooks/useCalendarEvents';
 import { useExamNotifications, useMarkExamNotificationRead, useMarkAllExamNotificationsRead } from '@/hooks/useExamNotifications';
-import { useClassesList } from '@/hooks/useClasses';
-import { useSubjectsList } from '@/hooks/useSubjects';
+import { useClasses, useSubjects } from '@/hooks/useGrades';
+import { useCurrentTeacher, useTeacherAssignments } from '@/hooks/useTeachers';
 import { useAuth } from '@/contexts/AuthContext';
 
 type ViewMode = 'month' | 'week' | 'list';
