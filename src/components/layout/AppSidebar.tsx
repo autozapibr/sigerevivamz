@@ -22,7 +22,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { useAuth } from '@/contexts/AuthContext';
+ import { useAuth } from '@/contexts/AuthContext';
+ import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { ROLE_PERMISSIONS } from '@/types/auth';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -111,7 +112,7 @@ const systemItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-   const { user } = useAuth();
+   const { user, logout } = useAuth();
    const unreadCount = useUnreadNotificationCount();
   const location = useLocation();
   const [openModules, setOpenModules] = React.useState<string[]>(['gestao_escolar']);
