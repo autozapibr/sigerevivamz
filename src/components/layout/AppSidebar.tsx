@@ -151,8 +151,8 @@ export function AppSidebar() {
   };
 
   const isActive = (path: string) => location.pathname === path;
-  const isModuleActive = (items: typeof systemModules.gestao_escolar.items) => 
-    items.some(item => location.pathname.startsWith(item.url));
+  const isModuleActive = (items: { url: string }[]) => 
+    items.some(item => location.pathname === item.url || location.pathname.startsWith(item.url + '/'));
 
    const toggleModule = (key: string) => {
      setOpenModules(prev => 
@@ -176,7 +176,7 @@ export function AppSidebar() {
     >
       <SidebarContent className="bg-sidebar">
          {/* Logo and Collapse Toggle */}
-         <div className={cn("p-4 border-b border-border/50 flex items-center justify-between", collapsed && "flex-col justify-center p-3 gap-3")}>
+         <div className={cn("p-4 border-b border-border/50 flex items-center justify-center h-16", collapsed && "p-3")}>
            <motion.div 
              className="flex items-center gap-3"
              layout
@@ -199,12 +199,6 @@ export function AppSidebar() {
              </AnimatePresence>
            </motion.div>
            
-           {!collapsed && (
-             <SidebarTrigger className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" />
-           )}
-           {collapsed && (
-             <SidebarTrigger className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" />
-           )}
          </div>
 
         {/* Navigation Icons */}
@@ -278,7 +272,8 @@ export function AppSidebar() {
          >
           <div className="space-y-2">
             {accessibleModules.map(([key, module]) => {
-              const isOpen = openModules.includes(key) || isModuleActive(module.items);
+              const moduleIsActive = isModuleActive(module.items);
+              const isOpen = openModules.includes(key) || (openModules.length === 0 && moduleIsActive);
               const ModuleIcon = module.icon;
 
               return (
@@ -291,8 +286,8 @@ export function AppSidebar() {
                     <button
                       className={cn(
                         "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-                        isModuleActive(module.items) 
-                          ? "bg-primary/10 text-primary" 
+                        moduleIsActive 
+                          ? "bg-primary/10 text-primary shadow-sm" 
                           : "text-muted-foreground hover:bg-accent hover:text-foreground"
                       )}
                     >
@@ -302,8 +297,8 @@ export function AppSidebar() {
                           <span className="flex-1 text-left">{module.label}</span>
                           <ChevronRight 
                             className={cn(
-                              "w-4 h-4 transition-transform duration-200",
-                              isOpen && "rotate-90"
+                              "w-4 h-4 transition-transform duration-200 opacity-50",
+                              isOpen && "rotate-90 opacity-100"
                             )} 
                           />
                         </>
@@ -313,9 +308,9 @@ export function AppSidebar() {
                   
                   <CollapsibleContent>
                     <motion.div 
-                      className="mt-1 ml-4 pl-4 border-l-2 border-border/50 space-y-1"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
+                      className="mt-1 ml-4 pl-4 border-l border-border/50 space-y-1"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
                       transition={{ duration: 0.2 }}
                     >
                       {module.items.map((item) => {
@@ -370,8 +365,8 @@ export function AppSidebar() {
 
               {/* Configurações - collapsible, apenas ADMIN/DIRETORIA */}
               {(user?.role === 'ADMIN' || user?.role === 'DIRETORIA') && (() => {
-                const configIsActive = configModule.items.some(i => location.pathname.startsWith(i.url));
-                const configIsOpen = openModules.includes('configuracoes') || configIsActive;
+                const configIsActive = isModuleActive(configModule.items);
+                const configIsOpen = openModules.includes('configuracoes') || (openModules.length === 0 && configIsActive);
                 const ConfigIcon = configModule.icon;
 
                 return (
@@ -384,7 +379,7 @@ export function AppSidebar() {
                         className={cn(
                           "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                           configIsActive
-                            ? "bg-primary/10 text-primary"
+                            ? "bg-primary/10 text-primary shadow-sm"
                             : "text-muted-foreground hover:bg-accent hover:text-foreground"
                         )}
                       >
@@ -394,8 +389,8 @@ export function AppSidebar() {
                             <span className="flex-1 text-left">{configModule.label}</span>
                             <ChevronRight
                               className={cn(
-                                "w-4 h-4 transition-transform duration-200",
-                                configIsOpen && "rotate-90"
+                                "w-4 h-4 transition-transform duration-200 opacity-50",
+                                configIsOpen && "rotate-90 opacity-100"
                               )}
                             />
                           </>
@@ -405,9 +400,9 @@ export function AppSidebar() {
 
                     <CollapsibleContent>
                       <motion.div
-                        className="mt-1 ml-4 pl-4 border-l-2 border-border/50 space-y-1"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        className="mt-1 ml-4 pl-4 border-l border-border/50 space-y-1"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
                         transition={{ duration: 0.2 }}
                       >
                         {configModule.items.map((item) => {
