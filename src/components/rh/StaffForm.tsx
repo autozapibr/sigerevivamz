@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, X, User, Smartphone } from 'lucide-react';
+ import { Camera, Upload, X, User, Smartphone, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+ import { Card, CardContent } from '@/components/ui/card';
 import { ProvinceSelector } from '@/components/shared/ProvinceSelector';
 import { MozambiqueInput } from '@/components/shared/MozambiqueInput';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -194,10 +195,13 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
 
   return (
     <Tabs defaultValue="personal" className="w-full">
-      <TabsList className="grid w-full grid-cols-3 mb-4">
+       <TabsList className={`grid w-full mb-4 ${staffType === 'teacher' && isEdit ? 'grid-cols-4' : 'grid-cols-3'}`}>
         <TabsTrigger value="personal">Dados Pessoais</TabsTrigger>
         <TabsTrigger value="professional">Profissional</TabsTrigger>
-        <TabsTrigger value="financial">Financeiro</TabsTrigger>
+         <TabsTrigger value="financial">Financeiro</TabsTrigger>
+         {staffType === 'teacher' && isEdit && (
+           <TabsTrigger value="assignments">Turmas</TabsTrigger>
+         )}
       </TabsList>
 
       <TabsContent value="personal" className="space-y-4">
