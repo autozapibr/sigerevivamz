@@ -42,6 +42,8 @@ import {
  import { useStudentsByClass, useAttendanceByClass, useRecordAttendance, AttendanceStatus } from '@/hooks/useAttendance';
  import { useCurrentTeacher, useTeacherAssignments } from '@/hooks/useTeachers';
  import { Link } from 'react-router-dom';
+ import { useAuth } from '@/contexts/AuthContext';
+ import { useQuery } from '@tanstack/react-query';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend
 } from 'recharts';
