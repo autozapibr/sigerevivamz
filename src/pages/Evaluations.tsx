@@ -1188,10 +1188,16 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
             />
           </TabsContent>
 
-          <TabsContent value="estatisticas" className="mt-6">
-            <GradeStatistics classId={selectedClassId} subjectId={selectedSubjectId} />
-          </TabsContent>
-        </Tabs>
+           <TabsContent value="estatisticas" className="mt-6">
+             <GradeStatistics classId={selectedClassId} subjectId={selectedSubjectId} />
+           </TabsContent>
+ 
+           {isPedagogical && (
+             <TabsContent value="pedagogico" className="mt-6">
+               <PedagogicalRelease />
+             </TabsContent>
+           )}
+         </Tabs>
       </div>
     </MainLayout>
   );
