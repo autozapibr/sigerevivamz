@@ -1138,31 +1138,33 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
         </Card>
 
         {/* Tabs de Funcionalidades */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-           <TabsList className={`grid w-full ${isPedagogical ? 'grid-cols-5' : 'grid-cols-4'}`}>
-             <TabsTrigger value="lancamento" className="gap-2">
-               <FileSpreadsheet className="h-4 w-4" />
-               Lançamento de Notas
-             </TabsTrigger>
-             <TabsTrigger value="faltas" className="gap-2">
-               <Users className="h-4 w-4" />
-               Faltas
-             </TabsTrigger>
-             <TabsTrigger value="resumo" className="gap-2">
-               <GraduationCap className="h-4 w-4" />
-               Resumo Anual
-             </TabsTrigger>
-             <TabsTrigger value="estatisticas" className="gap-2">
-               <BarChart3 className="h-4 w-4" />
-               Estatísticas
-             </TabsTrigger>
-             {isPedagogical && (
-               <TabsTrigger value="pedagogico" className="gap-2">
-                 <CheckCircle2 className="h-4 w-4" />
-                 Publicação
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-hidden">
+           <div className="overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
+             <TabsList className={`inline-flex md:grid w-max md:w-full ${isPedagogical ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
+               <TabsTrigger value="lancamento" className="gap-2 whitespace-nowrap">
+                 <FileSpreadsheet className="h-4 w-4 shrink-0" />
+                 <span>Lançamento</span>
                </TabsTrigger>
-             )}
-           </TabsList>
+               <TabsTrigger value="faltas" className="gap-2 whitespace-nowrap">
+                 <Users className="h-4 w-4 shrink-0" />
+                 <span>Faltas</span>
+               </TabsTrigger>
+               <TabsTrigger value="resumo" className="gap-2 whitespace-nowrap">
+                 <GraduationCap className="h-4 w-4 shrink-0" />
+                 <span>Resumo</span>
+               </TabsTrigger>
+               <TabsTrigger value="estatisticas" className="gap-2 whitespace-nowrap">
+                 <BarChart3 className="h-4 w-4 shrink-0" />
+                 <span>Estatísticas</span>
+               </TabsTrigger>
+               {isPedagogical && (
+                 <TabsTrigger value="pedagogico" className="gap-2 whitespace-nowrap">
+                   <CheckCircle2 className="h-4 w-4 shrink-0" />
+                   <span>Publicação</span>
+                 </TabsTrigger>
+               )}
+             </TabsList>
+           </div>
 
            <TabsContent value="lancamento" className="mt-6">
              <GradeEntry 
