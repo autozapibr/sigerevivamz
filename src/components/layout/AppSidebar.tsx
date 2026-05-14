@@ -21,7 +21,6 @@ import {
    SidebarMenuButton,
    SidebarMenuItem,
    useSidebar,
-   SidebarTrigger,
  } from '@/components/ui/sidebar';
  import { useAuth } from '@/contexts/AuthContext';
  import { useUnreadNotificationCount } from '@/hooks/useNotifications';
@@ -150,10 +149,10 @@ export function AppSidebar() {
     return userPermissions.includes(permission as never);
   };
 
-  const isActive = (path: string) => location.pathname === path;
-  const isModuleActive = (items: { url: string }[]) => 
-    items.some(item => location.pathname === item.url || location.pathname.startsWith(item.url + '/'));
-
+   const isActive = (path: string) => location.pathname === path;
+   const isModuleActive = (items: { url: string }[]) => 
+     items.some(item => location.pathname === item.url || location.pathname.startsWith(item.url + '/'));
+ 
    const toggleModule = (key: string) => {
      setOpenModules(prev => 
        prev.includes(key) 
@@ -161,6 +160,16 @@ export function AppSidebar() {
          : [key]
      );
    };
+ 
+   // Update open modules when path changes to match active module
+   React.useEffect(() => {
+     const activeModule = Object.entries(systemModules).find(([_, module]) => 
+       isModuleActive(module.items)
+     );
+     if (activeModule) {
+       setOpenModules([activeModule[0]]);
+     }
+   }, [location.pathname]);
 
   const accessibleModules = Object.entries(systemModules).filter(
     ([_, module]) => hasPermission(module.permission)
