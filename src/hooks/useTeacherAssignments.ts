@@ -35,9 +35,9 @@ export function useAllAssignments() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('class_curriculum')
-        .select('id, teacher_id, class_id, subject_id, weekly_hours, shift');
+        .select('id, teacher_id, class_id, subject_id, weekly_hours, shift, class:class_id(id,name,year), subject:subject_id(id,name,code)');
       if (error) throw error;
-      return data || [];
+      return (data || []) as unknown as TeacherAssignment[];
     },
   });
 }
