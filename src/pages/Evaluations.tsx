@@ -722,7 +722,14 @@ function AnnualSummary({ classId, subjects, classes }: { classId: number | null;
                 {annualData.map((row, index) => (
                   <TableRow key={row.student.id}>
                     <TableCell className="sticky left-0 bg-background">{index + 1}</TableCell>
-                    <TableCell className="sticky left-8 bg-background font-medium">{row.student.name}</TableCell>
+                     <TableCell className="sticky left-8 bg-background font-medium">
+                       <div className="flex items-center gap-2">
+                         {row.student.name}
+                         <Link to={`/students/${row.student.id}/caderneta`} className="text-primary hover:underline">
+                           <FileText className="h-3 w-3" />
+                         </Link>
+                       </div>
+                     </TableCell>
                     {subjects.slice(0, 5).map(subject => {
                       const avg = row.subjectAverages[subject.id]?.annual;
                       const { className } = classifyGrade(avg);
