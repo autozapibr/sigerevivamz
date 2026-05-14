@@ -36,12 +36,6 @@ export function useDashboardStats(teacherId?: number | null) {
         enrollmentsRes,
         employeesRes,
       ] = await Promise.all([
-        studentsQuery,
-        teachersQuery,
-        classesQuery,
-        enrollmentsQuery,
-        employeesQuery,
-      ] = await Promise.all([
         teacherId 
           ? supabase.from('students').select('id, status, gender, class_id').in('class_id', assignedClassIds.length > 0 ? assignedClassIds : [-1])
           : supabase.from('students').select('id, status, gender, class_id'),
@@ -53,11 +47,11 @@ export function useDashboardStats(teacherId?: number | null) {
         supabase.from('employees').select('id, status'),
       ]);
 
-      const students = studentsQuery.data || [];
-      const teachers = teachersQuery.data || [];
-      const classes = classesQuery.data || [];
-      const enrollments = enrollmentsQuery.data || [];
-      const employees = employeesQuery.data || [];
+      const students = studentsRes.data || [];
+      const teachers = teachersRes.data || [];
+      const classes = classesRes.data || [];
+      const enrollments = enrollmentsRes.data || [];
+      const employees = employeesRes.data || [];
 
       const students = studentsRes.data || [];
       const teachers = teachersRes.data || [];
