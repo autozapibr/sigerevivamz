@@ -47,11 +47,6 @@ export function useDashboardStats(teacherId?: number | null) {
         supabase.from('employees').select('id, status'),
       ]);
 
-      const students = studentsRes.data || [];
-      const teachers = teachersRes.data || [];
-      const classes = classesRes.data || [];
-      const enrollments = enrollmentsRes.data || [];
-      const employees = employeesRes.data || [];
 
       const students = studentsRes.data || [];
       const teachers = teachersRes.data || [];
