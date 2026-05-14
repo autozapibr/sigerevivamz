@@ -1,9 +1,3 @@
- 
-           {isPedagogical && (
-             <TabsContent value="pedagogico" className="mt-6">
-               <PedagogicalRelease />
-             </TabsContent>
-           )}
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
