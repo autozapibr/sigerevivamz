@@ -27,8 +27,35 @@ const AI_ASSIST_FIELDS = ['versiculos_biblicos', 'ideia_guia', 'objetivos_compet
 
 export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps) {
   const { data: fields, isLoading: fieldsLoading } = useLessonPlanFields();
-  const { data: classes } = useClasses();
-  const { data: subjects } = useSubjects();
+  const { data: allClasses } = useClasses();
+  const { data: allSubjects } = useSubjects();
+  const { user } = useAuth();
+  const { data: teacher } = useCurrentTeacher();
+  const { data: assignments } = useTeacherAssignments(teacher?.id || null);
+
+  const isProfessor = user?.role === 'PROFESSOR';
+  const hasTeacherProfile = !!teacher;
+  const shouldFilterByTeacher = isProfessor || (hasTeacherProfile && (assignments?.classes.length || 0) > 0);
+
+  const classes = useMemo(() => {
+    if (shouldFilterByTeacher) {
+      return assignments?.classes || [];
+    }
+    return allClasses || [];
+  }, [allClasses, assignments, shouldFilterByTeacher]);
+
+  const subjects = useMemo(() => {
+    if (shouldFilterByTeacher) {
+      if (!classId) return [];
+      return (assignments?.subjects || [])
+        .filter((s: any) => s.class_id === Number(classId))
+        .map((s: any) => ({ 
+          id: s.subject_id, 
+          name: s.subject_name 
+        }));
+    }
+    return allSubjects || [];
+  }, [allSubjects, assignments, shouldFilterByTeacher, classId]);
   const { data: calendarEvents } = useCalendarEvents();
   
   const [classId, setClassId] = useState<string>('');
