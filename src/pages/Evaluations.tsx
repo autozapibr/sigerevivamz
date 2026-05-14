@@ -837,22 +837,24 @@ function AnnualSummary({ classId, subjects, classes }: { classId: number | null;
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="sticky left-0 bg-background">#</TableHead>
-                   <TableHead className="sticky left-8 bg-background min-w-[200px]">Educando</TableHead>
-                  {subjects.slice(0, 5).map(subject => (
+                    <TableHead className="sticky left-0 z-20 bg-muted/90 backdrop-blur-sm">#</TableHead>
+                     <TableHead className="sticky left-8 z-20 bg-muted/90 backdrop-blur-sm min-w-[180px]">Educando</TableHead>
+                  {subjects.map(subject => (
                     <TableHead key={subject.id} className="text-center min-w-[80px]">
                       {subject.code || subject.name.substring(0, 4)}
                     </TableHead>
                   ))}
-                  <TableHead className="text-center font-bold">Média Geral</TableHead>
+                  <TableHead className="text-center font-bold min-w-[80px]">Média Geral</TableHead>
                   <TableHead className="text-center">Resultado</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {annualData.map((row, index) => (
+                {annualData.map((row, index) => {
+                  const { className: rowClassName } = classifyGrade(row.overallAverage);
+                  return (
                   <TableRow key={row.student.id}>
-                    <TableCell className="sticky left-0 bg-background">{index + 1}</TableCell>
-                     <TableCell className="sticky left-8 bg-background font-medium">
+                    <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur-sm">{index + 1}</TableCell>
+                     <TableCell className="sticky left-8 z-10 bg-background/95 backdrop-blur-sm font-medium">
                        <div className="flex items-center gap-2">
                          {row.student.name}
                          <Link to={`/students/${row.student.id}/caderneta`} className="text-primary hover:underline">
@@ -860,7 +862,7 @@ function AnnualSummary({ classId, subjects, classes }: { classId: number | null;
                          </Link>
                        </div>
                      </TableCell>
-                    {subjects.slice(0, 5).map(subject => {
+                    {subjects.map(subject => {
                       const avg = row.subjectAverages[subject.id]?.annual;
                       const { className } = classifyGrade(avg);
                       return (
@@ -880,7 +882,7 @@ function AnnualSummary({ classId, subjects, classes }: { classId: number | null;
                       )}
                     </TableCell>
                   </TableRow>
-                ))}
+                })}
               </TableBody>
             </Table>
           </div>
