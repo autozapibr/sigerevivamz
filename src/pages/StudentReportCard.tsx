@@ -38,7 +38,26 @@
      },
    });
  
-   // Fetch all subjects
+    // Fetch release settings
+    const { data: releaseSettings } = useQuery({
+      queryKey: ['pedagogical-release-settings', student?.class?.year],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('pedagogical_settings')
+          .select('*')
+          .eq('academic_year', student?.class?.year);
+        if (error) throw error;
+        return data;
+      },
+      enabled: !!student?.class?.year
+    });
+  
+    const isReleased = (trimestre: number) => {
+      const setting = releaseSettings?.find(s => s.trimestre === trimestre);
+      return setting?.release_status === 'released';
+    };
+
+    // Fetch all subjects
    const { data: subjects = [] } = useQuery({
      queryKey: ['subjects'],
      queryFn: async () => {
