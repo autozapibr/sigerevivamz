@@ -110,7 +110,7 @@ const systemItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === 'collapsed';
    const { user, logout } = useAuth();
    const unreadCount = useUnreadNotificationCount();
@@ -254,10 +254,7 @@ export function AppSidebar() {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                onClick={() => {
-                  const toggleBtn = document.querySelector('[data-sidebar-trigger]');
-                  if (toggleBtn instanceof HTMLElement) toggleBtn.click();
-                }}
+                onClick={toggleSidebar}
                 title={collapsed ? "Expandir" : "Recolher"}
               >
                 {collapsed ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
