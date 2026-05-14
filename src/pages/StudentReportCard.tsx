@@ -7,8 +7,8 @@
  import { Button } from '@/components/ui/button';
  import { Badge } from '@/components/ui/badge';
  import { 
-   ArrowLeft, Printer, Download, GraduationCap, 
-   Calendar, User, BookOpen, Clock, AlertCircle 
+   ArrowLeft, Printer, Download, GraduationCap,
+   Calendar, User, BookOpen, Clock, AlertCircle, ShieldAlert
  } from 'lucide-react';
  import { 
    Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
