@@ -256,6 +256,63 @@ function UsersTab() {
               }}
               className="space-y-4"
             >
+              <div className="p-3 bg-muted/50 rounded-lg space-y-3">
+                <Label className="text-xs font-semibold uppercase text-muted-foreground">Vincular a Perfil Existente (Opcional)</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Tipo de Perfil</Label>
+                    <Select 
+                      value={profileType} 
+                      onValueChange={(v: any) => {
+                        setProfileType(v);
+                        setSelectedProfileId('');
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="NONE">Nenhum (Manual)</SelectItem>
+                        <SelectItem value="TEACHER">Professor</SelectItem>
+                        <SelectItem value="STUDENT">Educando</SelectItem>
+                        <SelectItem value="EMPLOYEE">Colaborador</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Seleccionar Pessoa</Label>
+                    <Select 
+                      value={selectedProfileId} 
+                      disabled={profileType === 'NONE'}
+                      onValueChange={(v) => {
+                        setSelectedProfileId(v);
+                        let selected: any = null;
+                        if (profileType === 'TEACHER') selected = teachers.find(t => t.id.toString() === v);
+                        if (profileType === 'STUDENT') selected = students.find(s => s.id.toString() === v);
+                        if (profileType === 'EMPLOYEE') selected = employees.find(e => e.id.toString() === v);
+                        
+                        if (selected) {
+                          setForm(f => ({
+                            ...f,
+                            full_name: selected.name,
+                            email: selected.email || '',
+                            role: profileType === 'TEACHER' ? 'PROFESSOR' : (profileType === 'STUDENT' ? 'ALUNO' : f.role)
+                          }));
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Escolher..." /></SelectTrigger>
+                      <SelectContent>
+                        {profileType === 'TEACHER' && teachers.map(t => <SelectItem key={t.id} value={t.id.toString()}>{t.name}</SelectItem>)}
+                        {profileType === 'STUDENT' && students.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}
+                        {profileType === 'EMPLOYEE' && employees.map(e => <SelectItem key={e.id} value={e.id.toString()}>{e.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground italic">
+                  Ao vincular, o email e nome serão preenchidos automaticamente para garantir o acesso correcto aos dados.
+                </p>
+              </div>
+
               <div className="space-y-2">
                 <Label>Nome Completo</Label>
                 <Input value={form.full_name} onChange={(e) => setForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Nome do utilizador" />
