@@ -208,17 +208,19 @@ function GradeEntry({
     <Input
       type="text"
       inputMode="decimal"
+      autoComplete="off"
+      spellCheck={false}
       value={value ?? ''}
       onChange={(e) => {
         const val = e.target.value.replace(',', '.');
         if (val === '' || /^\d*\.?\d*$/.test(val)) {
-          if (val.length <= 4) {
+          if (val.length <= 5) { // Allow up to 5 chars for cases like 18.50
             onChange(val);
           }
         }
       }}
       placeholder={placeholder}
-      className="w-16 text-center font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+      className="w-16 text-center font-bold h-9 bg-background focus:ring-1 focus:ring-primary/30 border-muted-foreground/20"
     />
   );
 
