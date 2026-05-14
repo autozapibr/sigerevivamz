@@ -841,6 +841,10 @@ export type Database = {
           acf: number | null
           acp: number | null
           acs: number | null
+          acs1: number | null
+          acs2: number | null
+          acs3: number | null
+          at: number | null
           class_id: number | null
           created_at: string | null
           final_exam: number | null
@@ -860,6 +864,10 @@ export type Database = {
           acf?: number | null
           acp?: number | null
           acs?: number | null
+          acs1?: number | null
+          acs2?: number | null
+          acs3?: number | null
+          at?: number | null
           class_id?: number | null
           created_at?: string | null
           final_exam?: number | null
@@ -879,6 +887,10 @@ export type Database = {
           acf?: number | null
           acp?: number | null
           acs?: number | null
+          acs1?: number | null
+          acs2?: number | null
+          acs3?: number | null
+          at?: number | null
           class_id?: number | null
           created_at?: string | null
           final_exam?: number | null
