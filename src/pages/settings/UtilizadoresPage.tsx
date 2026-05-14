@@ -341,6 +341,16 @@ export default function UtilizadoresPage() {
           </CardContent>
         </Card>
         <InvitationManager />
+        
+        {linkOpen && (
+          <UserLinkDialog
+            userId={linkOpen.id}
+            userName={linkOpen.name}
+            userRole={linkOpen.role}
+            open={!!linkOpen}
+            onOpenChange={(open) => !open && setLinkOpen(null)}
+          />
+        )}
       </div>
     </MainLayout>
   );
