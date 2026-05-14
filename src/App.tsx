@@ -46,7 +46,8 @@ const BackupsPage = lazy(() => import("./pages/settings/BackupsPage"));
 const CaixaPage = lazy(() => import("./pages/financial/CaixaPage"));
 const PropinasPage = lazy(() => import("./pages/financial/PropinasPage"));
 const CobrancasPage = lazy(() => import("./pages/financial/CobrancasPage"));
-const RelatoriosFinanceirosPage = lazy(() => import("./pages/financial/RelatoriosFinanceirosPage"));
+ const RelatoriosFinanceirosPage = lazy(() => import("./pages/financial/RelatoriosFinanceirosPage"));
+ const StudentReportCard = lazy(() => import("./pages/StudentReportCard"));
 const FinancialDashboard = lazy(() => import("./pages/financial/FinancialDashboard"));
 
 const CalendarioPage = lazy(() => import("./pages/CalendarioPage"));
