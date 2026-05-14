@@ -1131,7 +1131,7 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
 
         {/* Tabs de Funcionalidades */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-           <TabsList className="grid w-full grid-cols-4">
+           <TabsList className={`grid w-full ${isPedagogical ? 'grid-cols-5' : 'grid-cols-4'}`}>
              <TabsTrigger value="lancamento" className="gap-2">
                <FileSpreadsheet className="h-4 w-4" />
                Lançamento de Notas
@@ -1148,6 +1148,12 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
                <BarChart3 className="h-4 w-4" />
                Estatísticas
              </TabsTrigger>
+             {isPedagogical && (
+               <TabsTrigger value="pedagogico" className="gap-2">
+                 <CheckCircle2 className="h-4 w-4" />
+                 Publicação
+               </TabsTrigger>
+             )}
            </TabsList>
 
            <TabsContent value="lancamento" className="mt-6">
