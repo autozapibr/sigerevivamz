@@ -631,15 +631,48 @@ function AttendanceStatistics({ classId }: { classId: number | null }) {
   );
 }
 
+import { useCurrentTeacher, useTeacherAssignments } from '@/hooks/useTeachers';
+import { useAuth } from '@/contexts/AuthContext';
+
 export default function Attendance() {
+  const { user } = useAuth();
+  const { data: teacher } = useCurrentTeacher();
+  const { data: assignments } = useTeacherAssignments(teacher?.id || null);
+
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState('chamada');
 
-  const { data: classes = [], isLoading: classesLoading } = useClasses();
-  const { data: subjects = [] } = useSubjects();
+  const { data: allClasses = [], isLoading: classesLoading } = useClasses();
+  const { data: allSubjects = [] } = useSubjects();
+  
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
+  const isProfessor = user?.role === 'PROFESSOR';
+  const hasTeacherProfile = !!teacher;
+  const shouldFilterByTeacher = hasTeacherProfile && (isProfessor || assignments?.classes.length > 0);
+
+  const classes = useMemo(() => {
+    if (shouldFilterByTeacher && assignments?.classes) {
+      return assignments.classes;
+    }
+    return allClasses;
+  }, [allClasses, assignments, shouldFilterByTeacher]);
+
+  const subjects = useMemo(() => {
+    if (shouldFilterByTeacher && assignments?.subjects) {
+      if (!selectedClassId) return [];
+      return assignments.subjects
+        .filter((s: any) => s.class_id === selectedClassId)
+        .map((s: any) => ({ 
+          id: s.subject_id, 
+          name: s.subject_name 
+        }));
+    }
+    return allSubjects;
+  }, [allSubjects, assignments, shouldFilterByTeacher, selectedClassId]);
+
   const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
 
   const changeDate = (days: number) => {
