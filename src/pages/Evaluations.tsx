@@ -852,7 +852,8 @@ function AnnualSummary({ classId, subjects, classes }: { classId: number | null;
                 {annualData.map((row, index) => {
                   const { className: rowClassName } = classifyGrade(row.overallAverage);
                   return (
-                  <TableRow key={row.student.id}>
+                  (
+                    <TableRow key={row.student.id}>
                     <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur-sm">{index + 1}</TableCell>
                      <TableCell className="sticky left-8 z-10 bg-background/95 backdrop-blur-sm font-medium">
                        <div className="flex items-center gap-2">
@@ -881,8 +882,9 @@ function AnnualSummary({ classId, subjects, classes }: { classId: number | null;
                         </Badge>
                       )}
                     </TableCell>
-                  </TableRow>
-                })}
+                    </TableRow>
+                  )
+                )})}
               </TableBody>
             </Table>
           </div>
