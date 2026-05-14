@@ -57,6 +57,8 @@ import {
 import { StaffForm, initialStaffFormData, type StaffFormData } from '@/components/rh/StaffForm';
 import { DocumentUploadDialog } from '@/components/rh/DocumentUploadDialog';
 import { formatPhone } from '@/lib/validators/mozambique';
+import { TeacherAssignmentsDialog } from '@/components/teachers/TeacherAssignmentsDialog';
+import { useAllAssignments } from '@/hooks/useTeacherAssignments';
 
 export default function Teachers() {
   const { searchQuery: searchTerm, setPlaceholder } = useSearch();
@@ -70,6 +72,7 @@ export default function Teachers() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDocumentDialog, setShowDocumentDialog] = useState(false);
+  const [showAssignmentsDialog, setShowAssignmentsDialog] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
   const [formData, setFormData] = useState<StaffFormData>(initialStaffFormData);
 
@@ -80,6 +83,7 @@ export default function Teachers() {
 
   const { data: teachers = [], isLoading } = useTeachers(filters);
   const { data: stats } = useTeachersStats();
+  const { data: allAssignments = [] } = useAllAssignments();
   const createTeacher = useCreateTeacher();
   const updateTeacher = useUpdateTeacher();
   const deleteTeacher = useDeleteTeacher();
@@ -365,6 +369,13 @@ export default function Teachers() {
                           <DropdownMenuItem onClick={() => handleEdit(teacher)}>
                             <Edit className="w-4 h-4 mr-2" />
                             Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedTeacher(teacher);
+                            setShowAssignmentsDialog(true);
+                          }}>
+                            <BookOpen className="w-4 h-4 mr-2" />
+                            Turmas e Disciplinas
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => {
                             setSelectedTeacher(teacher);
