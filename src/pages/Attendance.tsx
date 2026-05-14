@@ -648,8 +648,9 @@ export default function Attendance() {
   const { data: allClasses = [], isLoading: classesLoading } = useClasses();
   const { data: allSubjects = [] } = useSubjects();
   
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
-  const isProfessor = user?.role === 'PROFESSOR';
+  const userRole = String(user?.role || '');
+  const isAdmin = ['ADMIN', 'PEDAGOGICO', 'DIRETORIA', 'SECRETARIA'].includes(userRole);
+  const isProfessor = userRole === 'PROFESSOR';
   const hasTeacherProfile = !!teacher;
   const shouldFilterByTeacher = isProfessor || (hasTeacherProfile && assignments?.classes.length > 0);
 
