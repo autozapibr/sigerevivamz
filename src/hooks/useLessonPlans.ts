@@ -77,28 +77,35 @@ export function useLessonPlanConfig() {
   });
 }
 
-export function useLessonPlans() {
-  return useQuery({
-    queryKey: ['lesson-plans'],
-    queryFn: async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      const currentUserId = authData.user?.id;
-
-      let query = supabase
-        .from('lesson_plans')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (currentUserId) {
-        query = query.eq('teacher_id', currentUserId);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as LessonPlan[];
-    },
-  });
-}
+ export function useLessonPlans() {
+   return useQuery({
+     queryKey: ['lesson-plans'],
+     queryFn: async () => {
+       const { data: { user } } = await supabase.auth.getUser();
+       if (!user) return [];
+ 
+       const { data: userRoles } = await supabase
+         .from('user_roles')
+         .select('role')
+         .eq('user_id', user.id);
+       
+       const isAdmin = userRoles?.some(r => ['ADMIN', 'PEDAGOGICO', 'DIRETORIA'].includes(r.role));
+ 
+       let query = supabase
+         .from('lesson_plans')
+         .select('*')
+         .order('created_at', { ascending: false });
+ 
+       if (!isAdmin) {
+         query = query.eq('teacher_id', user.id);
+       }
+ 
+       const { data, error } = await query;
+       if (error) throw error;
+       return data as LessonPlan[];
+     },
+   });
+ }
 
 export function useLessonPlanMutations() {
   const queryClient = useQueryClient();

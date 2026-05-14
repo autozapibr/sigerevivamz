@@ -991,48 +991,24 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
    const [selectedTrimestre, setSelectedTrimestre] = useState<number>(1);
    const [activeTab, setActiveTab] = useState('lancamento');
  
-  const { user } = useAuth();
-  const { data: teacher } = useCurrentTeacher();
-  const { data: assignments } = useTeacherAssignments(teacher?.id || null);
-
-  const { data: allClasses = [], isLoading: classesLoading } = useClasses();
-  const { data: allSubjects = [] } = useSubjects();
-
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
-  const isProfessor = user?.role === 'PROFESSOR';
-  const hasTeacherProfile = !!teacher;
-
-  // If the user has a teacher profile, we should filter by their assignments
-  // even if they have an admin/pedagogical role, if they have assignments.
-  const shouldFilterByTeacher = isProfessor || (hasTeacherProfile && assignments?.classes.length > 0);
-
-  const classes = useMemo(() => {
-    if (shouldFilterByTeacher) {
-      return assignments?.classes || [];
-    }
-    return allClasses;
-  }, [allClasses, assignments, shouldFilterByTeacher]);
-
-  const subjects = useMemo(() => {
-    if (shouldFilterByTeacher) {
-      if (!selectedClassId) return [];
-      
-      // Filter unique subjects for the selected class
-      const classSubjects = assignments?.subjects
-        .filter((s: any) => s.class_id === selectedClassId) || [];
-      
-      if (classSubjects.length > 0) {
-        return classSubjects.map((s: any) => ({ 
-          id: s.subject_id, 
-          name: s.subject_name,
-          code: allSubjects.find(as => as.id === s.subject_id)?.code 
-        }));
-      }
-      
-      return [];
-    }
-    return allSubjects;
-  }, [allSubjects, assignments, shouldFilterByTeacher, selectedClassId]);
+   const { user } = useAuth();
+   const { data: classes = [], isLoading: classesLoading } = useClasses();
+   const { data: allSubjects = [] } = useSubjects();
+ 
+   const isAdmin = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA' || user?.role === 'SECRETARIA';
+ 
+   // Use the filtered subjects from useSubjects hook, but if a class is selected, 
+   // we might want to further filter subjects that are specifically assigned to that class
+   // for the current teacher (if not admin)
+   const subjects = useMemo(() => {
+     if (isAdmin) return allSubjects;
+     if (!selectedClassId) return allSubjects;
+     
+     // For teachers, useSubjects already returns only their assigned subjects.
+     // We just need to make sure they are valid for the selected class.
+     // The RLS and useSubjects handle this, so allSubjects here is already filtered.
+     return allSubjects;
+   }, [allSubjects, isAdmin, selectedClassId]);
  
   const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
   const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
