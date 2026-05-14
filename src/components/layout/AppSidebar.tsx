@@ -11,17 +11,18 @@ import {
   , Map as MapIcon, Shield, HardDrive
 } from 'lucide-react';
 
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from '@/components/ui/sidebar';
+ import {
+   Sidebar,
+   SidebarContent,
+   SidebarGroup,
+   SidebarGroupContent,
+   SidebarGroupLabel,
+   SidebarMenu,
+   SidebarMenuButton,
+   SidebarMenuItem,
+   useSidebar,
+   SidebarTrigger,
+ } from '@/components/ui/sidebar';
  import { useAuth } from '@/contexts/AuthContext';
  import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { ROLE_PERMISSIONS } from '@/types/auth';
@@ -115,7 +116,7 @@ export function AppSidebar() {
    const { user, logout } = useAuth();
    const unreadCount = useUnreadNotificationCount();
   const location = useLocation();
-  const [openModules, setOpenModules] = React.useState<string[]>(['gestao_escolar']);
+   const [openModules, setOpenModules] = React.useState<string[]>([]);
   const sidebarScrollRef = React.useRef<HTMLDivElement | null>(null);
 
   const saveSidebarScroll = React.useCallback(() => {
@@ -153,13 +154,13 @@ export function AppSidebar() {
   const isModuleActive = (items: typeof systemModules.gestao_escolar.items) => 
     items.some(item => location.pathname.startsWith(item.url));
 
-  const toggleModule = (key: string) => {
-    setOpenModules(prev => 
-      prev.includes(key) 
-        ? prev.filter(k => k !== key) 
-        : [...prev, key]
-    );
-  };
+   const toggleModule = (key: string) => {
+     setOpenModules(prev => 
+       prev.includes(key) 
+         ? [] 
+         : [key]
+     );
+   };
 
   const accessibleModules = Object.entries(systemModules).filter(
     ([_, module]) => hasPermission(module.permission)
@@ -174,30 +175,37 @@ export function AppSidebar() {
       collapsible="icon"
     >
       <SidebarContent className="bg-sidebar">
-        {/* Logo */}
-        <div className={cn("p-4 border-b border-border/50", collapsed && "flex justify-center p-3")}>
-          <motion.div 
-            className="flex items-center gap-3"
-            layout
-          >
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-              <GraduationCap className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <AnimatePresence>
-              {!collapsed && (
-                <motion.div
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 'auto' }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <h1 className="text-lg font-bold text-foreground font-inter tracking-tight">SiGER</h1>
-                  <p className="text-[10px] text-muted-foreground leading-none">Sistema de Gestão Escolar Reviva</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        </div>
+         {/* Logo and Collapse Toggle */}
+         <div className={cn("p-4 border-b border-border/50 flex items-center justify-between", collapsed && "flex-col justify-center p-3 gap-3")}>
+           <motion.div 
+             className="flex items-center gap-3"
+             layout
+           >
+             <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+               <GraduationCap className="w-5 h-5 text-primary-foreground" />
+             </div>
+             <AnimatePresence>
+               {!collapsed && (
+                 <motion.div
+                   initial={{ opacity: 0, width: 0 }}
+                   animate={{ opacity: 1, width: 'auto' }}
+                   exit={{ opacity: 0, width: 0 }}
+                   transition={{ duration: 0.2 }}
+                 >
+                   <h1 className="text-lg font-bold text-foreground font-inter tracking-tight">SiGER</h1>
+                   <p className="text-[10px] text-muted-foreground leading-none">Sistema de Gestão Escolar Reviva</p>
+                 </motion.div>
+               )}
+             </AnimatePresence>
+           </motion.div>
+           
+           {!collapsed && (
+             <SidebarTrigger className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" />
+           )}
+           {collapsed && (
+             <SidebarTrigger className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" />
+           )}
+         </div>
 
         {/* Navigation Icons */}
         {user && !collapsed && (
@@ -262,12 +270,12 @@ export function AppSidebar() {
           </div>
         )}
 
-        {/* Navigation */}
-        <div
-          ref={sidebarScrollRef}
-          onScroll={saveSidebarScroll}
-          className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
-        >
+         {/* Navigation */}
+         <div
+           ref={sidebarScrollRef}
+           onScroll={saveSidebarScroll}
+           className="flex-1 overflow-y-auto px-3 py-4 sidebar-scrollbar"
+         >
           <div className="space-y-2">
             {accessibleModules.map(([key, module]) => {
               const isOpen = openModules.includes(key) || isModuleActive(module.items);

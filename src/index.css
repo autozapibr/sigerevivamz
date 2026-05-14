@@ -229,17 +229,21 @@
     @apply animate-pulse bg-muted rounded;
   }
 
-  /* === Scrollbar Custom === */
-  .custom-scrollbar::-webkit-scrollbar {
-    @apply w-2;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-border rounded-full;
-    @apply hover:bg-muted-foreground/30;
-  }
+   /* === Scrollbar Custom - Blue tones for Sidebar === */
+   .sidebar-scrollbar::-webkit-scrollbar {
+     @apply w-1.5;
+   }
+   .sidebar-scrollbar::-webkit-scrollbar-track {
+     @apply bg-transparent;
+   }
+   .sidebar-scrollbar::-webkit-scrollbar-thumb {
+     @apply bg-blue-400/30 rounded-full;
+     @apply hover:bg-blue-500/50 transition-colors;
+   }
+   .dark .sidebar-scrollbar::-webkit-scrollbar-thumb {
+     @apply bg-blue-500/20;
+     @apply hover:bg-blue-400/40;
+   }
 
   /* === Page Transitions === */
   .page-enter {
