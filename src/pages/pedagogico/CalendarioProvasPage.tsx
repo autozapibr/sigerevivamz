@@ -25,8 +25,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useCalendarEventsByMonth, useCreateCalendarEvent, CalendarEvent, CalendarEventInsert } from '@/hooks/useCalendarEvents';
 import { useExamNotifications, useMarkExamNotificationRead, useMarkAllExamNotificationsRead } from '@/hooks/useExamNotifications';
-import { useClassesList } from '@/hooks/useClasses';
-import { useSubjectsList } from '@/hooks/useSubjects';
+import { useClasses, useSubjects } from '@/hooks/useGrades';
+import { useCurrentTeacher, useTeacherAssignments } from '@/hooks/useTeachers';
 import { useAuth } from '@/contexts/AuthContext';
 
 type ViewMode = 'month' | 'week' | 'list';
@@ -63,8 +63,32 @@ export default function CalendarioProvasPage() {
   const month = currentDate.getMonth() + 1;
   const { data: allEvents = [], isLoading } = useCalendarEventsByMonth(year, month);
   const { data: notifications = [] } = useExamNotifications();
-  const { data: classes = [] } = useClassesList({ year: new Date().getFullYear() });
-  const { data: subjects = [] } = useSubjectsList({});
+  const { data: teacher } = useCurrentTeacher();
+  const { data: assignments } = useTeacherAssignments(teacher?.id || null);
+  const { data: allClasses = [] } = useClasses();
+  const { data: allSubjects = [] } = useSubjects();
+
+  const isProfessor = user?.role === 'PROFESSOR';
+  const hasTeacherProfile = !!teacher;
+  const shouldFilterByTeacher = isProfessor || (hasTeacherProfile && (assignments?.classes.length || 0) > 0);
+
+  const classes = useMemo(() => {
+    if (shouldFilterByTeacher) {
+      return assignments?.classes || [];
+    }
+    return allClasses;
+  }, [allClasses, assignments, shouldFilterByTeacher]);
+
+  const subjects = useMemo(() => {
+    if (shouldFilterByTeacher) {
+      const uniqueSubjectsMap = new Map();
+      assignments?.subjects.forEach((s: any) => {
+        uniqueSubjectsMap.set(s.subject_id, { id: s.subject_id, name: s.subject_name });
+      });
+      return Array.from(uniqueSubjectsMap.values());
+    }
+    return allSubjects;
+  }, [allSubjects, assignments, shouldFilterByTeacher]);
   const createEvent = useCreateCalendarEvent();
   const markRead = useMarkExamNotificationRead();
   const markAllRead = useMarkAllExamNotificationsRead();

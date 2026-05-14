@@ -1004,22 +1004,22 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
 
   // If the user has a teacher profile, we should filter by their assignments
   // even if they have an admin/pedagogical role, if they have assignments.
-  const shouldFilterByTeacher = hasTeacherProfile && (isProfessor || assignments?.classes.length > 0);
+  const shouldFilterByTeacher = isProfessor || (hasTeacherProfile && assignments?.classes.length > 0);
 
   const classes = useMemo(() => {
-    if (shouldFilterByTeacher && assignments?.classes) {
-      return assignments.classes;
+    if (shouldFilterByTeacher) {
+      return assignments?.classes || [];
     }
     return allClasses;
   }, [allClasses, assignments, shouldFilterByTeacher]);
 
   const subjects = useMemo(() => {
-    if (shouldFilterByTeacher && assignments?.subjects) {
+    if (shouldFilterByTeacher) {
       if (!selectedClassId) return [];
       
       // Filter unique subjects for the selected class
-      const classSubjects = assignments.subjects
-        .filter((s: any) => s.class_id === selectedClassId);
+      const classSubjects = assignments?.subjects
+        .filter((s: any) => s.class_id === selectedClassId) || [];
       
       if (classSubjects.length > 0) {
         return classSubjects.map((s: any) => ({ 

@@ -651,19 +651,19 @@ export default function Attendance() {
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
   const isProfessor = user?.role === 'PROFESSOR';
   const hasTeacherProfile = !!teacher;
-  const shouldFilterByTeacher = hasTeacherProfile && (isProfessor || assignments?.classes.length > 0);
+  const shouldFilterByTeacher = isProfessor || (hasTeacherProfile && assignments?.classes.length > 0);
 
   const classes = useMemo(() => {
-    if (shouldFilterByTeacher && assignments?.classes) {
-      return assignments.classes;
+    if (shouldFilterByTeacher) {
+      return assignments?.classes || [];
     }
     return allClasses;
   }, [allClasses, assignments, shouldFilterByTeacher]);
 
   const subjects = useMemo(() => {
-    if (shouldFilterByTeacher && assignments?.subjects) {
+    if (shouldFilterByTeacher) {
       if (!selectedClassId) return [];
-      return assignments.subjects
+      return (assignments?.subjects || [])
         .filter((s: any) => s.class_id === selectedClassId)
         .map((s: any) => ({ 
           id: s.subject_id, 

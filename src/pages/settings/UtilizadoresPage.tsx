@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserPlus, Trash2, KeyRound, Shield, Search, Users } from 'lucide-react';
+import { UserPlus, Trash2, KeyRound, Shield, Search, Users, Link2 } from 'lucide-react';
+import { UserLinkDialog } from '@/components/users/UserLinkDialog';
 import { UserRole } from '@/types/auth';
 import { InvitationManager } from '@/components/invitations/InvitationManager';
 
@@ -68,6 +69,7 @@ export default function UtilizadoresPage() {
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState<string | null>(null);
+  const [linkOpen, setLinkOpen] = useState<SystemUser | null>(null);
   const [newPassword, setNewPassword] = useState('');
 
   // Form state
@@ -302,6 +304,16 @@ export default function UtilizadoresPage() {
                               </DialogContent>
                             </Dialog>
 
+                            {/* Link user */}
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              title="Vincular a um registo (Professor/Aluno/etc)"
+                              onClick={() => setLinkOpen(u)}
+                            >
+                              <Link2 className="w-4 h-4" />
+                            </Button>
+
                             {/* Delete */}
                             {u.id !== user?.id && (
                               <Button
@@ -329,6 +341,16 @@ export default function UtilizadoresPage() {
           </CardContent>
         </Card>
         <InvitationManager />
+        
+        {linkOpen && (
+          <UserLinkDialog
+            userId={linkOpen.id}
+            userName={linkOpen.name}
+            userRole={linkOpen.role}
+            open={!!linkOpen}
+            onOpenChange={(open) => !open && setLinkOpen(null)}
+          />
+        )}
       </div>
     </MainLayout>
   );

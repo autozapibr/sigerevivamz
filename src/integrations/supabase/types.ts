@@ -1338,25 +1338,70 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          employee_id: number | null
           full_name: string | null
+          student_id: number | null
+          teacher_id: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          employee_id?: number | null
           full_name?: string | null
+          student_id?: number | null
+          teacher_id?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          employee_id?: number | null
           full_name?: string | null
+          student_id?: number | null
+          teacher_id?: number | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_public_info"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_attendance_stats"
+            referencedColumns: ["student_id"]
+          },
+          {
+            foreignKeyName: "profiles_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       registration_invitations: {
         Row: {

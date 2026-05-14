@@ -202,8 +202,27 @@ export function useTeachersStats() {
      queryKey: ['current-teacher'],
      queryFn: async () => {
        const { data: { user } } = await supabase.auth.getUser();
-       if (!user?.email) return null;
+       if (!user?.id) return null;
  
+       // Try to get teacher_id from profiles first
+       const { data: profile } = await supabase
+         .from('profiles')
+         .select('teacher_id')
+         .eq('user_id', user.id)
+         .maybeSingle();
+ 
+       if (profile?.teacher_id) {
+         const { data, error } = await supabase
+           .from('teachers')
+           .select('*')
+           .eq('id', profile.teacher_id)
+           .maybeSingle();
+         
+         if (!error && data) return data as Teacher;
+       }
+ 
+       // Fallback to email matching
+       if (!user.email) return null;
        const { data, error } = await supabase
          .from('teachers')
          .select('*')

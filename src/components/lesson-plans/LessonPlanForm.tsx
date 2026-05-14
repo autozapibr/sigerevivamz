@@ -14,6 +14,8 @@ import { Loader2, Sparkles, X, Info, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLessonPlanFields, type LessonPlanField } from '@/hooks/useLessonPlans';
 import { useClasses, useSubjects } from '@/hooks/useGrades';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCurrentTeacher, useTeacherAssignments } from '@/hooks/useTeachers';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -27,12 +29,40 @@ const AI_ASSIST_FIELDS = ['versiculos_biblicos', 'ideia_guia', 'objetivos_compet
 
 export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps) {
   const { data: fields, isLoading: fieldsLoading } = useLessonPlanFields();
-  const { data: classes } = useClasses();
-  const { data: subjects } = useSubjects();
-  const { data: calendarEvents } = useCalendarEvents();
-  
+  const { data: allClasses } = useClasses();
+  const { data: allSubjects } = useSubjects();
+  const { user } = useAuth();
+  const { data: teacher } = useCurrentTeacher();
+  const { data: assignments } = useTeacherAssignments(teacher?.id || null);
+
   const [classId, setClassId] = useState<string>('');
   const [subjectId, setSubjectId] = useState<string>('');
+
+  const isProfessor = user?.role === 'PROFESSOR';
+  const hasTeacherProfile = !!teacher;
+  const shouldFilterByTeacher = isProfessor || (hasTeacherProfile && (assignments?.classes.length || 0) > 0);
+
+  const classes = useMemo(() => {
+    if (shouldFilterByTeacher) {
+      return assignments?.classes || [];
+    }
+    return allClasses || [];
+  }, [allClasses, assignments, shouldFilterByTeacher]);
+
+  const subjects = useMemo(() => {
+    if (shouldFilterByTeacher) {
+      if (!classId) return [];
+      return (assignments?.subjects || [])
+        .filter((s: any) => s.class_id === Number(classId))
+        .map((s: any) => ({ 
+          id: s.subject_id, 
+          name: s.subject_name 
+        }));
+    }
+    return allSubjects || [];
+  }, [allSubjects, assignments, shouldFilterByTeacher, classId]);
+  
+  const { data: calendarEvents } = useCalendarEvents();
   const [lessonDates, setLessonDates] = useState<Date[]>([]);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [aiLoadingField, setAiLoadingField] = useState<string | null>(null);
