@@ -75,8 +75,31 @@ export default function ArquivosPage() {
     category: filterCategory || undefined,
   });
   const { uploadFile: uploadMutation, deleteFile, getSignedUrl } = useTeacherFileMutations();
-  const { data: subjects } = useSubjectsList();
-  const { data: classes } = useClassesList();
+  const { data: teacher } = useCurrentTeacher();
+  const { data: assignments } = useTeacherAssignments(teacher?.id || null);
+  const { data: allClasses = [] } = useClasses();
+  const { data: allSubjects = [] } = useSubjects();
+
+  const hasTeacherProfile = !!teacher;
+  const shouldFilterByTeacher = isTeacher || (hasTeacherProfile && (assignments?.classes.length || 0) > 0);
+
+  const classes = useMemo(() => {
+    if (shouldFilterByTeacher) {
+      return assignments?.classes || [];
+    }
+    return allClasses;
+  }, [allClasses, assignments, shouldFilterByTeacher]);
+
+  const subjects = useMemo(() => {
+    if (shouldFilterByTeacher) {
+      const uniqueSubjectsMap = new Map();
+      assignments?.subjects.forEach((s: any) => {
+        uniqueSubjectsMap.set(s.subject_id, { id: s.subject_id, name: s.subject_name });
+      });
+      return Array.from(uniqueSubjectsMap.values());
+    }
+    return allSubjects;
+  }, [allSubjects, assignments, shouldFilterByTeacher]);
 
   // Group files by teacher
   const groupedFiles = useMemo(() => {
