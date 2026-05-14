@@ -35,6 +35,9 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
   const { data: teacher } = useCurrentTeacher();
   const { data: assignments } = useTeacherAssignments(teacher?.id || null);
 
+  const [classId, setClassId] = useState<string>('');
+  const [subjectId, setSubjectId] = useState<string>('');
+
   const isProfessor = user?.role === 'PROFESSOR';
   const hasTeacherProfile = !!teacher;
   const shouldFilterByTeacher = isProfessor || (hasTeacherProfile && (assignments?.classes.length || 0) > 0);
@@ -58,10 +61,8 @@ export function LessonPlanForm({ onGenerate, isGenerating }: LessonPlanFormProps
     }
     return allSubjects || [];
   }, [allSubjects, assignments, shouldFilterByTeacher, classId]);
-  const { data: calendarEvents } = useCalendarEvents();
   
-  const [classId, setClassId] = useState<string>('');
-  const [subjectId, setSubjectId] = useState<string>('');
+  const { data: calendarEvents } = useCalendarEvents();
   const [lessonDates, setLessonDates] = useState<Date[]>([]);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [aiLoadingField, setAiLoadingField] = useState<string | null>(null);
