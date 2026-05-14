@@ -1,14 +1,3 @@
-           <TabsContent value="faltas" className="mt-6">
-             <AttendanceEntry
-               classId={selectedClassId}
-               subjectId={selectedSubjectId}
-               students={students}
-               studentsLoading={studentsLoading}
-               classes={classes}
-               subjects={subjects}
-             />
-           </TabsContent>
- 
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
