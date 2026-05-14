@@ -184,32 +184,109 @@ export function useSaveGrades() {
   });
 }
 
-export function useSubjects() {
-  return useQuery({
-    queryKey: ['subjects'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('subjects')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      return data;
-    },
-  });
-}
-
-export function useClasses() {
-  return useQuery({
-    queryKey: ['classes'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('classes')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      return data;
-    },
-  });
-}
+ export function useSubjects() {
+   return useQuery({
+     queryKey: ['subjects'],
+     queryFn: async () => {
+       const { data: { user } } = await supabase.auth.getUser();
+       if (!user) return [];
+ 
+       const { data: userRoles } = await supabase
+         .from('user_roles')
+         .select('role')
+         .eq('user_id', user.id);
+       
+       const isAdmin = userRoles?.some(r => ['ADMIN', 'PEDAGOGICO', 'DIRETORIA', 'SECRETARIA'].includes(r.role));
+ 
+       if (isAdmin) {
+         const { data, error } = await supabase
+           .from('subjects')
+           .select('*')
+           .order('name');
+         if (error) throw error;
+         return data;
+       }
+ 
+       // Filter by teacher assignments
+       const { data: profile } = await supabase
+         .from('profiles')
+         .select('teacher_id')
+         .eq('user_id', user.id)
+         .maybeSingle();
+       
+       const teacherId = profile?.teacher_id;
+       if (!teacherId) return [];
+ 
+       const { data: curriculum, error: currError } = await supabase
+         .from('class_curriculum')
+         .select('subject_id, subjects(*)')
+         .eq('teacher_id', teacherId);
+       
+       if (currError) throw currError;
+       
+       // Unique subjects
+       const subjectMap = new Map();
+       curriculum?.forEach(c => {
+         if (c.subjects) subjectMap.set(c.subject_id, c.subjects);
+       });
+       
+       return Array.from(subjectMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+     },
+   });
+ }
+ 
+ export function useClasses() {
+   return useQuery({
+     queryKey: ['classes'],
+     queryFn: async () => {
+       const { data: { user } } = await supabase.auth.getUser();
+       if (!user) return [];
+ 
+       const { data: userRoles } = await supabase
+         .from('user_roles')
+         .select('role')
+         .eq('user_id', user.id);
+       
+       const isAdmin = userRoles?.some(r => ['ADMIN', 'PEDAGOGICO', 'DIRETORIA', 'SECRETARIA'].includes(r.role));
+ 
+       if (isAdmin) {
+         const { data, error } = await supabase
+           .from('classes')
+           .select('*')
+           .order('name');
+         if (error) throw error;
+         return data;
+       }
+ 
+       // Filter by teacher assignments (Director or Subject Teacher)
+       const { data: profile } = await supabase
+         .from('profiles')
+         .select('teacher_id')
+         .eq('user_id', user.id)
+         .maybeSingle();
+       
+       const teacherId = profile?.teacher_id;
+       if (!teacherId) return [];
+ 
+       // Directed classes
+       const { data: directed } = await supabase
+         .from('classes')
+         .select('*')
+         .eq('teacher_id', teacherId);
+       
+       // Curriculum classes
+       const { data: curriculum } = await supabase
+         .from('class_curriculum')
+         .select('classes(*)')
+         .eq('teacher_id', teacherId);
+ 
+       const classMap = new Map();
+       directed?.forEach(c => classMap.set(c.id, c));
+       curriculum?.forEach(c => {
+         if (c.classes) classMap.set((c.classes as any).id, c.classes);
+       });
+ 
+       return Array.from(classMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+     },
+   });
+ }
