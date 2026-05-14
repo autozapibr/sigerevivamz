@@ -206,14 +206,19 @@ function GradeEntry({
     placeholder: string;
   }) => (
     <Input
-      type="number"
-      min="0"
-      max="20"
-      step="0.5"
+      type="text"
+      inputMode="decimal"
       value={value ?? ''}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => {
+        const val = e.target.value.replace(',', '.');
+        if (val === '' || /^\d*\.?\d*$/.test(val)) {
+          if (val.length <= 4) {
+            onChange(val);
+          }
+        }
+      }}
       placeholder={placeholder}
-      className="w-16 text-center"
+      className="w-16 text-center font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
     />
   );
 
