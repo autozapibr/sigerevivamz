@@ -205,11 +205,11 @@ export function useTeachersStats() {
        if (!user?.id) return null;
  
        // Try to get teacher_id from profiles first
-       const { data: profile } = await supabase
-         .from('profiles')
-         .select('teacher_id')
-         .eq('user_id', user.id)
-         .maybeSingle();
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('teacher_id, full_name')
+          .eq('user_id', user.id)
+          .maybeSingle();
  
        if (profile?.teacher_id) {
          const { data, error } = await supabase
@@ -223,11 +223,11 @@ export function useTeachersStats() {
  
        // Fallback to email matching
        if (!user.email) return null;
-       const { data, error } = await supabase
-         .from('teachers')
-         .select('*')
-         .eq('email', user.email)
-         .maybeSingle();
+        const { data, error } = await supabase
+          .from('teachers')
+          .select('*')
+          .or(`email.eq."${user.email}",name.ilike."${profile?.full_name || ''}"`)
+          .maybeSingle();
  
        if (error) throw error;
        return data as Teacher;
