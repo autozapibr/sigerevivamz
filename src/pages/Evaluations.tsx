@@ -989,30 +989,37 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
    const [selectedTrimestre, setSelectedTrimestre] = useState<number>(1);
    const [activeTab, setActiveTab] = useState('lancamento');
  
-   const { data: teacher } = useCurrentTeacher();
-   const { data: assignments } = useTeacherAssignments(teacher?.id || null);
- 
-   const { data: allClasses = [], isLoading: classesLoading } = useClasses();
-   const { data: allSubjects = [] } = useSubjects();
- 
-   // Filter classes and subjects if user is a teacher
-   const classes = useMemo(() => {
-     if (!teacher) return allClasses;
-     return assignments?.classes || [];
-   }, [teacher, assignments, allClasses]);
- 
-   const subjects = useMemo(() => {
-     if (!teacher) return allSubjects;
-     // Filter subjects assigned to this teacher for the selected class
-     if (!selectedClassId) return [];
-     return assignments?.subjects
-       .filter(s => s.class_id === selectedClassId)
-       .map(s => ({ 
-         id: s.subject_id, 
-         name: s.subject_name,
-         code: allSubjects.find(as => as.id === s.subject_id)?.code 
-       })) || [];
-   }, [teacher, assignments, allSubjects, selectedClassId]);
+  const { user } = useAuth();
+  const { data: teacher } = useCurrentTeacher();
+  const { data: assignments } = useTeacherAssignments(teacher?.id || null);
+
+  const { data: allClasses = [], isLoading: classesLoading } = useClasses();
+  const { data: allSubjects = [] } = useSubjects();
+
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
+  const isProfessor = user?.role === 'PROFESSOR';
+
+  // Filter classes and subjects if user is a teacher
+  const classes = useMemo(() => {
+    if (isAdmin) return allClasses;
+    if (isProfessor) return assignments?.classes || [];
+    return allClasses;
+  }, [allClasses, assignments, isAdmin, isProfessor]);
+
+  const subjects = useMemo(() => {
+    if (isAdmin) return allSubjects;
+    if (isProfessor) {
+      if (!selectedClassId) return [];
+      return assignments?.subjects
+        .filter((s: any) => s.class_id === selectedClassId)
+        .map((s: any) => ({ 
+          id: s.subject_id, 
+          name: s.subject_name,
+          code: allSubjects.find(as => as.id === s.subject_id)?.code 
+        })) || [];
+    }
+    return allSubjects;
+  }, [allSubjects, assignments, isAdmin, isProfessor, selectedClassId]);
  
    const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
    const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
