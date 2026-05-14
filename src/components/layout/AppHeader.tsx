@@ -68,39 +68,15 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
         </div>
       </div>
 
-      {/* Right Actions */}
-      <div className="flex items-center gap-2">
-        {/* Sidebar Toggle */}
-        <SidebarTrigger className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg" />
-
-        {/* Notifications Icon */}
+      {/* Right Actions - Theme and User Menu */}
+      <div className="flex items-center gap-3">
+        {/* Theme Toggle */}
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 relative rounded-lg text-muted-foreground hover:text-foreground"
-          onClick={() => navigate('/notificacoes')}
-          title="Notificações"
+          onClick={toggleTheme}
+          className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
         >
-          <Bell className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <motion.span 
-              className="absolute top-1.5 right-1.5 min-w-[14px] h-[14px] px-0.5 bg-destructive text-destructive-foreground text-[8px] font-bold rounded-full flex items-center justify-center"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 500 }}
-            >
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </motion.span>
-          )}
-        </Button>
-
-        {/* Theme Toggle */}
-         <Button
-           variant="ghost"
-           size="icon"
-           onClick={toggleTheme}
-           className="rounded-lg text-muted-foreground hover:text-foreground"
-         >
            <motion.div
              initial={false}
              animate={{ rotate: isDark ? 180 : 0 }}
