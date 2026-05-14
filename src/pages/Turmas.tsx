@@ -439,8 +439,9 @@ export default function Turmas() {
               </motion.div>
             ))
           )}
-        </div>
-      </div>
+           </div>
+         )}
+       </div>
 
       {/* Create/Edit Dialog */}
       <Dialog open={showCreateDialog || showEditDialog} onOpenChange={(open) => {
