@@ -304,6 +304,16 @@ export default function UtilizadoresPage() {
                               </DialogContent>
                             </Dialog>
 
+                            {/* Link user */}
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              title="Vincular a um registo (Professor/Aluno/etc)"
+                              onClick={() => setLinkOpen(u)}
+                            >
+                              <Link2 className="w-4 h-4" />
+                            </Button>
+
                             {/* Delete */}
                             {u.id !== user?.id && (
                               <Button
