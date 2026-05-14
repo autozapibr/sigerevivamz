@@ -52,9 +52,10 @@ const TRIMESTRES = [
 interface StudentGrade {
   student_id: number;
   student_name: string;
-  acs: number | null;
-  acp: number | null;
-  acf: number | null;
+   acs1: number | null;
+   acs2: number | null;
+   acs3: number | null;
+   at: number | null;
   media: number | null;
 }
 
@@ -94,9 +95,10 @@ function GradeEntry({
         map.set(student.id, {
           student_id: student.id,
           student_name: student.name,
-          acs: existingGrade?.acs ?? null,
-          acp: existingGrade?.acp ?? null,
-          acf: existingGrade?.acf ?? null,
+           acs1: existingGrade?.acs1 ?? null,
+           acs2: existingGrade?.acs2 ?? null,
+           acs3: existingGrade?.acs3 ?? null,
+           at: existingGrade?.at ?? null,
           media: existingGrade?.media_trimestral ?? null,
         });
       });
@@ -131,16 +133,21 @@ function GradeEntry({
     };
   }, [gradesData]);
 
-  const handleGradeChange = (studentId: number, field: 'acs' | 'acp' | 'acf', value: string) => {
+   const handleGradeChange = (studentId: number, field: 'acs1' | 'acs2' | 'acs3' | 'at', value: string) => {
     const numValue = value === '' ? null : Math.min(20, Math.max(0, parseFloat(value) || 0));
     
     setGradesData(prev => {
       const newMap = new Map(prev);
       const current = newMap.get(studentId);
       if (current) {
-        const updated = { ...current, [field]: numValue };
-        updated.media = calculateTrimesterAverage(updated.acs, updated.acp, updated.acf);
-        newMap.set(studentId, updated);
+         const updated = { ...current, [field]: numValue } as any;
+         updated.media = calculateTrimesterAverage(
+           updated.acs1 ?? null, 
+           updated.acs2 ?? null, 
+           updated.acs3 ?? null, 
+           updated.at ?? null
+         );
+         newMap.set(studentId, updated as StudentGrade);
       }
       return newMap;
     });
@@ -157,17 +164,18 @@ function GradeEntry({
       return;
     }
 
-    const grades: GradeInsert[] = Array.from(gradesData.values())
-      .filter(g => g.acs !== null || g.acp !== null || g.acf !== null)
-      .map(g => ({
-        student_id: g.student_id,
-        subject_id: subjectId,
-        trimestre: trimestre,
-        acs: g.acs,
-        acp: g.acp,
-        acf: g.acf,
-        class_id: classId,
-      }));
+     const grades: GradeInsert[] = Array.from(gradesData.values())
+       .filter(g => g.acs1 !== null || g.acs2 !== null || g.acs3 !== null || g.at !== null)
+       .map(g => ({
+         student_id: g.student_id,
+         subject_id: subjectId,
+         trimestre: trimestre,
+         acs1: g.acs1,
+         acs2: g.acs2,
+         acs3: g.acs3,
+         at: g.at,
+         class_id: classId,
+       }));
 
     if (grades.length === 0) {
       toast({
@@ -323,12 +331,12 @@ function GradeEntry({
         <CardContent>
           {/* Legenda MEC */}
           <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-            <p className="text-sm font-medium mb-2">Sistema de Avaliação MEC (0-20):</p>
-            <div className="flex flex-wrap gap-4 text-xs">
-              <span><strong>ACS</strong> - Avaliação Contínua Sistemática (30%)</span>
-              <span><strong>ACP</strong> - Avaliação Contínua Parcial (30%)</span>
-              <span><strong>ACF</strong> - Avaliação Contínua Final (40%)</span>
-            </div>
+             <p className="text-sm font-medium mb-2">Sistema de Avaliação Moçambicano (SiGER):</p>
+             <div className="flex flex-wrap gap-4 text-xs">
+               <span><strong>ACS</strong> - Avaliação Contínua e Sistemática</span>
+               <span><strong>AT</strong> - Avaliação Trimestral</span>
+               <span className="text-muted-foreground ml-2">Fórmula: (Média ACS * 2 + AT) / 3</span>
+             </div>
             <div className="flex flex-wrap gap-2 mt-2">
               <Badge className="grade-excelente">18-20 Excelente</Badge>
               <Badge className="grade-bom">14-17 Bom</Badge>
@@ -360,9 +368,10 @@ function GradeEntry({
                   <TableRow>
                     <TableHead className="w-12">#</TableHead>
                     <TableHead className="min-w-[200px]">Educando</TableHead>
-                    <TableHead className="text-center w-20">ACS (30%)</TableHead>
-                    <TableHead className="text-center w-20">ACP (30%)</TableHead>
-                    <TableHead className="text-center w-20">ACF (40%)</TableHead>
+                     <TableHead className="text-center w-20">ACS 1</TableHead>
+                     <TableHead className="text-center w-20">ACS 2</TableHead>
+                     <TableHead className="text-center w-20">ACS 3</TableHead>
+                     <TableHead className="text-center w-20">AT</TableHead>
                     <TableHead className="text-center w-32">Média</TableHead>
                     <TableHead className="text-center w-28">Classificação</TableHead>
                   </TableRow>
@@ -381,27 +390,34 @@ function GradeEntry({
                       <TableCell className="font-medium">
                         {grade.student_name}
                       </TableCell>
-                      <TableCell className="text-center">
-                        <GradeInput
-                          value={grade.acs}
-                          onChange={(v) => handleGradeChange(grade.student_id, 'acs', v)}
-                          placeholder="0-20"
-                        />
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <GradeInput
-                          value={grade.acp}
-                          onChange={(v) => handleGradeChange(grade.student_id, 'acp', v)}
-                          placeholder="0-20"
-                        />
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <GradeInput
-                          value={grade.acf}
-                          onChange={(v) => handleGradeChange(grade.student_id, 'acf', v)}
-                          placeholder="0-20"
-                        />
-                      </TableCell>
+                       <TableCell className="text-center">
+                         <GradeInput
+                           value={grade.acs1}
+                           onChange={(v) => handleGradeChange(grade.student_id, 'acs1', v)}
+                           placeholder="ACS 1"
+                         />
+                       </TableCell>
+                       <TableCell className="text-center">
+                         <GradeInput
+                           value={grade.acs2}
+                           onChange={(v) => handleGradeChange(grade.student_id, 'acs2', v)}
+                           placeholder="ACS 2"
+                         />
+                       </TableCell>
+                       <TableCell className="text-center">
+                         <GradeInput
+                           value={grade.acs3}
+                           onChange={(v) => handleGradeChange(grade.student_id, 'acs3', v)}
+                           placeholder="ACS 3"
+                         />
+                       </TableCell>
+                       <TableCell className="text-center">
+                         <GradeInput
+                           value={grade.at}
+                           onChange={(v) => handleGradeChange(grade.student_id, 'at', v)}
+                           placeholder="AT"
+                         />
+                       </TableCell>
                       <TableCell className="text-center">
                         <span className={`text-lg font-bold ${classifyGrade(grade.media).className}`}>
                           {grade.media !== null ? grade.media.toFixed(1) : '-'}
