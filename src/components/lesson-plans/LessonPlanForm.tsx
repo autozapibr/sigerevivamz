@@ -14,6 +14,8 @@ import { Loader2, Sparkles, X, Info, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLessonPlanFields, type LessonPlanField } from '@/hooks/useLessonPlans';
 import { useClasses, useSubjects } from '@/hooks/useGrades';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCurrentTeacher, useTeacherAssignments } from '@/hooks/useTeachers';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
 import { supabase } from '@/integrations/supabase/client';
 
