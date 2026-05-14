@@ -355,67 +355,62 @@ export default function Teachers() {
                         </div>
                       </div>
                       
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                           <DropdownMenuItem 
-                             className="flex items-center gap-2 cursor-pointer"
-                             onClick={() => handleEdit(teacher)}
-                           >
-                             <Edit className="w-4 h-4" />
-                             <span>Editar Perfil</span>
-                           </DropdownMenuItem>
-                           <DropdownMenuItem 
-                             className="flex items-center gap-2 cursor-pointer text-primary"
-                             onClick={() => {
+                       <div className="flex gap-1">
+                         <Button 
+                           variant="ghost" 
+                           size="icon"
+                           className="h-8 w-8 text-muted-foreground hover:text-primary"
+                           onClick={() => handleEdit(teacher)}
+                           title="Editar Perfil"
+                         >
+                           <Edit className="w-4 h-4" />
+                         </Button>
+                         
+                         <DropdownMenu>
+                           <DropdownMenuTrigger asChild>
+                             <Button 
+                               variant="ghost" 
+                               size="icon"
+                               className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                             >
+                               <MoreHorizontal className="w-4 h-4" />
+                             </Button>
+                           </DropdownMenuTrigger>
+                           <DropdownMenuContent align="end">
+                             <DropdownMenuItem onClick={() => {
                                setSelectedTeacher(teacher);
-                               setShowAssignmentsDialog(true);
-                             }}
-                           >
-                             <BookOpen className="w-4 h-4" />
-                             <span>Atribuir Turmas e Disciplinas</span>
-                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => {
-                            setSelectedTeacher(teacher);
-                            setShowDocumentDialog(true);
-                          }}>
-                            <FileText className="w-4 h-4 mr-2" />
-                            Documentos
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleToggleStatus(teacher)}>
-                            {teacher.status === 'Ativo' ? (
-                              <>
-                                <UserX className="w-4 h-4 mr-2" />
-                                Desactivar
-                              </>
-                            ) : (
-                              <>
-                                <UserCheck className="w-4 h-4 mr-2" />
-                                Activar
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-destructive"
-                            onClick={() => {
-                              setSelectedTeacher(teacher);
-                              setShowDeleteDialog(true);
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Eliminar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                               setShowDocumentDialog(true);
+                             }}>
+                               <FileText className="w-4 h-4 mr-2" />
+                               Documentos
+                             </DropdownMenuItem>
+                             <DropdownMenuSeparator />
+                             <DropdownMenuItem onClick={() => handleToggleStatus(teacher)}>
+                               {teacher.status === 'Ativo' ? (
+                                 <>
+                                   <UserX className="w-4 h-4 mr-2" />
+                                   Desactivar
+                                 </>
+                               ) : (
+                                 <>
+                                   <UserCheck className="w-4 h-4 mr-2" />
+                                   Activar
+                                 </>
+                               )}
+                             </DropdownMenuItem>
+                             <DropdownMenuItem 
+                               className="text-destructive"
+                               onClick={() => {
+                                 setSelectedTeacher(teacher);
+                                 setShowDeleteDialog(true);
+                               }}
+                             >
+                               <Trash2 className="w-4 h-4 mr-2" />
+                               Eliminar
+                             </DropdownMenuItem>
+                           </DropdownMenuContent>
+                         </DropdownMenu>
+                       </div>
                     </div>
 
                     {teacher.qualifications && (
@@ -428,48 +423,79 @@ export default function Teachers() {
                       </div>
                     )}
 
-                    {(() => {
-                      const teacherAssigns = allAssignments.filter(a => a.teacher_id === teacher.id);
-                      if (teacherAssigns.length === 0) return null;
-                      const totalH = teacherAssigns.reduce((s, a) => s + (a.weekly_hours || 0), 0);
-                      return (
-                        <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                          <BookOpen className="w-3 h-3" />
-                          <span>{teacherAssigns.length} atribuições · {totalH}h/semana</span>
-                        </div>
-                      );
-                    })()}
+                    <div className="mt-4 space-y-3">
+                      {(() => {
+                        const teacherAssigns = allAssignments.filter(a => a.teacher_id === teacher.id);
+                        if (teacherAssigns.length === 0) return null;
+                        
+                        // Group by class to show tags
+                        const uniqueClasses = Array.from(new Set(teacherAssigns.map(a => a.class?.name).filter(Boolean)));
+                        const uniqueShifts = Array.from(new Set(teacherAssigns.map(a => a.shift).filter(Boolean)));
+                        const totalH = teacherAssigns.reduce((s, a) => s + (a.weekly_hours || 0), 0);
+                        
+                        return (
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap gap-1">
+                              {uniqueClasses.map(cls => (
+                                <Badge key={cls} variant="secondary" className="text-[10px] py-0 px-1.5 bg-primary/5 text-primary border-primary/10">
+                                  {cls}
+                                </Badge>
+                              ))}
+                              {uniqueShifts.map(sh => (
+                                <Badge key={sh} variant="outline" className="text-[10px] py-0 px-1.5 border-muted-foreground/20 text-muted-foreground">
+                                  {sh}
+                                </Badge>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                               <BookOpen className="w-3 h-3" />
+                               <span>{teacherAssigns.length} disciplinas · {totalH}h/semana</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
 
-                     <div className="mt-6 flex flex-col gap-3">
-                       <Button 
-                         variant="outline" 
-                         size="sm" 
-                         className="w-full justify-start text-primary border-primary/20 hover:bg-primary/5 hover:text-primary hover:border-primary/40"
-                         onClick={() => {
-                           setSelectedTeacher(teacher);
-                           setShowAssignmentsDialog(true);
-                         }}
-                       >
-                         <BookOpen className="w-4 h-4 mr-2" />
-                         Turmas e Disciplinas
-                       </Button>
-                       
-                       <div className="flex items-center justify-between">
-                         <Badge variant="secondary" className={
-                        teacher.status === 'Ativo'
-                          ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-0'
-                          : 'bg-destructive/10 text-destructive border-0'
-                      }>
-                        {teacher.status}
-                      </Badge>
-                      
-                         {teacher.contract_number && (
-                           <span className="text-xs text-muted-foreground">
-                             {teacher.contract_number}
-                           </span>
-                         )}
-                       </div>
-                     </div>
+                      <div className="flex items-center justify-between pt-2 border-t border-border/50 mt-4">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className={
+                            teacher.status === 'Ativo'
+                              ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-0 text-[10px]'
+                              : 'bg-destructive/10 text-destructive border-0 text-[10px]'
+                          }>
+                            {teacher.status}
+                          </Badge>
+                          {teacher.contract_number && (
+                            <span className="text-[10px] text-muted-foreground font-mono">
+                              {teacher.contract_number}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 text-primary hover:bg-primary/10"
+                            onClick={() => {
+                              setSelectedTeacher(teacher);
+                              setShowAssignmentsDialog(true);
+                            }}
+                            title="Gestão de Turmas e Disciplinas"
+                          >
+                            <BookOpen className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 text-muted-foreground hover:bg-muted"
+                            onClick={() => handleEdit(teacher)}
+                            title="Editar Cadastro"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
