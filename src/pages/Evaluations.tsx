@@ -1024,8 +1024,7 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
    const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
    const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
  
-   const { user } = useAuth();
-   const isPedagogical = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
+    const isPedagogical = isAdmin;
 
   return (
     <MainLayout title="Pauta Digital" subtitle="Sistema de avaliação e lançamento de notas">
