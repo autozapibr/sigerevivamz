@@ -39,7 +39,9 @@ import {
   classifyGrade,
   GradeInsert
 } from '@/hooks/useGrades';
-import { useStudentsByClass } from '@/hooks/useAttendance';
+ import { useStudentsByClass, useAttendanceByClass, useRecordAttendance, AttendanceStatus } from '@/hooks/useAttendance';
+ import { useCurrentTeacher, useTeacherAssignments } from '@/hooks/useTeachers';
+ import { Link } from 'react-router-dom';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend
 } from 'recharts';
