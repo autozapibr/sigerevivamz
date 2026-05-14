@@ -356,16 +356,6 @@ export default function Teachers() {
                       </div>
                       
                        <div className="flex gap-1">
-                         <Button 
-                           variant="ghost" 
-                           size="icon"
-                           className="h-8 w-8 text-muted-foreground hover:text-primary"
-                           onClick={() => handleEdit(teacher)}
-                           title="Editar Perfil"
-                         >
-                           <Edit className="w-4 h-4" />
-                         </Button>
-                         
                          <DropdownMenu>
                            <DropdownMenuTrigger asChild>
                              <Button 
@@ -534,23 +524,37 @@ export default function Teachers() {
             />
           </ScrollArea>
 
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => {
-              setShowCreateDialog(false);
-              setShowEditDialog(false);
-              resetForm();
-            }}>
-              Cancelar
-            </Button>
-            <Button 
-              onClick={showEditDialog ? handleUpdate : handleCreate}
-              disabled={!formData.name || createTeacher.isPending || updateTeacher.isPending}
-            >
-              {(createTeacher.isPending || updateTeacher.isPending) && (
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <DialogFooter className="mt-4 flex flex-col sm:flex-row gap-2">
+            <div className="flex-1">
+              {showEditDialog && (
+                <Button 
+                  variant="destructive" 
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="w-full sm:w-auto"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Excluir Professor
+                </Button>
               )}
-              {showEditDialog ? 'Guardar' : 'Registar'}
-            </Button>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => {
+                setShowCreateDialog(false);
+                setShowEditDialog(false);
+                resetForm();
+              }}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={showEditDialog ? handleUpdate : handleCreate}
+                disabled={!formData.name || createTeacher.isPending || updateTeacher.isPending}
+              >
+                {(createTeacher.isPending || updateTeacher.isPending) && (
+                  <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                )}
+                {showEditDialog ? 'Guardar' : 'Registar'}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
