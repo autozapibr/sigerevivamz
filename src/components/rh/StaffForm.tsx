@@ -199,10 +199,10 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
        <TabsList className={`grid w-full mb-4 ${staffType === 'teacher' && isEdit ? 'grid-cols-4' : 'grid-cols-3'}`}>
         <TabsTrigger value="personal" className="text-xs sm:text-sm">Dados Pessoais</TabsTrigger>
         <TabsTrigger value="professional" className="text-xs sm:text-sm">Profissional</TabsTrigger>
-        <TabsTrigger value="financial" className="text-xs sm:text-sm">Financeiro</TabsTrigger>
         {staffType === 'teacher' && isEdit && (
           <TabsTrigger value="assignments" className="text-xs sm:text-sm">Turmas</TabsTrigger>
         )}
+        <TabsTrigger value="financial" className="text-xs sm:text-sm">Financeiro</TabsTrigger>
       </TabsList>
 
       <TabsContent value="personal" className="space-y-4">
