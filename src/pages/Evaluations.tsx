@@ -352,7 +352,6 @@ function GradeEntry({
               <Badge variant="outline" className="grade-excelente">18-20 Excelente</Badge>
               <Badge variant="outline" className="grade-bom">14-17 Bom</Badge>
               <Badge variant="outline" className="grade-suficiente">10-13 Suficiente</Badge>
-              <Badge variant="outline" className="grade-insuficiente">14-17 Bom</Badge>
               <Badge variant="outline" className="grade-insuficiente">5-9 Insuficiente</Badge>
               <Badge variant="outline" className="grade-mau">0-4 Mau</Badge>
             </div>
