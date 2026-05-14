@@ -382,9 +382,20 @@ export function StudentDetail() {
               </Card>
             )}
 
-            {/* Grades */}
-            <Card>
-              <CardHeader><CardTitle className="text-base">Notas</CardTitle></CardHeader>
+             {/* Grades & Report Card */}
+             <Card>
+               <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                 <CardTitle className="text-base">Notas & Aproveitamento</CardTitle>
+                 <Button 
+                   variant="outline" 
+                   size="sm" 
+                   onClick={() => navigate(`/students/${studentId}/caderneta`)}
+                   className="gap-2"
+                 >
+                   <FileText className="h-4 w-4" />
+                   Ver Caderneta Completa
+                 </Button>
+               </CardHeader>
               <CardContent>
                 {grades.length === 0 ? (
                   <p className="text-sm text-muted-foreground">Sem notas registadas.</p>
