@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   BookOpen, Save, Calculator, Filter, FileSpreadsheet,
-  TrendingUp, TrendingDown, Download, BarChart3, Users, 
-  GraduationCap, ClipboardList
+   TrendingUp, TrendingDown, Download, BarChart3, Users,
+   GraduationCap, ClipboardList, CheckCircle2, XCircle, AlertCircle, Clock,
+   FileText
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
