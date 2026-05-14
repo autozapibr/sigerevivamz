@@ -1017,20 +1017,24 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
 
         {/* Tabs de Funcionalidades */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="lancamento" className="gap-2">
-              <FileSpreadsheet className="h-4 w-4" />
-              Lançamento de Notas
-            </TabsTrigger>
-            <TabsTrigger value="resumo" className="gap-2">
-              <GraduationCap className="h-4 w-4" />
-              Resumo Anual
-            </TabsTrigger>
-            <TabsTrigger value="estatisticas" className="gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Estatísticas
-            </TabsTrigger>
-          </TabsList>
+           <TabsList className="grid w-full grid-cols-4">
+             <TabsTrigger value="lancamento" className="gap-2">
+               <FileSpreadsheet className="h-4 w-4" />
+               Lançamento de Notas
+             </TabsTrigger>
+             <TabsTrigger value="faltas" className="gap-2">
+               <Users className="h-4 w-4" />
+               Faltas
+             </TabsTrigger>
+             <TabsTrigger value="resumo" className="gap-2">
+               <GraduationCap className="h-4 w-4" />
+               Resumo Anual
+             </TabsTrigger>
+             <TabsTrigger value="estatisticas" className="gap-2">
+               <BarChart3 className="h-4 w-4" />
+               Estatísticas
+             </TabsTrigger>
+           </TabsList>
 
           <TabsContent value="lancamento" className="mt-6">
             <GradeEntry 
