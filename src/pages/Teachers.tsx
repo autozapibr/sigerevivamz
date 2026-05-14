@@ -422,6 +422,18 @@ export default function Teachers() {
                       </div>
                     )}
 
+                    {(() => {
+                      const teacherAssigns = allAssignments.filter(a => a.teacher_id === teacher.id);
+                      if (teacherAssigns.length === 0) return null;
+                      const totalH = teacherAssigns.reduce((s, a) => s + (a.weekly_hours || 0), 0);
+                      return (
+                        <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                          <BookOpen className="w-3 h-3" />
+                          <span>{teacherAssigns.length} atribuições · {totalH}h/semana</span>
+                        </div>
+                      );
+                    })()}
+
                     <div className="mt-4 flex items-center justify-between">
                       <Badge variant="secondary" className={
                         teacher.status === 'Ativo'
@@ -528,6 +540,12 @@ export default function Teachers() {
           staffName={selectedTeacher.name}
         />
       )}
+
+      <TeacherAssignmentsDialog
+        open={showAssignmentsDialog}
+        onOpenChange={setShowAssignmentsDialog}
+        teacher={selectedTeacher ? { id: selectedTeacher.id, name: selectedTeacher.name } : null}
+      />
     </MainLayout>
   );
 }
