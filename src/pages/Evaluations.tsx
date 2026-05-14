@@ -398,8 +398,8 @@ function GradeEntry({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12">#</TableHead>
-                    <TableHead className="min-w-[200px]">Educando</TableHead>
+                    <TableHead className="sticky left-0 z-20 bg-muted/90 backdrop-blur-sm w-12">#</TableHead>
+                    <TableHead className="sticky left-12 z-20 bg-muted/90 backdrop-blur-sm min-w-[150px]">Educando</TableHead>
                      <TableHead className="text-center w-20">ACS 1</TableHead>
                      <TableHead className="text-center w-20">ACS 2</TableHead>
                      <TableHead className="text-center w-20">ACS 3</TableHead>
@@ -416,10 +416,10 @@ function GradeEntry({
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.02 }}
                     >
-                      <TableCell className="font-medium text-muted-foreground">
+                      <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur-sm font-medium text-muted-foreground">
                         {index + 1}
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="sticky left-12 z-10 bg-background/95 backdrop-blur-sm font-medium">
                         {grade.student_name}
                       </TableCell>
                        <TableCell className="text-center">
