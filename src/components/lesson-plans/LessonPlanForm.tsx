@@ -445,8 +445,8 @@ REGRAS OBRIGATÓRIAS:
                   <Button type="button" variant="outline" className="h-9 w-full justify-start text-left font-normal">
                     <CalendarDays className="mr-2 h-4 w-4" />
                     {lessonDates.length > 0
-                      ? `${lessonDates.length} dia(s) seleccionado(s)`
-                      : 'Seleccione múltiplos dias'}
+                      ? `${lessonDates.length} dia(s) selecionado(s)`
+                      : 'Selecione'}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -459,9 +459,7 @@ REGRAS OBRIGATÓRIAS:
                   />
                 </PopoverContent>
               </Popover>
-              <p className="text-[11px] text-muted-foreground">
-                Sincronizado com Provas/Actividades da turma e disciplina seleccionadas.
-              </p>
+              <p className="text-[11px] text-muted-foreground">Pode selecionar múltiplos dias.</p>
               {selectedDateConflicts.length > 0 && (
                 <div className="text-[11px] text-muted-foreground">
                   Conflitos detectados: {selectedDateConflicts.slice(0, 3).map((event) => `${event.title} (${event.date})`).join(', ')}
