@@ -160,6 +160,13 @@ export function AppSidebar() {
          : [key]
      );
    };
+
+   const handleCollapsedIconClick = (key: string) => {
+     if (collapsed) {
+       toggleSidebar();
+       setOpenModules([key]);
+     }
+   };
  
    // Update open modules when path changes to match active module
    React.useEffect(() => {
@@ -302,17 +309,18 @@ export function AppSidebar() {
               const ModuleIcon = module.icon;
 
               return (
-                <Collapsible 
-                  key={key} 
+                <Collapsible
+                  key={key}
                   open={isOpen && !collapsed}
                   onOpenChange={() => !collapsed && toggleModule(key)}
                 >
                   <CollapsibleTrigger asChild>
                     <button
+                      onClick={() => handleCollapsedIconClick(key)}
                       className={cn(
                         "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-                        moduleIsActive 
-                          ? "bg-primary/10 text-primary shadow-sm" 
+                        moduleIsActive
+                          ? "bg-primary/10 text-primary shadow-sm"
                           : "text-muted-foreground hover:bg-accent hover:text-foreground"
                       )}
                     >
@@ -401,6 +409,7 @@ export function AppSidebar() {
                   >
                     <CollapsibleTrigger asChild>
                       <button
+                        onClick={() => handleCollapsedIconClick('configuracoes')}
                         className={cn(
                           "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                           configIsActive
