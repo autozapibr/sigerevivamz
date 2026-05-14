@@ -1036,18 +1036,29 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
              </TabsTrigger>
            </TabsList>
 
-          <TabsContent value="lancamento" className="mt-6">
-            <GradeEntry 
-              classId={selectedClassId}
-              subjectId={selectedSubjectId}
-              trimestre={selectedTrimestre}
-              students={students}
-              existingGrades={existingGrades}
-              studentsLoading={studentsLoading}
-              classes={classes}
-              subjects={subjects}
-            />
-          </TabsContent>
+           <TabsContent value="lancamento" className="mt-6">
+             <GradeEntry 
+               classId={selectedClassId}
+               subjectId={selectedSubjectId}
+               trimestre={selectedTrimestre}
+               students={students}
+               existingGrades={existingGrades}
+               studentsLoading={studentsLoading}
+               classes={classes}
+               subjects={subjects}
+             />
+           </TabsContent>
+ 
+           <TabsContent value="faltas" className="mt-6">
+             <AttendanceEntry
+               classId={selectedClassId}
+               subjectId={selectedSubjectId}
+               students={students}
+               studentsLoading={studentsLoading}
+               classes={classes}
+               subjects={subjects}
+             />
+           </TabsContent>
 
           <TabsContent value="resumo" className="mt-6">
             <AnnualSummary 
