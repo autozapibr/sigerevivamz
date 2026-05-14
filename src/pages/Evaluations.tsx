@@ -228,6 +228,12 @@ function GradeEntry({
           }
         }}
         onBlur={() => onBlur(localValue)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            onBlur(localValue);
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
         placeholder={placeholder}
         className="w-16 text-center font-bold h-9 bg-background focus:ring-1 focus:ring-primary/30 border-muted-foreground/20"
       />
