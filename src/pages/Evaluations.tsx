@@ -208,17 +208,19 @@ function GradeEntry({
     <Input
       type="text"
       inputMode="decimal"
+      autoComplete="off"
+      spellCheck={false}
       value={value ?? ''}
       onChange={(e) => {
         const val = e.target.value.replace(',', '.');
         if (val === '' || /^\d*\.?\d*$/.test(val)) {
-          if (val.length <= 4) {
+          if (val.length <= 5) { // Allow up to 5 chars for cases like 18.50
             onChange(val);
           }
         }
       }}
       placeholder={placeholder}
-      className="w-16 text-center font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+      className="w-16 text-center font-bold h-9 bg-background focus:ring-1 focus:ring-primary/30 border-muted-foreground/20"
     />
   );
 
@@ -998,33 +1000,44 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
   const isProfessor = user?.role === 'PROFESSOR';
+  const hasTeacherProfile = !!teacher;
 
-  // Filter classes and subjects if user is a teacher
+  // If the user has a teacher profile, we should filter by their assignments
+  // even if they have an admin/pedagogical role, if they have assignments.
+  const shouldFilterByTeacher = hasTeacherProfile && (isProfessor || assignments?.classes.length > 0);
+
   const classes = useMemo(() => {
-    if (isAdmin) return allClasses;
-    if (isProfessor) return assignments?.classes || [];
+    if (shouldFilterByTeacher && assignments?.classes) {
+      return assignments.classes;
+    }
     return allClasses;
-  }, [allClasses, assignments, isAdmin, isProfessor]);
+  }, [allClasses, assignments, shouldFilterByTeacher]);
 
   const subjects = useMemo(() => {
-    if (isAdmin) return allSubjects;
-    if (isProfessor) {
+    if (shouldFilterByTeacher && assignments?.subjects) {
       if (!selectedClassId) return [];
-      return assignments?.subjects
-        .filter((s: any) => s.class_id === selectedClassId)
-        .map((s: any) => ({ 
+      
+      // Filter unique subjects for the selected class
+      const classSubjects = assignments.subjects
+        .filter((s: any) => s.class_id === selectedClassId);
+      
+      if (classSubjects.length > 0) {
+        return classSubjects.map((s: any) => ({ 
           id: s.subject_id, 
           name: s.subject_name,
           code: allSubjects.find(as => as.id === s.subject_id)?.code 
-        })) || [];
+        }));
+      }
+      
+      return [];
     }
     return allSubjects;
-  }, [allSubjects, assignments, isAdmin, isProfessor, selectedClassId]);
+  }, [allSubjects, assignments, shouldFilterByTeacher, selectedClassId]);
  
-   const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
-   const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
+  const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
+  const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
  
-    const isPedagogical = isAdmin;
+  const isPedagogical = isAdmin;
 
   return (
     <MainLayout title="Pauta Digital" subtitle="Sistema de avaliação e lançamento de notas">

@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDashboardStats, useFinancialDashboard } from '@/hooks/useDashboardStats';
+import { useCurrentTeacher } from '@/hooks/useTeachers';
 import {
   ChartCard,
   StudentDistributionChart,
@@ -241,7 +242,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: teacher } = useCurrentTeacher();
+  const { data: stats, isLoading: statsLoading } = useDashboardStats(teacher?.id);
   const { data: financial, isLoading: financialLoading } = useFinancialDashboard();
 
   const availableTabs = useMemo(() => getAvailableTabs(user?.role), [user?.role]);

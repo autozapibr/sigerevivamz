@@ -2,10 +2,33 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
-export function useDashboardStats() {
+export function useDashboardStats(teacherId?: number | null) {
   return useQuery({
-    queryKey: ['dashboard-stats-extended'],
+    queryKey: ['dashboard-stats-extended', teacherId],
     queryFn: async () => {
+      // Get assigned classes and students if teacherId is provided
+      let assignedClassIds: number[] = [];
+      let assignedStudentIds: number[] = [];
+
+      if (teacherId) {
+        // Get classes where teacher is director
+        const { data: directorClasses } = await supabase
+          .from('classes')
+          .select('id')
+          .eq('teacher_id', teacherId);
+        
+        // Get classes from curriculum
+        const { data: curriculumClasses } = await supabase
+          .from('class_curriculum')
+          .select('class_id')
+          .eq('teacher_id', teacherId);
+
+        assignedClassIds = Array.from(new Set([
+          ...(directorClasses?.map(c => c.id) || []),
+          ...(curriculumClasses?.map(c => c.class_id) || [])
+        ]));
+      }
+
       const [
         studentsRes,
         teachersRes,
@@ -13,12 +36,17 @@ export function useDashboardStats() {
         enrollmentsRes,
         employeesRes,
       ] = await Promise.all([
-        supabase.from('students').select('id, status, gender, class_id'),
+        teacherId 
+          ? supabase.from('students').select('id, status, gender, class_id').in('class_id', assignedClassIds.length > 0 ? assignedClassIds : [-1])
+          : supabase.from('students').select('id, status, gender, class_id'),
         supabase.from('teachers').select('id, status'),
-        supabase.from('classes').select('id, name'),
+        teacherId
+          ? supabase.from('classes').select('id, name').in('id', assignedClassIds.length > 0 ? assignedClassIds : [-1])
+          : supabase.from('classes').select('id, name'),
         supabase.from('student_enrollments').select('id, status'),
         supabase.from('employees').select('id, status'),
       ]);
+
 
       const students = studentsRes.data || [];
       const teachers = teachersRes.data || [];
