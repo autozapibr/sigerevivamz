@@ -1304,6 +1304,36 @@ export type Database = {
           },
         ]
       }
+      pedagogical_settings: {
+        Row: {
+          academic_year: number
+          created_at: string
+          id: string
+          release_status: Database["public"]["Enums"]["release_status"]
+          released_at: string | null
+          trimestre: number
+          updated_at: string
+        }
+        Insert: {
+          academic_year: number
+          created_at?: string
+          id?: string
+          release_status?: Database["public"]["Enums"]["release_status"]
+          released_at?: string | null
+          trimestre: number
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: number
+          created_at?: string
+          id?: string
+          release_status?: Database["public"]["Enums"]["release_status"]
+          released_at?: string | null
+          trimestre?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2568,6 +2598,7 @@ export type Database = {
         | "QUEBRADO"
         | "CANCELADO"
       payment_status: "Pago" | "Pendente"
+      release_status: "draft" | "review" | "released"
       reminder_type:
         | "VENCIMENTO_PROXIMO"
         | "DIA_VENCIMENTO"
@@ -2781,6 +2812,7 @@ export const Constants = {
         "CANCELADO",
       ],
       payment_status: ["Pago", "Pendente"],
+      release_status: ["draft", "review", "released"],
       reminder_type: [
         "VENCIMENTO_PROXIMO",
         "DIA_VENCIMENTO",
