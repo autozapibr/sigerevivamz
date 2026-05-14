@@ -111,7 +111,8 @@ const AppRoutes = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/students" element={<ProtectedRoute><Students /></ProtectedRoute>} />
-        <Route path="/students/:id" element={<ProtectedRoute><StudentDetail /></ProtectedRoute>} />
+         <Route path="/students/:id" element={<ProtectedRoute><StudentDetail /></ProtectedRoute>} />
+         <Route path="/students/:id/caderneta" element={<ProtectedRoute><StudentReportCard /></ProtectedRoute>} />
         <Route path="/teachers" element={<ProtectedRoute><Teachers /></ProtectedRoute>} />
         <Route path="/turmas" element={<ProtectedRoute><Turmas /></ProtectedRoute>} />
         <Route path="/enrollments" element={<ProtectedRoute><Enrollments /></ProtectedRoute>} />
