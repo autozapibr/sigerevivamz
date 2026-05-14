@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserPlus, Trash2, KeyRound, Shield, Search, Users } from 'lucide-react';
+import { UserPlus, Trash2, KeyRound, Shield, Search, Users, Link2 } from 'lucide-react';
+import { UserLinkDialog } from '@/components/users/UserLinkDialog';
 import { UserRole } from '@/types/auth';
 import { InvitationManager } from '@/components/invitations/InvitationManager';
 
