@@ -89,7 +89,7 @@ export function useLessonPlanConfig() {
          .select('role')
          .eq('user_id', user.id);
        
-       const isAdmin = userRoles?.some(r => ['ADMIN', 'PEDAGOGICO', 'DIRETORIA'].includes(r.role));
+        const isAdmin = userRoles?.some(r => ['ADMIN', 'PEDAGOGICO', 'DIRETORIA'].includes(String(r.role)));
  
        let query = supabase
          .from('lesson_plans')
