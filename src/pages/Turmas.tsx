@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSearch } from '@/contexts/SearchContext';
 import { motion } from 'framer-motion';
-import { 
-  Plus, Search, Users, MoreHorizontal, BookOpen, 
-  Edit, Trash2, UserPlus, User, Calendar, ChevronRight
-} from 'lucide-react';
+ import { 
+   Plus, Search, Users, MoreHorizontal, BookOpen, 
+   Edit, Trash2, UserPlus, User, Calendar, ChevronRight,
+   ArrowLeft
+ } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,9 +56,10 @@ export default function Turmas() {
   }, [setPlaceholder]);
   const [yearFilter, setYearFilter] = useState<string>(currentYear.toString());
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedClass, setSelectedClass] = useState<any>(null);
+   const [showEditDialog, setShowEditDialog] = useState(false);
+   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+   const [showDetails, setShowDetails] = useState(false);
+   const [selectedClass, setSelectedClass] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
     year: currentYear,
@@ -205,9 +207,84 @@ export default function Turmas() {
           </CardContent>
         </Card>
 
-        {/* Classes Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {isLoading ? (
+         {/* Classes Grid or Details */}
+         {showDetails && selectedClass ? (
+           <div className="space-y-6">
+             <Button 
+               variant="ghost" 
+               onClick={() => { setShowDetails(false); setSelectedClass(null); }}
+               className="mb-4"
+             >
+               <ArrowLeft className="w-4 h-4 mr-2" />
+               Voltar para Lista
+             </Button>
+             
+             <Card>
+               <CardHeader>
+                 <div className="flex items-center justify-between">
+                   <div className="flex items-center gap-4">
+                     <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                       <BookOpen className="h-8 w-8 text-primary" />
+                     </div>
+                     <div>
+                       <CardTitle className="text-2xl">{selectedClass.name}</CardTitle>
+                       <p className="text-muted-foreground">Ano Lectivo: {selectedClass.year}</p>
+                     </div>
+                   </div>
+                   <Button onClick={() => handleEdit(selectedClass)}>
+                     <Edit className="w-4 h-4 mr-2" />
+                     Editar Turma
+                   </Button>
+                 </div>
+               </CardHeader>
+               <CardContent>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                   <div className="space-y-1">
+                     <p className="text-sm text-muted-foreground">Director de Turma</p>
+                     <p className="font-medium text-lg">{selectedClass.teacher?.name || 'Não atribuído'}</p>
+                   </div>
+                   <div className="space-y-1">
+                     <p className="text-sm text-muted-foreground">Total de Educandos</p>
+                     <p className="font-medium text-lg">{selectedClass.students_count || 0}</p>
+                   </div>
+                   <div className="space-y-1">
+                     <p className="text-sm text-muted-foreground">Status</p>
+                     <Badge variant="secondary" className={
+                       (selectedClass.students_count || 0) > 0 
+                         ? 'bg-green-500/10 text-green-500'
+                         : 'bg-orange-500/10 text-orange-500'
+                     }>
+                       {(selectedClass.students_count || 0) > 0 ? 'Activa' : 'Vazia'}
+                     </Badge>
+                   </div>
+                 </div>
+               </CardContent>
+             </Card>
+ 
+             <Card>
+               <CardHeader>
+                 <div className="flex items-center justify-between">
+                   <CardTitle className="text-lg flex items-center gap-2">
+                     <Users className="w-5 h-5" />
+                     Lista de Educandos
+                   </CardTitle>
+                   <Button size="sm" variant="outline">
+                     <UserPlus className="w-4 h-4 mr-2" />
+                     Adicionar Educando
+                   </Button>
+                 </div>
+               </CardHeader>
+               <CardContent>
+                 <div className="text-center py-12 text-muted-foreground">
+                   <Users className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                   <p>A funcionalidade de listagem de educandos por turma está em desenvolvimento.</p>
+                 </div>
+               </CardContent>
+             </Card>
+           </div>
+         ) : (
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+             {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
               <Card key={i} className="animate-pulse">
                 <CardContent className="pt-6 h-48" />
@@ -344,10 +421,18 @@ export default function Turmas() {
                         )}
                       </div>
                       
-                      <Button variant="ghost" size="sm" className="text-primary">
-                        Ver Detalhes
-                        <ChevronRight className="w-4 h-4 ml-1" />
-                      </Button>
+                       <Button 
+                         variant="ghost" 
+                         size="sm" 
+                         className="text-primary"
+                         onClick={() => {
+                           setSelectedClass(turma);
+                           setShowDetails(true);
+                         }}
+                       >
+                         Ver Detalhes
+                         <ChevronRight className="w-4 h-4 ml-1" />
+                       </Button>
                     </div>
                   </CardContent>
                 </Card>
