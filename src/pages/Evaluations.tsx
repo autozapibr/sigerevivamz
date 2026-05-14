@@ -587,8 +587,8 @@ function GradeEntry({
                <Table>
                  <TableHeader>
                    <TableRow>
-                     <TableHead className="w-12">#</TableHead>
-                     <TableHead>Educando</TableHead>
+                      <TableHead className="sticky left-0 z-20 bg-muted/90 backdrop-blur-sm w-12">#</TableHead>
+                      <TableHead className="sticky left-12 z-20 bg-muted/90 backdrop-blur-sm min-w-[150px]">Educando</TableHead>
                      <TableHead className="text-center">Status de Presença</TableHead>
                      <TableHead>Observação</TableHead>
                    </TableRow>
@@ -597,9 +597,9 @@ function GradeEntry({
                    {students.map((student, index) => {
                      const status = attendanceData.get(student.id) || 'PRESENTE';
                      return (
-                       <TableRow key={student.id}>
-                         <TableCell className="text-muted-foreground">{index + 1}</TableCell>
-                         <TableCell className="font-medium">{student.name}</TableCell>
+                        <TableRow key={student.id} className="hover:bg-muted/50 transition-colors">
+                          <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur-sm text-muted-foreground font-medium">{index + 1}</TableCell>
+                          <TableCell className="sticky left-12 z-10 bg-background/95 backdrop-blur-sm font-medium">{student.name}</TableCell>
                          <TableCell>
                            <div className="flex items-center justify-center gap-2">
                              <Button
