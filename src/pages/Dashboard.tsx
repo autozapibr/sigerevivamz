@@ -241,7 +241,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: teacher } = useCurrentTeacher();
+  const { data: stats, isLoading: statsLoading } = useDashboardStats(teacher?.id);
   const { data: financial, isLoading: financialLoading } = useFinancialDashboard();
 
   const availableTabs = useMemo(() => getAvailableTabs(user?.role), [user?.role]);
