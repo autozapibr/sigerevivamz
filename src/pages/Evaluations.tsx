@@ -632,6 +632,107 @@ function GradeEntry({
    );
  }
  
+ // Componente para Controle de Lançamento (Direção Pedagógica)
+ function PedagogicalRelease() {
+   const currentYear = new Date().getFullYear();
+   const { toast } = useToast();
+   
+   const { data: settings, refetch } = useQuery({
+     queryKey: ['pedagogical-settings'],
+     queryFn: async () => {
+       const { data, error } = await supabase
+         .from('pedagogical_settings')
+         .select('*')
+         .eq('academic_year', currentYear)
+         .order('trimestre');
+       if (error) throw error;
+       return data;
+     },
+   });
+ 
+   const handleStatusChange = async (trimestre: number, status: 'draft' | 'review' | 'released') => {
+     const { error } = await supabase
+       .from('pedagogical_settings')
+       .upsert({
+         academic_year: currentYear,
+         trimestre,
+         release_status: status,
+         released_at: status === 'released' ? new Date().toISOString() : null
+       }, { onConflict: 'academic_year,trimestre' });
+ 
+     if (error) {
+       toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+     } else {
+       toast({ title: 'Sucesso', description: `Status do ${trimestre}º Trimestre actualizado.` });
+       refetch();
+     }
+   };
+ 
+   return (
+     <Card>
+       <CardHeader>
+         <CardTitle className="text-lg flex items-center gap-2">
+           <CheckCircle2 className="h-5 w-5 text-primary" />
+           Controle de Lançamento e Publicação
+         </CardTitle>
+         <CardDescription>
+           Defina o status de cada trimestre. Quando "Publicado", educandos e encarregados poderão ver as notas.
+         </CardDescription>
+       </CardHeader>
+       <CardContent>
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+           {[1, 2, 3].map((t) => {
+             const current = settings?.find(s => s.trimestre === t);
+             const status = current?.release_status || 'draft';
+             
+             return (
+               <div key={t} className="p-4 border rounded-xl space-y-4">
+                 <div className="flex items-center justify-between">
+                   <h4 className="font-bold">{t}º Trimestre</h4>
+                   <Badge variant={status === 'released' ? 'default' : status === 'review' ? 'secondary' : 'outline'}>
+                     {status === 'released' ? 'Publicado' : status === 'review' ? 'Em Revisão' : 'Rascunho'}
+                   </Badge>
+                 </div>
+                 
+                 <div className="grid grid-cols-1 gap-2">
+                   <Button 
+                     size="sm" 
+                     variant={status === 'draft' ? 'default' : 'outline'}
+                     onClick={() => handleStatusChange(t, 'draft')}
+                   >
+                     Rascunho
+                   </Button>
+                   <Button 
+                     size="sm" 
+                     variant={status === 'review' ? 'default' : 'outline'}
+                     onClick={() => handleStatusChange(t, 'review')}
+                   >
+                     Enviar p/ Revisão
+                   </Button>
+                   <Button 
+                     size="sm" 
+                     variant={status === 'released' ? 'default' : 'outline'}
+                     className={status === 'released' ? 'bg-green-600' : ''}
+                     onClick={() => handleStatusChange(t, 'released')}
+                   >
+                     Publicar Notas
+                   </Button>
+                 </div>
+                 
+                 {current?.released_at && (
+                   <p className="text-[10px] text-muted-foreground text-center">
+                     Publicado em: {new Date(current.released_at).toLocaleDateString()}
+                   </p>
+                 )}
+               </div>
+             );
+           })}
+         </div>
+       </CardContent>
+     </Card>
+   );
+ }
+ 
  // Componente de Resumo Anual
 function AnnualSummary({ classId, subjects, classes }: { classId: number | null; subjects: any[]; classes: any[] }) {
   const { data: students = [] } = useStudentsByClass(classId);
