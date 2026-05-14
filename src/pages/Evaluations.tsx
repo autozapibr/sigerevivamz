@@ -891,7 +891,11 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
      if (!selectedClassId) return [];
      return assignments?.subjects
        .filter(s => s.class_id === selectedClassId)
-       .map(s => ({ id: s.subject_id, name: s.subject_name })) || [];
+       .map(s => ({ 
+         id: s.subject_id, 
+         name: s.subject_name,
+         code: allSubjects.find(as => as.id === s.subject_id)?.code 
+       })) || [];
    }, [teacher, assignments, allSubjects, selectedClassId]);
  
    const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
