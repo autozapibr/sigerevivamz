@@ -638,7 +638,40 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
             </div>
           </div>
         )}
-      </TabsContent>
-    </Tabs>
+       </TabsContent>
+ 
+       {staffType === 'teacher' && isEdit && (
+         <TabsContent value="assignments" className="space-y-4">
+           <Card className="border-primary/20 bg-primary/5">
+             <CardContent className="pt-6">
+               <div className="flex items-center gap-3 mb-4">
+                 <div className="p-2 bg-primary/10 rounded-full text-primary">
+                   <BookOpen className="w-5 h-5" />
+                 </div>
+                 <div>
+                   <h3 className="font-semibold text-lg">Turmas e Disciplinas</h3>
+                   <p className="text-sm text-muted-foreground">Gestão de atribuições pedagógicas</p>
+                 </div>
+               </div>
+               
+               <div className="space-y-4">
+                 <p className="text-sm">
+                   A atribuição de turmas e disciplinas é gerida fora deste formulário para permitir uma visão mais detalhada da carga horária e conflitos de horários.
+                 </p>
+                 
+                 <div className="p-4 bg-background border rounded-md">
+                   <p className="text-sm font-medium mb-2 text-primary">Como gerir:</p>
+                   <ol className="text-sm space-y-2 list-decimal list-inside text-muted-foreground">
+                     <li>Feche este diálogo de edição.</li>
+                     <li>No cartão deste professor, clique no botão azul <strong>"Turmas e Disciplinas"</strong>.</li>
+                     <li>Ou use o menu de opções (três pontos) e selecione <strong>"Atribuir Turmas e Disciplinas"</strong>.</li>
+                   </ol>
+                 </div>
+               </div>
+             </CardContent>
+           </Card>
+         </TabsContent>
+       )}
+     </Tabs>
   );
 }
