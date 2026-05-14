@@ -147,6 +147,13 @@ function GradeEntry({
       const current = newMap.get(studentId);
       if (current) {
          const updated = { ...current, [field]: numValue } as any;
+         // Recalcular a média localmente apenas após o blur/enter para atualizar a interface visual
+         updated.media = calculateTrimesterAverage(
+           updated.acs1 ?? null, 
+           updated.acs2 ?? null, 
+           updated.acs3 ?? null, 
+           updated.at ?? null
+         );
          newMap.set(studentId, updated as StudentGrade);
       }
       return newMap;
