@@ -441,7 +441,196 @@ function GradeEntry({
   );
 }
 
-// Componente de Resumo Anual
+ // Componente de Registro de Faltas
+ function AttendanceEntry({
+   classId,
+   subjectId,
+   students,
+   studentsLoading,
+   classes,
+   subjects
+ }: {
+   classId: number | null;
+   subjectId: number | null;
+   students: any[];
+   studentsLoading: boolean;
+   classes: any[];
+   subjects: any[];
+ }) {
+   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+   const [attendanceData, setAttendanceData] = useState<Map<number, AttendanceStatus>>(new Map());
+   const [observations, setObservations] = useState<Map<number, string>>(new Map());
+   const [hasChanges, setHasChanges] = useState(false);
+   const { toast } = useToast();
+   const recordAttendance = useRecordAttendance();
+   const { data: existingAttendance = [], isLoading: attendanceLoading } = useAttendanceByClass(classId, selectedDate);
+ 
+   // Initialize from existing data
+   React.useEffect(() => {
+     const dataMap = new Map<number, AttendanceStatus>();
+     const obsMap = new Map<number, string>();
+     
+     // Default to PRESENTE for everyone if no records exist
+     students.forEach(student => {
+       dataMap.set(student.id, 'PRESENTE');
+     });
+ 
+     existingAttendance.forEach(record => {
+       dataMap.set(record.student_id, record.status);
+       if (record.observation) obsMap.set(record.student_id, record.observation);
+     });
+ 
+     setAttendanceData(dataMap);
+     setObservations(obsMap);
+     setHasChanges(false);
+   }, [students, existingAttendance]);
+ 
+   const handleStatusChange = (studentId: number, status: AttendanceStatus) => {
+     setAttendanceData(prev => {
+       const next = new Map(prev);
+       next.set(studentId, status);
+       return next;
+     });
+     setHasChanges(true);
+   };
+ 
+   const handleSave = async () => {
+     if (!classId) return;
+ 
+     const records = Array.from(attendanceData.entries()).map(([studentId, status]) => ({
+       student_id: studentId,
+       class_id: classId,
+       subject_id: subjectId,
+       date: selectedDate,
+       status,
+       observation: observations.get(studentId) || null
+     }));
+ 
+     await recordAttendance.mutateAsync(records);
+     setHasChanges(false);
+   };
+ 
+   if (!classId) return (
+     <Card>
+       <CardContent className="py-12 text-center">
+         <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+         <h3 className="text-lg font-medium mb-2">Seleccione uma Turma</h3>
+         <p className="text-muted-foreground">Escolha uma turma para registrar presenças</p>
+       </CardContent>
+     </Card>
+   );
+ 
+   return (
+     <div className="space-y-6">
+       <Card>
+         <CardHeader>
+           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+             <div>
+               <CardTitle className="flex items-center gap-2">
+                 <Users className="h-5 w-5" />
+                 Chamada Diária
+               </CardTitle>
+               <CardDescription>
+                 Registrar faltas e presenças para {classes.find((c: any) => c.id === classId)?.name}
+               </CardDescription>
+             </div>
+             <div className="flex items-center gap-2">
+               <Input 
+                 type="date" 
+                 value={selectedDate} 
+                 onChange={(e) => setSelectedDate(e.target.value)}
+                 className="w-40"
+               />
+               <Button onClick={handleSave} disabled={recordAttendance.isPending || !hasChanges}>
+                 <Save className="mr-2 h-4 w-4" />
+                 Guardar Chamada
+               </Button>
+             </div>
+           </div>
+         </CardHeader>
+         <CardContent>
+           {studentsLoading || attendanceLoading ? (
+             <div className="space-y-3">
+               {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+             </div>
+           ) : (
+             <div className="overflow-x-auto">
+               <Table>
+                 <TableHeader>
+                   <TableRow>
+                     <TableHead className="w-12">#</TableHead>
+                     <TableHead>Educando</TableHead>
+                     <TableHead className="text-center">Status de Presença</TableHead>
+                     <TableHead>Observação</TableHead>
+                   </TableRow>
+                 </TableHeader>
+                 <TableBody>
+                   {students.map((student, index) => {
+                     const status = attendanceData.get(student.id) || 'PRESENTE';
+                     return (
+                       <TableRow key={student.id}>
+                         <TableCell className="text-muted-foreground">{index + 1}</TableCell>
+                         <TableCell className="font-medium">{student.name}</TableCell>
+                         <TableCell>
+                           <div className="flex items-center justify-center gap-2">
+                             <Button
+                               size="sm"
+                               variant={status === 'PRESENTE' ? 'default' : 'outline'}
+                               className={status === 'PRESENTE' ? 'bg-green-600 hover:bg-green-700' : ''}
+                               onClick={() => handleStatusChange(student.id, 'PRESENTE')}
+                             >
+                               <CheckCircle2 className="h-4 w-4" />
+                             </Button>
+                             <Button
+                               size="sm"
+                               variant={status === 'FALTA' ? 'destructive' : 'outline'}
+                               onClick={() => handleStatusChange(student.id, 'FALTA')}
+                             >
+                               <XCircle className="h-4 w-4" />
+                             </Button>
+                             <Button
+                               size="sm"
+                               variant={status === 'FALTA_JUSTIFICADA' ? 'secondary' : 'outline'}
+                               className={status === 'FALTA_JUSTIFICADA' ? 'bg-orange-500 text-white hover:bg-orange-600' : ''}
+                               onClick={() => handleStatusChange(student.id, 'FALTA_JUSTIFICADA')}
+                             >
+                               <AlertCircle className="h-4 w-4" />
+                             </Button>
+                             <Button
+                               size="sm"
+                               variant={status === 'ATRASO' ? 'secondary' : 'outline'}
+                               className={status === 'ATRASO' ? 'bg-blue-500 text-white hover:bg-blue-600' : ''}
+                               onClick={() => handleStatusChange(student.id, 'ATRASO')}
+                             >
+                               <Clock className="h-4 w-4" />
+                             </Button>
+                           </div>
+                         </TableCell>
+                         <TableCell>
+                           <Input 
+                             placeholder="Opcional..." 
+                             value={observations.get(student.id) || ''}
+                             onChange={(e) => {
+                               setObservations(new Map(observations).set(student.id, e.target.value));
+                               setHasChanges(true);
+                             }}
+                             className="h-8"
+                           />
+                         </TableCell>
+                       </TableRow>
+                     );
+                   })}
+                 </TableBody>
+               </Table>
+             </div>
+           )}
+         </CardContent>
+       </Card>
+     </div>
+   );
+ }
+ 
+ // Componente de Resumo Anual
 function AnnualSummary({ classId, subjects, classes }: { classId: number | null; subjects: any[]; classes: any[] }) {
   const { data: students = [] } = useStudentsByClass(classId);
   const { data: allGrades = [] } = useGradesByClass(classId, null, null);
