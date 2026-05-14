@@ -419,28 +419,33 @@ export default function Teachers() {
                         if (teacherAssigns.length === 0) return null;
                         
                         // Group by class to show tags
-                        const uniqueClasses = Array.from(new Set(teacherAssigns.map(a => a.class?.name).filter(Boolean)));
-                        const uniqueShifts = Array.from(new Set(teacherAssigns.map(a => a.shift).filter(Boolean)));
-                        const totalH = teacherAssigns.reduce((s, a) => s + (a.weekly_hours || 0), 0);
+                         const uniqueClasses = Array.from(new Set(teacherAssigns.map(a => a.class?.name).filter(Boolean)));
+                         const uniqueSubjects = Array.from(new Set(teacherAssigns.map(a => a.subject?.name).filter(Boolean)));
+                         const uniqueShifts = Array.from(new Set(teacherAssigns.map(a => a.shift).filter(Boolean)));
                         
                         return (
                           <div className="space-y-2">
-                            <div className="flex flex-wrap gap-1">
-                              {uniqueClasses.map(cls => (
-                                <Badge key={cls} variant="secondary" className="text-[10px] py-0 px-1.5 bg-primary/5 text-primary border-primary/10">
-                                  {cls}
-                                </Badge>
-                              ))}
-                              {uniqueShifts.map(sh => (
-                                <Badge key={sh} variant="outline" className="text-[10px] py-0 px-1.5 border-muted-foreground/20 text-muted-foreground">
-                                  {sh}
-                                </Badge>
-                              ))}
-                            </div>
-                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                               <BookOpen className="w-3 h-3" />
-                               <span>{teacherAssigns.length} disciplinas · {totalH}h/semana</span>
-                            </div>
+                             <div className="flex flex-wrap gap-1">
+                               {uniqueClasses.map(cls => (
+                                 <Badge key={cls} variant="secondary" className="text-[11px] py-0 px-1.5 bg-primary/5 text-primary border-primary/10">
+                                   {cls}
+                                 </Badge>
+                               ))}
+                               {uniqueSubjects.map(sub => (
+                                 <Badge key={sub} variant="secondary" className="text-[11px] py-0 px-1.5 bg-blue-500/5 text-blue-600 border-blue-500/10">
+                                   {sub}
+                                 </Badge>
+                               ))}
+                               {uniqueShifts.map(sh => (
+                                 <Badge key={sh} variant="outline" className="text-[11px] py-0 px-1.5 border-muted-foreground/20 text-muted-foreground">
+                                   {sh}
+                                 </Badge>
+                               ))}
+                             </div>
+                             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                                <BookOpen className="w-3 h-3" />
+                                <span>{teacherAssigns.length} atribuições</span>
+                             </div>
                           </div>
                         );
                       })()}
