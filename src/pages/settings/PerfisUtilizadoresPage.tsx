@@ -139,6 +139,10 @@ export default function PerfisUtilizadoresPage() {
   );
 }
 
+import { useTeachers } from '@/hooks/useTeachers';
+import { useStudents } from '@/hooks/useStudents';
+import { useEmployees } from '@/hooks/useEmployees';
+
 // ─── Users Tab ───
 function UsersTab() {
   const { user } = useAuth();
@@ -149,6 +153,12 @@ function UsersTab() {
   const [resetOpen, setResetOpen] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [form, setForm] = useState({ email: '', password: '', full_name: '', role: 'PROFESSOR' });
+  const [selectedProfileId, setSelectedProfileId] = useState<string>('');
+  const [profileType, setProfileType] = useState<'NONE' | 'TEACHER' | 'STUDENT' | 'EMPLOYEE'>('NONE');
+
+  const { data: teachers = [] } = useTeachers();
+  const { data: students = [] } = useStudents();
+  const { data: employees = [] } = useEmployees();
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['system-users'],
