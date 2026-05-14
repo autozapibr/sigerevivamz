@@ -992,23 +992,12 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
    const [activeTab, setActiveTab] = useState('lancamento');
  
    const { user } = useAuth();
-   const { data: classes = [], isLoading: classesLoading } = useClasses();
-   const { data: allSubjects = [] } = useSubjects();
+    const { data: classes = [], isLoading: classesLoading } = useClasses();
+    const { data: allSubjects = [] } = useSubjects(selectedClassId);
  
    const isAdmin = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA' || user?.role === 'SECRETARIA';
  
-   // Use the filtered subjects from useSubjects hook, but if a class is selected, 
-   // we might want to further filter subjects that are specifically assigned to that class
-   // for the current teacher (if not admin)
-   const subjects = useMemo(() => {
-     if (isAdmin) return allSubjects;
-     if (!selectedClassId) return allSubjects;
-     
-     // For teachers, useSubjects already returns only their assigned subjects.
-     // We just need to make sure they are valid for the selected class.
-     // The RLS and useSubjects handle this, so allSubjects here is already filtered.
-     return allSubjects;
-   }, [allSubjects, isAdmin, selectedClassId]);
+    const subjects = allSubjects;
  
   const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
   const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
