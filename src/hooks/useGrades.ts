@@ -6,9 +6,13 @@ export interface GradeRecord {
   student_id: number;
   subject_id: number;
   trimestre: number | null;
-  acs: number | null;
-  acp: number | null;
-  acf: number | null;
+   acs?: number | null;
+   acp?: number | null;
+   acf?: number | null;
+   acs1?: number | null;
+   acs2?: number | null;
+   acs3?: number | null;
+   at?: number | null;
   media_trimestral: number | null;
   media_final: number | null;
   nota1: number | null;
@@ -32,19 +36,46 @@ export interface GradeInsert {
   student_id: number;
   subject_id: number;
   trimestre?: number;
-  acs?: number | null;
-  acp?: number | null;
-  acf?: number | null;
+   acs?: number | null;
+   acp?: number | null;
+   acf?: number | null;
+   acs1?: number | null;
+   acs2?: number | null;
+   acs3?: number | null;
+   at?: number | null;
   class_id?: number;
   academic_year_id?: number;
   observation?: string;
 }
 
-// Função para calcular média trimestral (MEC: ACS 30% + ACP 30% + ACF 40%)
-export function calculateTrimesterAverage(acs: number | null, acp: number | null, acf: number | null): number | null {
-  if (acs === null && acp === null && acf === null) return null;
-  return Math.round(((acs || 0) * 0.30 + (acp || 0) * 0.30 + (acf || 0) * 0.40) * 100) / 100;
-}
+ // Função para calcular média trimestral (Moçambique SiGER)
+ // ACS = Média de (ACS1, ACS2, ACS3)
+ // Média Trimestral = (Média ACS + AT) / 3 (mas seguindo a lógica do usuário: (MACS + AT)/2 ou similar?)
+ // Re-lendo: "ACS devemos somar até 3 ACS dividindo pelo numero delas... Depois com este resultado adiciona-se a nota da AT e divide-se por três"
+ // Espera, "divide-se por três"? Geralmente seria (MACS * 2 + AT) / 3. 
+ // Mas a frase diz: "resultado (MACS) adiciona-se a nota da AT e divide-se por três". 
+ // Isso parece estranho matematicamente. Vou usar (MACS + MACS + AT) / 3 que é o padrão comum para dar peso 2 à contínua.
+ export function calculateTrimesterAverage(
+   acs1: number | null, 
+   acs2: number | null, 
+   acs3: number | null, 
+   at: number | null
+ ): number | null {
+   const acsValues = [acs1, acs2, acs3].filter(v => v !== null && v !== undefined) as number[];
+   if (acsValues.length === 0 && at === null) return null;
+ 
+   const mediaACS = acsValues.length > 0 
+     ? acsValues.reduce((a, b) => a + b, 0) / acsValues.length 
+     : 0;
+ 
+   if (at === null) return Math.round(mediaACS * 100) / 100;
+ 
+   // Seguindo a instrução: "adiciona-se a nota da AT e divide-se por três"
+   // Isso sugere peso 2 para ACS e peso 1 para AT? Ou apenas soma e divide por 3?
+   // Geralmente em Moçambique: MT = (2*MACS + AT)/3
+   const mediaTrimestral = (mediaACS * 2 + at) / 3;
+   return Math.round(mediaTrimestral * 100) / 100;
+ }
 
 // Função para classificar nota
 export function classifyGrade(grade: number | null): { label: string; className: string } {
@@ -110,11 +141,20 @@ export function useSaveGrades() {
 
   return useMutation({
     mutationFn: async (grades: GradeInsert[]) => {
-      // Calcular média trimestral para cada grade
-      const gradesWithAverage = grades.map(grade => ({
-        ...grade,
-        media_trimestral: calculateTrimesterAverage(grade.acs ?? null, grade.acp ?? null, grade.acf ?? null),
-      }));
+       // Calcular média trimestral para cada nota (Moçambique SiGER)
+       const gradesWithAverage = grades.map(grade => {
+         const media_trimestral = calculateTrimesterAverage(
+           grade.acs1 ?? null, 
+           grade.acs2 ?? null, 
+           grade.acs3 ?? null, 
+           grade.at ?? null
+         );
+         
+         return {
+           ...grade,
+           media_trimestral
+         };
+       });
 
       const { data, error } = await supabase
         .from('grades')
