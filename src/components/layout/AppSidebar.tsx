@@ -210,65 +210,90 @@ export function AppSidebar() {
            
          </div>
 
-        {/* Navigation Icons */}
-        {user && !collapsed && (
+        {/* Navigation Icons - Integrated with Collapse Toggle */}
+        {user && (
           <div className="border-b border-border/50 py-3">
-            <div className="flex items-center justify-center gap-1 px-4">
+            <div className={cn(
+              "flex items-center justify-center gap-1 px-4",
+              collapsed && "flex-col px-0 gap-2"
+            )}>
+              {!collapsed && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                    onClick={() => window.history.back()}
+                    title="Voltar"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                    onClick={() => window.history.forward()}
+                    title="Avançar"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                    onClick={() => window.location.reload()}
+                    title="Actualizar"
+                  >
+                    <RotateCw className="w-4 h-4" />
+                  </Button>
+                </>
+              )}
+              
+              {/* Always visible icons */}
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                onClick={() => window.history.back()}
-                title="Voltar"
+                onClick={() => {
+                  const toggleBtn = document.querySelector('[data-sidebar-trigger]');
+                  if (toggleBtn instanceof HTMLElement) toggleBtn.click();
+                }}
+                title={collapsed ? "Expandir" : "Recolher"}
               >
-                <ArrowLeft className="w-4 h-4" />
+                {collapsed ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
               </Button>
+
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                onClick={() => window.history.forward()}
-                title="Avançar"
+                className="h-8 w-8 relative rounded-lg text-muted-foreground hover:text-foreground"
+                onClick={() => window.location.href = '/notificacoes'}
+                title="Notificações"
               >
-                <ArrowRight className="w-4 h-4" />
+                <Bell className="w-4 h-4" />
+                {unreadCount > 0 && (
+                  <motion.span 
+                    className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-0.5 bg-destructive text-destructive-foreground text-[8px] font-bold rounded-full flex items-center justify-center"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500 }}
+                  >
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </motion.span>
+                )}
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                onClick={() => window.location.reload()}
-                title="Actualizar"
-              >
-                <RotateCw className="w-4 h-4" />
-              </Button>
-               <Button
-                 variant="ghost"
-                 size="icon"
-                 className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                 onClick={() => window.location.href = '/dashboard'}
-                 title="Início"
-               >
-                 <Home className="w-4 h-4" />
-               </Button>
-               <Button
-                 variant="ghost"
-                 size="icon"
-                 className="h-8 w-8 relative rounded-lg text-muted-foreground hover:text-foreground"
-                 onClick={() => window.location.href = '/notificacoes'}
-                 title="Notificações"
-               >
-                 <Bell className="w-4 h-4" />
-                 {unreadCount > 0 && (
-                   <motion.span 
-                     className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-0.5 bg-destructive text-destructive-foreground text-[8px] font-bold rounded-full flex items-center justify-center"
-                     initial={{ scale: 0 }}
-                     animate={{ scale: 1 }}
-                     transition={{ type: "spring", stiffness: 500 }}
-                   >
-                     {unreadCount > 99 ? '99+' : unreadCount}
-                   </motion.span>
-                 )}
-               </Button>
+
+              {!collapsed && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                  onClick={() => window.location.href = '/dashboard'}
+                  title="Início"
+                >
+                  <Home className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
         )}
