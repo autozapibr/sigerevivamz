@@ -227,7 +227,10 @@ function GradeEntry({
             }
           }
         }}
-        onBlur={() => onBlur(localValue)}
+        onBlur={(e) => {
+          // Only trigger if we're not focusing another input (optional but safer)
+          onBlur(localValue);
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             onBlur(localValue);
