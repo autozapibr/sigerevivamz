@@ -227,7 +227,10 @@ function GradeEntry({
             }
           }
         }}
-        onBlur={() => onBlur(localValue)}
+        onBlur={(e) => {
+          // Only trigger if we're not focusing another input (optional but safer)
+          onBlur(localValue);
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             onBlur(localValue);
@@ -395,8 +398,8 @@ function GradeEntry({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12">#</TableHead>
-                    <TableHead className="min-w-[200px]">Educando</TableHead>
+                    <TableHead className="sticky left-0 z-20 bg-muted/90 backdrop-blur-sm w-12">#</TableHead>
+                    <TableHead className="sticky left-12 z-20 bg-muted/90 backdrop-blur-sm min-w-[150px]">Educando</TableHead>
                      <TableHead className="text-center w-20">ACS 1</TableHead>
                      <TableHead className="text-center w-20">ACS 2</TableHead>
                      <TableHead className="text-center w-20">ACS 3</TableHead>
@@ -413,10 +416,10 @@ function GradeEntry({
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.02 }}
                     >
-                      <TableCell className="font-medium text-muted-foreground">
+                      <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur-sm font-medium text-muted-foreground">
                         {index + 1}
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="sticky left-12 z-10 bg-background/95 backdrop-blur-sm font-medium">
                         {grade.student_name}
                       </TableCell>
                        <TableCell className="text-center">
@@ -584,8 +587,8 @@ function GradeEntry({
                <Table>
                  <TableHeader>
                    <TableRow>
-                     <TableHead className="w-12">#</TableHead>
-                     <TableHead>Educando</TableHead>
+                      <TableHead className="sticky left-0 z-20 bg-muted/90 backdrop-blur-sm w-12">#</TableHead>
+                      <TableHead className="sticky left-12 z-20 bg-muted/90 backdrop-blur-sm min-w-[150px]">Educando</TableHead>
                      <TableHead className="text-center">Status de Presença</TableHead>
                      <TableHead>Observação</TableHead>
                    </TableRow>
@@ -594,9 +597,9 @@ function GradeEntry({
                    {students.map((student, index) => {
                      const status = attendanceData.get(student.id) || 'PRESENTE';
                      return (
-                       <TableRow key={student.id}>
-                         <TableCell className="text-muted-foreground">{index + 1}</TableCell>
-                         <TableCell className="font-medium">{student.name}</TableCell>
+                        <TableRow key={student.id} className="hover:bg-muted/50 transition-colors">
+                          <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur-sm text-muted-foreground font-medium">{index + 1}</TableCell>
+                          <TableCell className="sticky left-12 z-10 bg-background/95 backdrop-blur-sm font-medium">{student.name}</TableCell>
                          <TableCell>
                            <div className="flex items-center justify-center gap-2">
                              <Button
@@ -834,22 +837,25 @@ function AnnualSummary({ classId, subjects, classes }: { classId: number | null;
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="sticky left-0 bg-background">#</TableHead>
-                   <TableHead className="sticky left-8 bg-background min-w-[200px]">Educando</TableHead>
-                  {subjects.slice(0, 5).map(subject => (
+                    <TableHead className="sticky left-0 z-20 bg-muted/90 backdrop-blur-sm">#</TableHead>
+                     <TableHead className="sticky left-8 z-20 bg-muted/90 backdrop-blur-sm min-w-[180px]">Educando</TableHead>
+                  {subjects.map(subject => (
                     <TableHead key={subject.id} className="text-center min-w-[80px]">
                       {subject.code || subject.name.substring(0, 4)}
                     </TableHead>
                   ))}
-                  <TableHead className="text-center font-bold">Média Geral</TableHead>
+                  <TableHead className="text-center font-bold min-w-[80px]">Média Geral</TableHead>
                   <TableHead className="text-center">Resultado</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {annualData.map((row, index) => (
-                  <TableRow key={row.student.id}>
-                    <TableCell className="sticky left-0 bg-background">{index + 1}</TableCell>
-                     <TableCell className="sticky left-8 bg-background font-medium">
+                {annualData.map((row, index) => {
+                  const { className: rowClassName } = classifyGrade(row.overallAverage);
+                  return (
+                  (
+                    <TableRow key={row.student.id}>
+                    <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur-sm">{index + 1}</TableCell>
+                     <TableCell className="sticky left-8 z-10 bg-background/95 backdrop-blur-sm font-medium">
                        <div className="flex items-center gap-2">
                          {row.student.name}
                          <Link to={`/students/${row.student.id}/caderneta`} className="text-primary hover:underline">
@@ -857,7 +863,7 @@ function AnnualSummary({ classId, subjects, classes }: { classId: number | null;
                          </Link>
                        </div>
                      </TableCell>
-                    {subjects.slice(0, 5).map(subject => {
+                    {subjects.map(subject => {
                       const avg = row.subjectAverages[subject.id]?.annual;
                       const { className } = classifyGrade(avg);
                       return (
@@ -876,8 +882,9 @@ function AnnualSummary({ classId, subjects, classes }: { classId: number | null;
                         </Badge>
                       )}
                     </TableCell>
-                  </TableRow>
-                ))}
+                    </TableRow>
+                  )
+                )})}
               </TableBody>
             </Table>
           </div>
@@ -1059,7 +1066,7 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
         {/* Filtros Principais */}
         <Card>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {/* Turma */}
               <div className="space-y-2">
                 <Label>Turma</Label>
@@ -1135,31 +1142,33 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
         </Card>
 
         {/* Tabs de Funcionalidades */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-           <TabsList className={`grid w-full ${isPedagogical ? 'grid-cols-5' : 'grid-cols-4'}`}>
-             <TabsTrigger value="lancamento" className="gap-2">
-               <FileSpreadsheet className="h-4 w-4" />
-               Lançamento de Notas
-             </TabsTrigger>
-             <TabsTrigger value="faltas" className="gap-2">
-               <Users className="h-4 w-4" />
-               Faltas
-             </TabsTrigger>
-             <TabsTrigger value="resumo" className="gap-2">
-               <GraduationCap className="h-4 w-4" />
-               Resumo Anual
-             </TabsTrigger>
-             <TabsTrigger value="estatisticas" className="gap-2">
-               <BarChart3 className="h-4 w-4" />
-               Estatísticas
-             </TabsTrigger>
-             {isPedagogical && (
-               <TabsTrigger value="pedagogico" className="gap-2">
-                 <CheckCircle2 className="h-4 w-4" />
-                 Publicação
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-hidden">
+           <div className="overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
+             <TabsList className={`inline-flex md:grid w-max md:w-full ${isPedagogical ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
+               <TabsTrigger value="lancamento" className="gap-2 whitespace-nowrap">
+                 <FileSpreadsheet className="h-4 w-4 shrink-0" />
+                 <span>Lançamento</span>
                </TabsTrigger>
-             )}
-           </TabsList>
+               <TabsTrigger value="faltas" className="gap-2 whitespace-nowrap">
+                 <Users className="h-4 w-4 shrink-0" />
+                 <span>Faltas</span>
+               </TabsTrigger>
+               <TabsTrigger value="resumo" className="gap-2 whitespace-nowrap">
+                 <GraduationCap className="h-4 w-4 shrink-0" />
+                 <span>Resumo</span>
+               </TabsTrigger>
+               <TabsTrigger value="estatisticas" className="gap-2 whitespace-nowrap">
+                 <BarChart3 className="h-4 w-4 shrink-0" />
+                 <span>Estatísticas</span>
+               </TabsTrigger>
+               {isPedagogical && (
+                 <TabsTrigger value="pedagogico" className="gap-2 whitespace-nowrap">
+                   <CheckCircle2 className="h-4 w-4 shrink-0" />
+                   <span>Publicação</span>
+                 </TabsTrigger>
+               )}
+             </TabsList>
+           </div>
 
            <TabsContent value="lancamento" className="mt-6">
              <GradeEntry 
