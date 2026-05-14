@@ -365,8 +365,8 @@ export function AppSidebar() {
 
               {/* Configurações - collapsible, apenas ADMIN/DIRETORIA */}
               {(user?.role === 'ADMIN' || user?.role === 'DIRETORIA') && (() => {
-                const configIsActive = configModule.items.some(i => location.pathname.startsWith(i.url));
-                const configIsOpen = openModules.includes('configuracoes') || configIsActive;
+                const configIsActive = isModuleActive(configModule.items);
+                const configIsOpen = openModules.includes('configuracoes') || (openModules.length === 0 && configIsActive);
                 const ConfigIcon = configModule.icon;
 
                 return (
@@ -379,7 +379,7 @@ export function AppSidebar() {
                         className={cn(
                           "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                           configIsActive
-                            ? "bg-primary/10 text-primary"
+                            ? "bg-primary/10 text-primary shadow-sm"
                             : "text-muted-foreground hover:bg-accent hover:text-foreground"
                         )}
                       >
@@ -389,8 +389,8 @@ export function AppSidebar() {
                             <span className="flex-1 text-left">{configModule.label}</span>
                             <ChevronRight
                               className={cn(
-                                "w-4 h-4 transition-transform duration-200",
-                                configIsOpen && "rotate-90"
+                                "w-4 h-4 transition-transform duration-200 opacity-50",
+                                configIsOpen && "rotate-90 opacity-100"
                               )}
                             />
                           </>
@@ -400,9 +400,9 @@ export function AppSidebar() {
 
                     <CollapsibleContent>
                       <motion.div
-                        className="mt-1 ml-4 pl-4 border-l-2 border-border/50 space-y-1"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        className="mt-1 ml-4 pl-4 border-l border-border/50 space-y-1"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
                         transition={{ duration: 0.2 }}
                       >
                         {configModule.items.map((item) => {
