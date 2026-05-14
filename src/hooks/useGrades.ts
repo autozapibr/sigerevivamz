@@ -184,9 +184,9 @@ export function useSaveGrades() {
   });
 }
 
- export function useSubjects() {
+  export function useSubjects(classId?: number | null) {
    return useQuery({
-     queryKey: ['subjects'],
+      queryKey: ['subjects', classId],
      queryFn: async () => {
        const { data: { user } } = await supabase.auth.getUser();
        if (!user) return [];
@@ -217,11 +217,18 @@ export function useSaveGrades() {
        const teacherId = profile?.teacher_id;
        if (!teacherId) return [];
  
-       const { data: curriculum, error: currError } = await supabase
-         .from('class_curriculum')
-         .select('subject_id, subjects(*)')
-         .eq('teacher_id', teacherId);
-       
+        let query = supabase
+          .from('class_curriculum')
+          .select('subject_id, subjects(*)');
+          
+        if (classId) {
+          query = query.eq('class_id', classId);
+        } else {
+          query = query.eq('teacher_id', teacherId);
+        }
+
+        const { data: curriculum, error: currError } = await query;
+
        if (currError) throw currError;
        
        // Unique subjects

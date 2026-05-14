@@ -1,0 +1,1 @@
+UPDATE public.profiles SET teacher_id = 36 WHERE user_id = '2426866a-c857-407a-a40d-bc4f41966f2c';

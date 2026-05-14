@@ -646,7 +646,7 @@ export default function Attendance() {
   const [activeTab, setActiveTab] = useState('chamada');
 
   const { data: allClasses = [], isLoading: classesLoading } = useClasses();
-  const { data: allSubjects = [] } = useSubjects();
+  const { data: allSubjects = [] } = useSubjects(selectedClassId);
   
   const { data: userRoles } = useQuery({
     queryKey: ['user-roles-attendance', user?.id],
