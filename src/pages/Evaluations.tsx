@@ -867,16 +867,35 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
   );
 }
 
-export default function Evaluations() {
-  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
-  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
-  const [selectedTrimestre, setSelectedTrimestre] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState('lancamento');
-
-  const { data: classes = [], isLoading: classesLoading } = useClasses();
-  const { data: subjects = [] } = useSubjects();
-  const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
-  const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
+ export default function Evaluations() {
+   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
+   const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
+   const [selectedTrimestre, setSelectedTrimestre] = useState<number>(1);
+   const [activeTab, setActiveTab] = useState('lancamento');
+ 
+   const { data: teacher } = useCurrentTeacher();
+   const { data: assignments } = useTeacherAssignments(teacher?.id || null);
+ 
+   const { data: allClasses = [], isLoading: classesLoading } = useClasses();
+   const { data: allSubjects = [] } = useSubjects();
+ 
+   // Filter classes and subjects if user is a teacher
+   const classes = useMemo(() => {
+     if (!teacher) return allClasses;
+     return assignments?.classes || [];
+   }, [teacher, assignments, allClasses]);
+ 
+   const subjects = useMemo(() => {
+     if (!teacher) return allSubjects;
+     // Filter subjects assigned to this teacher for the selected class
+     if (!selectedClassId) return [];
+     return assignments?.subjects
+       .filter(s => s.class_id === selectedClassId)
+       .map(s => ({ id: s.subject_id, name: s.subject_name })) || [];
+   }, [teacher, assignments, allSubjects, selectedClassId]);
+ 
+   const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
+   const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
 
   return (
     <MainLayout title="Pauta Digital" subtitle="Sistema de avaliação e lançamento de notas">
