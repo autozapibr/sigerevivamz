@@ -659,7 +659,7 @@ export default function Attendance() {
   });
 
   const isAdmin = userRoles?.some(r => ['ADMIN', 'PEDAGOGICO', 'DIRETORIA', 'SECRETARIA'].includes(r));
-  const isProfessor = userRole === 'PROFESSOR';
+  const isProfessor = userRoles?.includes('PROFESSOR');
   const hasTeacherProfile = !!teacher;
   const shouldFilterByTeacher = isProfessor || (hasTeacherProfile && assignments?.classes.length > 0);
 
