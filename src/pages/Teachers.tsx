@@ -57,6 +57,8 @@ import {
 import { StaffForm, initialStaffFormData, type StaffFormData } from '@/components/rh/StaffForm';
 import { DocumentUploadDialog } from '@/components/rh/DocumentUploadDialog';
 import { formatPhone } from '@/lib/validators/mozambique';
+import { TeacherAssignmentsDialog } from '@/components/teachers/TeacherAssignmentsDialog';
+import { useAllAssignments } from '@/hooks/useTeacherAssignments';
 
 export default function Teachers() {
   const { searchQuery: searchTerm, setPlaceholder } = useSearch();
@@ -70,6 +72,7 @@ export default function Teachers() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDocumentDialog, setShowDocumentDialog] = useState(false);
+  const [showAssignmentsDialog, setShowAssignmentsDialog] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
   const [formData, setFormData] = useState<StaffFormData>(initialStaffFormData);
 
@@ -80,6 +83,7 @@ export default function Teachers() {
 
   const { data: teachers = [], isLoading } = useTeachers(filters);
   const { data: stats } = useTeachersStats();
+  const { data: allAssignments = [] } = useAllAssignments();
   const createTeacher = useCreateTeacher();
   const updateTeacher = useUpdateTeacher();
   const deleteTeacher = useDeleteTeacher();
@@ -368,6 +372,13 @@ export default function Teachers() {
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => {
                             setSelectedTeacher(teacher);
+                            setShowAssignmentsDialog(true);
+                          }}>
+                            <BookOpen className="w-4 h-4 mr-2" />
+                            Turmas e Disciplinas
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedTeacher(teacher);
                             setShowDocumentDialog(true);
                           }}>
                             <FileText className="w-4 h-4 mr-2" />
@@ -410,6 +421,18 @@ export default function Teachers() {
                         <p className="text-sm line-clamp-2">{teacher.qualifications}</p>
                       </div>
                     )}
+
+                    {(() => {
+                      const teacherAssigns = allAssignments.filter(a => a.teacher_id === teacher.id);
+                      if (teacherAssigns.length === 0) return null;
+                      const totalH = teacherAssigns.reduce((s, a) => s + (a.weekly_hours || 0), 0);
+                      return (
+                        <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                          <BookOpen className="w-3 h-3" />
+                          <span>{teacherAssigns.length} atribuições · {totalH}h/semana</span>
+                        </div>
+                      );
+                    })()}
 
                     <div className="mt-4 flex items-center justify-between">
                       <Badge variant="secondary" className={
@@ -517,6 +540,12 @@ export default function Teachers() {
           staffName={selectedTeacher.name}
         />
       )}
+
+      <TeacherAssignmentsDialog
+        open={showAssignmentsDialog}
+        onOpenChange={setShowAssignmentsDialog}
+        teacher={selectedTeacher ? { id: selectedTeacher.id, name: selectedTeacher.name } : null}
+      />
     </MainLayout>
   );
 }

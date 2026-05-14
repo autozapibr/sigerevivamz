@@ -361,18 +361,33 @@ export type Database = {
       class_curriculum: {
         Row: {
           class_id: number
+          created_at: string | null
+          id: number
+          shift: string | null
           subject_id: number
           teacher_id: number
+          updated_at: string | null
+          weekly_hours: number | null
         }
         Insert: {
           class_id: number
+          created_at?: string | null
+          id?: number
+          shift?: string | null
           subject_id: number
           teacher_id: number
+          updated_at?: string | null
+          weekly_hours?: number | null
         }
         Update: {
           class_id?: number
+          created_at?: string | null
+          id?: number
+          shift?: string | null
           subject_id?: number
           teacher_id?: number
+          updated_at?: string | null
+          weekly_hours?: number | null
         }
         Relationships: [
           {
