@@ -166,6 +166,17 @@
            </div>
          </div>
  
+         {/* Warning if not released */}
+         {(!isReleased(1) || !isReleased(2) || !isReleased(3)) && (
+           <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3 print:hidden">
+             <ShieldAlert className="h-5 w-5 mt-0.5 flex-shrink-0" />
+             <div>
+               <p className="font-semibold text-sm">Algumas notas ainda não foram publicadas pela Direção Pedagógica.</p>
+               <p className="text-xs opacity-80">As notas em rascunho ou revisão são visíveis apenas para professores e administradores.</p>
+             </div>
+           </div>
+         )}
+ 
          {/* Cabeçalho da Caderneta */}
          <Card className="print:border-none print:shadow-none">
            <CardContent className="pt-6">
