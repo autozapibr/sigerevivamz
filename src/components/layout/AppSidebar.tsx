@@ -350,16 +350,16 @@ export function AppSidebar() {
                       {module.items.map((item) => {
                         const ItemIcon = item.icon;
                         return (
-                          <NavLink
-                            key={item.url}
-                            to={item.url}
-                            className={cn(
-                              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
-                              isActive(item.url)
-                                ? "bg-primary text-primary-foreground font-medium shadow-sm"
-                                : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                            )}
-                          >
+                           <NavLink
+                             key={item.url}
+                             to={item.url}
+                             className={cn(
+                               "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
+                               isActive(item.url)
+                                 ? "bg-primary/10 text-primary font-medium shadow-sm"
+                                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                             )}
+                           >
                             <ItemIcon className="w-4 h-4" />
                             <span>{item.title}</span>
                           </NavLink>
@@ -381,16 +381,16 @@ export function AppSidebar() {
               {systemItems.filter(item => !item.roles || (user && item.roles.includes(user.role))).map((item) => {
                 const ItemIcon = item.icon;
                 return (
-                  <NavLink
-                    key={item.url}
-                    to={item.url}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200",
-                      isActive(item.url)
-                        ? "bg-primary text-primary-foreground font-medium shadow-sm"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                    )}
-                  >
+                   <NavLink
+                     key={item.url}
+                     to={item.url}
+                     className={cn(
+                       "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200",
+                       isActive(item.url)
+                         ? "bg-primary/10 text-primary font-medium shadow-sm"
+                         : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                     )}
+                   >
                     <ItemIcon className="w-5 h-5 flex-shrink-0" />
                     {!collapsed && <span>{item.title}</span>}
                   </NavLink>
@@ -442,16 +442,16 @@ export function AppSidebar() {
                         {configModule.items.map((item) => {
                           const ItemIcon = item.icon;
                           return (
-                            <NavLink
-                              key={item.url}
-                              to={item.url}
-                              className={cn(
-                                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
-                                isActive(item.url)
-                                  ? "bg-primary text-primary-foreground font-medium shadow-sm"
-                                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                              )}
-                            >
+                             <NavLink
+                               key={item.url}
+                               to={item.url}
+                               className={cn(
+                                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
+                                 isActive(item.url)
+                                   ? "bg-primary/10 text-primary font-medium shadow-sm"
+                                   : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                               )}
+                             >
                               <ItemIcon className="w-4 h-4" />
                               <span>{item.title}</span>
                             </NavLink>
