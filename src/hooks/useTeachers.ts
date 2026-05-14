@@ -196,22 +196,97 @@ export function useTeachersStats() {
   });
 }
 
-// Hook to get teacher's classes (as director)
-export function useTeacherClasses(teacherId: number | null) {
-  return useQuery({
-    queryKey: ['teacher-classes', teacherId],
-    queryFn: async () => {
-      if (!teacherId) return [];
-      
-      const { data, error } = await supabase
-        .from('classes')
-        .select('id, name, year')
-        .eq('teacher_id', teacherId)
-        .order('year', { ascending: false });
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!teacherId,
-  });
-}
+ // Hook to get current teacher profile based on logged in user
+ export function useCurrentTeacher() {
+   return useQuery({
+     queryKey: ['current-teacher'],
+     queryFn: async () => {
+       const { data: { user } } = await supabase.auth.getUser();
+       if (!user?.email) return null;
+ 
+       const { data, error } = await supabase
+         .from('teachers')
+         .select('*')
+         .eq('email', user.email)
+         .maybeSingle();
+ 
+       if (error) throw error;
+       return data as Teacher;
+     },
+   });
+ }
+ 
+ // Hook to get teacher's classes (both as director and subject teacher)
+ export function useTeacherAssignments(teacherId: number | null) {
+   return useQuery({
+     queryKey: ['teacher-assignments', teacherId],
+     queryFn: async () => {
+       if (!teacherId) return { classes: [], subjects: [] };
+       
+       // Get classes where teacher is director
+       const { data: directedClasses, error: dirError } = await supabase
+         .from('classes')
+         .select('id, name, year')
+         .eq('teacher_id', teacherId);
+       
+       if (dirError) throw dirError;
+ 
+       // Get curriculum assignments (specific subjects in specific classes)
+       const { data: curriculum, error: currError } = await supabase
+         .from('class_curriculum')
+         .select(`
+           class_id,
+           subject_id,
+           classes:class_id (id, name, year),
+           subjects:subject_id (id, name)
+         `)
+         .eq('teacher_id', teacherId);
+ 
+       if (currError) throw currError;
+ 
+       // Merge unique classes
+       const classMap = new Map<number, any>();
+       directedClasses?.forEach(c => classMap.set(c.id, c));
+       curriculum?.forEach(curr => {
+         if (curr.classes) {
+           const c = curr.classes as any;
+           classMap.set(c.id, c);
+         }
+       });
+ 
+       const assignedClasses = Array.from(classMap.values());
+       const assignedSubjects = curriculum?.map(curr => ({
+         class_id: curr.class_id,
+         subject_id: curr.subject_id,
+         subject_name: (curr.subjects as any)?.name
+       })) || [];
+ 
+       return { 
+         classes: assignedClasses, 
+         subjects: assignedSubjects,
+         isDirectorOf: directedClasses?.map(c => c.id) || []
+       };
+     },
+     enabled: !!teacherId,
+   });
+ }
+ 
+ // Hook to get teacher's classes (as director)
+ export function useTeacherClasses(teacherId: number | null) {
+   return useQuery({
+     queryKey: ['teacher-classes', teacherId],
+     queryFn: async () => {
+       if (!teacherId) return [];
+       
+       const { data, error } = await supabase
+         .from('classes')
+         .select('id, name, year')
+         .eq('teacher_id', teacherId)
+         .order('year', { ascending: false });
+       
+       if (error) throw error;
+       return data;
+     },
+     enabled: !!teacherId,
+   });
+ }
