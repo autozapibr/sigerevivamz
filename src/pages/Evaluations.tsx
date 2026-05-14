@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   BookOpen, Save, Calculator, Filter, FileSpreadsheet,
-  TrendingUp, TrendingDown, Download, BarChart3, Users, 
-  GraduationCap, ClipboardList
+   TrendingUp, TrendingDown, Download, BarChart3, Users,
+   GraduationCap, ClipboardList, CheckCircle2, XCircle, AlertCircle, Clock,
+   FileText
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -38,7 +39,12 @@ import {
   classifyGrade,
   GradeInsert
 } from '@/hooks/useGrades';
-import { useStudentsByClass } from '@/hooks/useAttendance';
+ import { useStudentsByClass, useAttendanceByClass, useRecordAttendance, AttendanceStatus } from '@/hooks/useAttendance';
+ import { useCurrentTeacher, useTeacherAssignments } from '@/hooks/useTeachers';
+ import { Link } from 'react-router-dom';
+ import { useAuth } from '@/contexts/AuthContext';
+ import { supabase } from '@/integrations/supabase/client';
+ import { useQuery } from '@tanstack/react-query';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend
 } from 'recharts';
@@ -438,7 +444,297 @@ function GradeEntry({
   );
 }
 
-// Componente de Resumo Anual
+ // Componente de Registro de Faltas
+ function AttendanceEntry({
+   classId,
+   subjectId,
+   students,
+   studentsLoading,
+   classes,
+   subjects
+ }: {
+   classId: number | null;
+   subjectId: number | null;
+   students: any[];
+   studentsLoading: boolean;
+   classes: any[];
+   subjects: any[];
+ }) {
+   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+   const [attendanceData, setAttendanceData] = useState<Map<number, AttendanceStatus>>(new Map());
+   const [observations, setObservations] = useState<Map<number, string>>(new Map());
+   const [hasChanges, setHasChanges] = useState(false);
+   const { toast } = useToast();
+   const recordAttendance = useRecordAttendance();
+   const { data: existingAttendance = [], isLoading: attendanceLoading } = useAttendanceByClass(classId, selectedDate);
+ 
+   // Initialize from existing data
+   React.useEffect(() => {
+     const dataMap = new Map<number, AttendanceStatus>();
+     const obsMap = new Map<number, string>();
+     
+     // Default to PRESENTE for everyone if no records exist
+     students.forEach(student => {
+       dataMap.set(student.id, 'PRESENTE');
+     });
+ 
+     existingAttendance.forEach(record => {
+       dataMap.set(record.student_id, record.status);
+       if (record.observation) obsMap.set(record.student_id, record.observation);
+     });
+ 
+     setAttendanceData(dataMap);
+     setObservations(obsMap);
+     setHasChanges(false);
+   }, [students, existingAttendance]);
+ 
+   const handleStatusChange = (studentId: number, status: AttendanceStatus) => {
+     setAttendanceData(prev => {
+       const next = new Map(prev);
+       next.set(studentId, status);
+       return next;
+     });
+     setHasChanges(true);
+   };
+ 
+   const handleSave = async () => {
+     if (!classId) return;
+ 
+     const records = Array.from(attendanceData.entries()).map(([studentId, status]) => ({
+       student_id: studentId,
+       class_id: classId,
+       subject_id: subjectId,
+       date: selectedDate,
+       status,
+       observation: observations.get(studentId) || null
+     }));
+ 
+     await recordAttendance.mutateAsync(records);
+     setHasChanges(false);
+   };
+ 
+   if (!classId) return (
+     <Card>
+       <CardContent className="py-12 text-center">
+         <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+         <h3 className="text-lg font-medium mb-2">Seleccione uma Turma</h3>
+         <p className="text-muted-foreground">Escolha uma turma para registrar presenças</p>
+       </CardContent>
+     </Card>
+   );
+ 
+   return (
+     <div className="space-y-6">
+       <Card>
+         <CardHeader>
+           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+             <div>
+               <CardTitle className="flex items-center gap-2">
+                 <Users className="h-5 w-5" />
+                 Chamada Diária
+               </CardTitle>
+               <CardDescription>
+                 Registrar faltas e presenças para {classes.find((c: any) => c.id === classId)?.name}
+               </CardDescription>
+             </div>
+             <div className="flex items-center gap-2">
+               <Input 
+                 type="date" 
+                 value={selectedDate} 
+                 onChange={(e) => setSelectedDate(e.target.value)}
+                 className="w-40"
+               />
+               <Button onClick={handleSave} disabled={recordAttendance.isPending || !hasChanges}>
+                 <Save className="mr-2 h-4 w-4" />
+                 Guardar Chamada
+               </Button>
+             </div>
+           </div>
+         </CardHeader>
+         <CardContent>
+           {studentsLoading || attendanceLoading ? (
+             <div className="space-y-3">
+               {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+             </div>
+           ) : (
+             <div className="overflow-x-auto">
+               <Table>
+                 <TableHeader>
+                   <TableRow>
+                     <TableHead className="w-12">#</TableHead>
+                     <TableHead>Educando</TableHead>
+                     <TableHead className="text-center">Status de Presença</TableHead>
+                     <TableHead>Observação</TableHead>
+                   </TableRow>
+                 </TableHeader>
+                 <TableBody>
+                   {students.map((student, index) => {
+                     const status = attendanceData.get(student.id) || 'PRESENTE';
+                     return (
+                       <TableRow key={student.id}>
+                         <TableCell className="text-muted-foreground">{index + 1}</TableCell>
+                         <TableCell className="font-medium">{student.name}</TableCell>
+                         <TableCell>
+                           <div className="flex items-center justify-center gap-2">
+                             <Button
+                               size="sm"
+                               variant={status === 'PRESENTE' ? 'default' : 'outline'}
+                               className={status === 'PRESENTE' ? 'bg-green-600 hover:bg-green-700' : ''}
+                               onClick={() => handleStatusChange(student.id, 'PRESENTE')}
+                             >
+                               <CheckCircle2 className="h-4 w-4" />
+                             </Button>
+                             <Button
+                               size="sm"
+                               variant={status === 'FALTA' ? 'destructive' : 'outline'}
+                               onClick={() => handleStatusChange(student.id, 'FALTA')}
+                             >
+                               <XCircle className="h-4 w-4" />
+                             </Button>
+                             <Button
+                               size="sm"
+                               variant={status === 'FALTA_JUSTIFICADA' ? 'secondary' : 'outline'}
+                               className={status === 'FALTA_JUSTIFICADA' ? 'bg-orange-500 text-white hover:bg-orange-600' : ''}
+                               onClick={() => handleStatusChange(student.id, 'FALTA_JUSTIFICADA')}
+                             >
+                               <AlertCircle className="h-4 w-4" />
+                             </Button>
+                             <Button
+                               size="sm"
+                               variant={status === 'ATRASO' ? 'secondary' : 'outline'}
+                               className={status === 'ATRASO' ? 'bg-blue-500 text-white hover:bg-blue-600' : ''}
+                               onClick={() => handleStatusChange(student.id, 'ATRASO')}
+                             >
+                               <Clock className="h-4 w-4" />
+                             </Button>
+                           </div>
+                         </TableCell>
+                         <TableCell>
+                           <Input 
+                             placeholder="Opcional..." 
+                             value={observations.get(student.id) || ''}
+                             onChange={(e) => {
+                               setObservations(new Map(observations).set(student.id, e.target.value));
+                               setHasChanges(true);
+                             }}
+                             className="h-8"
+                           />
+                         </TableCell>
+                       </TableRow>
+                     );
+                   })}
+                 </TableBody>
+               </Table>
+             </div>
+           )}
+         </CardContent>
+       </Card>
+     </div>
+   );
+ }
+ 
+ // Componente para Controle de Lançamento (Direção Pedagógica)
+ function PedagogicalRelease() {
+   const currentYear = new Date().getFullYear();
+   const { toast } = useToast();
+   
+   const { data: settings, refetch } = useQuery({
+     queryKey: ['pedagogical-settings'],
+     queryFn: async () => {
+       const { data, error } = await supabase
+         .from('pedagogical_settings')
+         .select('*')
+         .eq('academic_year', currentYear)
+         .order('trimestre');
+       if (error) throw error;
+       return data;
+     },
+   });
+ 
+   const handleStatusChange = async (trimestre: number, status: 'draft' | 'review' | 'released') => {
+     const { error } = await supabase
+       .from('pedagogical_settings')
+       .upsert({
+         academic_year: currentYear,
+         trimestre,
+         release_status: status,
+         released_at: status === 'released' ? new Date().toISOString() : null
+       }, { onConflict: 'academic_year,trimestre' });
+ 
+     if (error) {
+       toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+     } else {
+       toast({ title: 'Sucesso', description: `Status do ${trimestre}º Trimestre actualizado.` });
+       refetch();
+     }
+   };
+ 
+   return (
+     <Card>
+       <CardHeader>
+         <CardTitle className="text-lg flex items-center gap-2">
+           <CheckCircle2 className="h-5 w-5 text-primary" />
+           Controle de Lançamento e Publicação
+         </CardTitle>
+         <CardDescription>
+           Defina o status de cada trimestre. Quando "Publicado", educandos e encarregados poderão ver as notas.
+         </CardDescription>
+       </CardHeader>
+       <CardContent>
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+           {[1, 2, 3].map((t) => {
+             const current = settings?.find(s => s.trimestre === t);
+             const status = current?.release_status || 'draft';
+             
+             return (
+               <div key={t} className="p-4 border rounded-xl space-y-4">
+                 <div className="flex items-center justify-between">
+                   <h4 className="font-bold">{t}º Trimestre</h4>
+                   <Badge variant={status === 'released' ? 'default' : status === 'review' ? 'secondary' : 'outline'}>
+                     {status === 'released' ? 'Publicado' : status === 'review' ? 'Em Revisão' : 'Rascunho'}
+                   </Badge>
+                 </div>
+                 
+                 <div className="grid grid-cols-1 gap-2">
+                   <Button 
+                     size="sm" 
+                     variant={status === 'draft' ? 'default' : 'outline'}
+                     onClick={() => handleStatusChange(t, 'draft')}
+                   >
+                     Rascunho
+                   </Button>
+                   <Button 
+                     size="sm" 
+                     variant={status === 'review' ? 'default' : 'outline'}
+                     onClick={() => handleStatusChange(t, 'review')}
+                   >
+                     Enviar p/ Revisão
+                   </Button>
+                   <Button 
+                     size="sm" 
+                     variant={status === 'released' ? 'default' : 'outline'}
+                     className={status === 'released' ? 'bg-green-600' : ''}
+                     onClick={() => handleStatusChange(t, 'released')}
+                   >
+                     Publicar Notas
+                   </Button>
+                 </div>
+                 
+                 {current?.released_at && (
+                   <p className="text-[10px] text-muted-foreground text-center">
+                     Publicado em: {new Date(current.released_at).toLocaleDateString()}
+                   </p>
+                 )}
+               </div>
+             );
+           })}
+         </div>
+       </CardContent>
+     </Card>
+   );
+ }
+ 
+ // Componente de Resumo Anual
 function AnnualSummary({ classId, subjects, classes }: { classId: number | null; subjects: any[]; classes: any[] }) {
   const { data: students = [] } = useStudentsByClass(classId);
   const { data: allGrades = [] } = useGradesByClass(classId, null, null);
@@ -516,7 +812,7 @@ function AnnualSummary({ classId, subjects, classes }: { classId: number | null;
               <TableHeader>
                 <TableRow>
                   <TableHead className="sticky left-0 bg-background">#</TableHead>
-                  <TableHead className="sticky left-8 bg-background min-w-[180px]">Educando</TableHead>
+                   <TableHead className="sticky left-8 bg-background min-w-[200px]">Educando</TableHead>
                   {subjects.slice(0, 5).map(subject => (
                     <TableHead key={subject.id} className="text-center min-w-[80px]">
                       {subject.code || subject.name.substring(0, 4)}
@@ -530,7 +826,14 @@ function AnnualSummary({ classId, subjects, classes }: { classId: number | null;
                 {annualData.map((row, index) => (
                   <TableRow key={row.student.id}>
                     <TableCell className="sticky left-0 bg-background">{index + 1}</TableCell>
-                    <TableCell className="sticky left-8 bg-background font-medium">{row.student.name}</TableCell>
+                     <TableCell className="sticky left-8 bg-background font-medium">
+                       <div className="flex items-center gap-2">
+                         {row.student.name}
+                         <Link to={`/students/${row.student.id}/caderneta`} className="text-primary hover:underline">
+                           <FileText className="h-3 w-3" />
+                         </Link>
+                       </div>
+                     </TableCell>
                     {subjects.slice(0, 5).map(subject => {
                       const avg = row.subjectAverages[subject.id]?.annual;
                       const { className } = classifyGrade(avg);
@@ -675,16 +978,42 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
   );
 }
 
-export default function Evaluations() {
-  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
-  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
-  const [selectedTrimestre, setSelectedTrimestre] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState('lancamento');
-
-  const { data: classes = [], isLoading: classesLoading } = useClasses();
-  const { data: subjects = [] } = useSubjects();
-  const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
-  const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
+ export default function Evaluations() {
+   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
+   const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
+   const [selectedTrimestre, setSelectedTrimestre] = useState<number>(1);
+   const [activeTab, setActiveTab] = useState('lancamento');
+ 
+   const { data: teacher } = useCurrentTeacher();
+   const { data: assignments } = useTeacherAssignments(teacher?.id || null);
+ 
+   const { data: allClasses = [], isLoading: classesLoading } = useClasses();
+   const { data: allSubjects = [] } = useSubjects();
+ 
+   // Filter classes and subjects if user is a teacher
+   const classes = useMemo(() => {
+     if (!teacher) return allClasses;
+     return assignments?.classes || [];
+   }, [teacher, assignments, allClasses]);
+ 
+   const subjects = useMemo(() => {
+     if (!teacher) return allSubjects;
+     // Filter subjects assigned to this teacher for the selected class
+     if (!selectedClassId) return [];
+     return assignments?.subjects
+       .filter(s => s.class_id === selectedClassId)
+       .map(s => ({ 
+         id: s.subject_id, 
+         name: s.subject_name,
+         code: allSubjects.find(as => as.id === s.subject_id)?.code 
+       })) || [];
+   }, [teacher, assignments, allSubjects, selectedClassId]);
+ 
+   const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
+   const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
+ 
+   const { user } = useAuth();
+   const isPedagogical = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
 
   return (
     <MainLayout title="Pauta Digital" subtitle="Sistema de avaliação e lançamento de notas">
@@ -802,33 +1131,54 @@ export default function Evaluations() {
 
         {/* Tabs de Funcionalidades */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="lancamento" className="gap-2">
-              <FileSpreadsheet className="h-4 w-4" />
-              Lançamento de Notas
-            </TabsTrigger>
-            <TabsTrigger value="resumo" className="gap-2">
-              <GraduationCap className="h-4 w-4" />
-              Resumo Anual
-            </TabsTrigger>
-            <TabsTrigger value="estatisticas" className="gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Estatísticas
-            </TabsTrigger>
-          </TabsList>
+           <TabsList className={`grid w-full ${isPedagogical ? 'grid-cols-5' : 'grid-cols-4'}`}>
+             <TabsTrigger value="lancamento" className="gap-2">
+               <FileSpreadsheet className="h-4 w-4" />
+               Lançamento de Notas
+             </TabsTrigger>
+             <TabsTrigger value="faltas" className="gap-2">
+               <Users className="h-4 w-4" />
+               Faltas
+             </TabsTrigger>
+             <TabsTrigger value="resumo" className="gap-2">
+               <GraduationCap className="h-4 w-4" />
+               Resumo Anual
+             </TabsTrigger>
+             <TabsTrigger value="estatisticas" className="gap-2">
+               <BarChart3 className="h-4 w-4" />
+               Estatísticas
+             </TabsTrigger>
+             {isPedagogical && (
+               <TabsTrigger value="pedagogico" className="gap-2">
+                 <CheckCircle2 className="h-4 w-4" />
+                 Publicação
+               </TabsTrigger>
+             )}
+           </TabsList>
 
-          <TabsContent value="lancamento" className="mt-6">
-            <GradeEntry 
-              classId={selectedClassId}
-              subjectId={selectedSubjectId}
-              trimestre={selectedTrimestre}
-              students={students}
-              existingGrades={existingGrades}
-              studentsLoading={studentsLoading}
-              classes={classes}
-              subjects={subjects}
-            />
-          </TabsContent>
+           <TabsContent value="lancamento" className="mt-6">
+             <GradeEntry 
+               classId={selectedClassId}
+               subjectId={selectedSubjectId}
+               trimestre={selectedTrimestre}
+               students={students}
+               existingGrades={existingGrades}
+               studentsLoading={studentsLoading}
+               classes={classes}
+               subjects={subjects}
+             />
+           </TabsContent>
+ 
+           <TabsContent value="faltas" className="mt-6">
+             <AttendanceEntry
+               classId={selectedClassId}
+               subjectId={selectedSubjectId}
+               students={students}
+               studentsLoading={studentsLoading}
+               classes={classes}
+               subjects={subjects}
+             />
+           </TabsContent>
 
           <TabsContent value="resumo" className="mt-6">
             <AnnualSummary 
@@ -838,10 +1188,16 @@ export default function Evaluations() {
             />
           </TabsContent>
 
-          <TabsContent value="estatisticas" className="mt-6">
-            <GradeStatistics classId={selectedClassId} subjectId={selectedSubjectId} />
-          </TabsContent>
-        </Tabs>
+           <TabsContent value="estatisticas" className="mt-6">
+             <GradeStatistics classId={selectedClassId} subjectId={selectedSubjectId} />
+           </TabsContent>
+ 
+           {isPedagogical && (
+             <TabsContent value="pedagogico" className="mt-6">
+               <PedagogicalRelease />
+             </TabsContent>
+           )}
+         </Tabs>
       </div>
     </MainLayout>
   );

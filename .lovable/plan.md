@@ -1,33 +1,25 @@
-# Correção do crash na Landing Page (React error #310)
+I will implement the requested features to adapt the system for Mozambican teachers and pedagogical management.
 
-## Causa
+### Phase 1: Teacher Access & Filtering
+1.  **Teacher Identity**: Create a hook to identify the logged-in teacher by their email.
+2.  **Filter Assignments**: Update the Evaluations page to only show classes and subjects assigned to the logged-in teacher (either as Class Director or subject teacher).
+3.  **Permissions**: Ensure that only authorised personnel (Admins/Pedagogical) can see all data, while teachers see only their own.
 
-O componente `CommandPalette` (montado globalmente em `App.tsx`) viola as **Rules of Hooks**:
+### Phase 2: Attendance (Faltas) Integration
+1.  **Attendance Tab**: Add an "Attendance" (Faltas) tab to the Evaluations page.
+2.  **Daily Recording**: Allow teachers to record daily attendance for their classes and subjects.
+3.  **Monthly/Trimestral Summary**: Display attendance statistics in the teacher's view.
 
-```tsx
-const items = useMemo(...)           // ✅ hook 1
-if (!isAuthenticated) return null;   // ❌ early return ANTES de todos os hooks
-const groups = useMemo(...)          // ❌ hook 2 — só corre se autenticado
-```
+### Phase 3: Caderneta do Aluno (Report Card)
+1.  **Report Card Generation**: Create a dedicated view and PDF export for the "Caderneta do Aluno".
+2.  **SiGER Standards**: Ensure the report card follows the Mozambican SiGER standards, including ACS1, ACS2, ACS3, AT, and Trimestral Averages.
+3.  **Comprehensive View**: Include overall attendance, behavior, and final results.
 
-Quando o `AuthContext` resolve o estado (de `isLoading` → `isAuthenticated=false` ou vice-versa), o número de hooks chamados muda entre renders → React lança o erro **#310** ("Rendered more hooks than during the previous render"). É isto que faz a LandingPage rebentar com "Algo correu mal".
+### Phase 4: Pedagogical Release Logic
+1.  **Release Controls**: Implement a mechanism for the Pedagogical Department to "Release" (Release for Viewing) grades and report cards.
+2.  **Visibility**: Students and parents will only see the updated grades once released by the department.
 
-## Correção
-
-**Ficheiro:** `src/components/shared/CommandPalette.tsx`
-
-1. Mover o `useMemo` de `groups` para **antes** do `if (!isAuthenticated) return null;`.
-2. Mover também o atalho global `Cmd+K` para só registar listener quando autenticado (opcional mas limpo) — manter como está está OK desde que continue a ser um `useEffect` antes do return.
-3. Manter a ordem: todos os hooks (`useState`, `useEffect`, `useMemo` items, `useMemo` groups) → depois o `if (!isAuthenticated) return null;` → depois o JSX.
-
-Resultado: ordem dos hooks fica estável entre renders autenticados e não autenticados, eliminando o erro #310 e restaurando a Landing Page.
-
-## Verificação
-
-- Abrir `/` (landing) sem sessão → deve carregar normalmente.
-- Fazer login → `Cmd+K` continua a abrir a palette.
-- Fazer logout no dashboard → não deve crashar.
-
-## Fora de âmbito
-
-Nenhuma outra alteração à Fase 2 — apenas hotfix de regressão introduzida pelo CommandPalette.
+### Technical Steps
+- **Migration**: Add `released_at` and `release_status` to a new `pedagogical_settings` table.
+- **Hooks**: Create `useCurrentTeacher` and update `useGrades` / `useAttendance`.
+- **UI**: Enhance `Evaluations.tsx`, create `StudentReportCard.tsx`, and add a report card link in the class details.
