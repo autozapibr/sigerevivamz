@@ -996,30 +996,43 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
   const { data: allClasses = [], isLoading: classesLoading } = useClasses();
   const { data: allSubjects = [] } = useSubjects();
 
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
-  const isProfessor = user?.role === 'PROFESSOR';
+  const isSystemAdmin = user?.role === 'ADMIN';
+  const isPedagogical = user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA' || isSystemAdmin;
+  const hasTeacherProfile = !!teacher;
 
-  // Filter classes and subjects if user is a teacher
+  // If the user has a teacher profile, we should filter by their assignments
+  // unless they are a pure Admin/Pedagogical without teaching assignments.
+  const shouldFilterByTeacher = hasTeacherProfile && (user?.role === 'PROFESSOR' || !isPedagogical || assignments?.classes.length > 0);
+
   const classes = useMemo(() => {
-    if (isAdmin) return allClasses;
-    if (isProfessor) return assignments?.classes || [];
+    if (shouldFilterByTeacher && assignments?.classes) {
+      return assignments.classes;
+    }
     return allClasses;
-  }, [allClasses, assignments, isAdmin, isProfessor]);
+  }, [allClasses, assignments, shouldFilterByTeacher]);
 
   const subjects = useMemo(() => {
-    if (isAdmin) return allSubjects;
-    if (isProfessor) {
+    if (shouldFilterByTeacher && assignments?.subjects) {
       if (!selectedClassId) return [];
-      return assignments?.subjects
-        .filter((s: any) => s.class_id === selectedClassId)
-        .map((s: any) => ({ 
+      
+      // Filter unique subjects for the selected class
+      const classSubjects = assignments.subjects
+        .filter((s: any) => s.class_id === selectedClassId);
+      
+      if (classSubjects.length > 0) {
+        return classSubjects.map((s: any) => ({ 
           id: s.subject_id, 
           name: s.subject_name,
           code: allSubjects.find(as => as.id === s.subject_id)?.code 
-        })) || [];
+        }));
+      }
+      
+      // If we are filtering by teacher but they have no subjects for this class (e.g. they are just director)
+      // we might want to show all subjects or none. The user says "apenas as que lhe foram atribuídas".
+      return [];
     }
     return allSubjects;
-  }, [allSubjects, assignments, isAdmin, isProfessor, selectedClassId]);
+  }, [allSubjects, assignments, shouldFilterByTeacher, selectedClassId]);
  
    const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
    const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
