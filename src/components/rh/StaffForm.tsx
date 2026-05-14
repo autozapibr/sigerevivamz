@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, X, User, Smartphone } from 'lucide-react';
+ import { Camera, Upload, X, User, Smartphone, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+ import { Card, CardContent } from '@/components/ui/card';
 import { ProvinceSelector } from '@/components/shared/ProvinceSelector';
 import { MozambiqueInput } from '@/components/shared/MozambiqueInput';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -194,10 +195,13 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
 
   return (
     <Tabs defaultValue="personal" className="w-full">
-      <TabsList className="grid w-full grid-cols-3 mb-4">
+       <TabsList className={`grid w-full mb-4 ${staffType === 'teacher' && isEdit ? 'grid-cols-4' : 'grid-cols-3'}`}>
         <TabsTrigger value="personal">Dados Pessoais</TabsTrigger>
         <TabsTrigger value="professional">Profissional</TabsTrigger>
-        <TabsTrigger value="financial">Financeiro</TabsTrigger>
+         <TabsTrigger value="financial">Financeiro</TabsTrigger>
+         {staffType === 'teacher' && isEdit && (
+           <TabsTrigger value="assignments">Turmas</TabsTrigger>
+         )}
       </TabsList>
 
       <TabsContent value="personal" className="space-y-4">
@@ -634,7 +638,40 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
             </div>
           </div>
         )}
-      </TabsContent>
-    </Tabs>
+       </TabsContent>
+ 
+       {staffType === 'teacher' && isEdit && (
+         <TabsContent value="assignments" className="space-y-4">
+           <Card className="border-primary/20 bg-primary/5">
+             <CardContent className="pt-6">
+               <div className="flex items-center gap-3 mb-4">
+                 <div className="p-2 bg-primary/10 rounded-full text-primary">
+                   <BookOpen className="w-5 h-5" />
+                 </div>
+                 <div>
+                   <h3 className="font-semibold text-lg">Turmas e Disciplinas</h3>
+                   <p className="text-sm text-muted-foreground">Gestão de atribuições pedagógicas</p>
+                 </div>
+               </div>
+               
+               <div className="space-y-4">
+                 <p className="text-sm">
+                   A atribuição de turmas e disciplinas é gerida fora deste formulário para permitir uma visão mais detalhada da carga horária e conflitos de horários.
+                 </p>
+                 
+                 <div className="p-4 bg-background border rounded-md">
+                   <p className="text-sm font-medium mb-2 text-primary">Como gerir:</p>
+                   <ol className="text-sm space-y-2 list-decimal list-inside text-muted-foreground">
+                     <li>Feche este diálogo de edição.</li>
+                     <li>No cartão deste professor, clique no botão azul <strong>"Turmas e Disciplinas"</strong>.</li>
+                     <li>Ou use o menu de opções (três pontos) e selecione <strong>"Atribuir Turmas e Disciplinas"</strong>.</li>
+                   </ol>
+                 </div>
+               </div>
+             </CardContent>
+           </Card>
+         </TabsContent>
+       )}
+     </Tabs>
   );
 }

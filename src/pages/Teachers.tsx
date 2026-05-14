@@ -366,17 +366,23 @@ export default function Teachers() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(teacher)}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => {
-                            setSelectedTeacher(teacher);
-                            setShowAssignmentsDialog(true);
-                          }}>
-                            <BookOpen className="w-4 h-4 mr-2" />
-                            Turmas e Disciplinas
-                          </DropdownMenuItem>
+                           <DropdownMenuItem 
+                             className="flex items-center gap-2 cursor-pointer"
+                             onClick={() => handleEdit(teacher)}
+                           >
+                             <Edit className="w-4 h-4" />
+                             <span>Editar Perfil</span>
+                           </DropdownMenuItem>
+                           <DropdownMenuItem 
+                             className="flex items-center gap-2 cursor-pointer text-primary"
+                             onClick={() => {
+                               setSelectedTeacher(teacher);
+                               setShowAssignmentsDialog(true);
+                             }}
+                           >
+                             <BookOpen className="w-4 h-4" />
+                             <span>Atribuir Turmas e Disciplinas</span>
+                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => {
                             setSelectedTeacher(teacher);
                             setShowDocumentDialog(true);
@@ -434,8 +440,22 @@ export default function Teachers() {
                       );
                     })()}
 
-                    <div className="mt-4 flex items-center justify-between">
-                      <Badge variant="secondary" className={
+                     <div className="mt-6 flex flex-col gap-3">
+                       <Button 
+                         variant="outline" 
+                         size="sm" 
+                         className="w-full justify-start text-primary border-primary/20 hover:bg-primary/5 hover:text-primary hover:border-primary/40"
+                         onClick={() => {
+                           setSelectedTeacher(teacher);
+                           setShowAssignmentsDialog(true);
+                         }}
+                       >
+                         <BookOpen className="w-4 h-4 mr-2" />
+                         Turmas e Disciplinas
+                       </Button>
+                       
+                       <div className="flex items-center justify-between">
+                         <Badge variant="secondary" className={
                         teacher.status === 'Ativo'
                           ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-0'
                           : 'bg-destructive/10 text-destructive border-0'
@@ -443,12 +463,13 @@ export default function Teachers() {
                         {teacher.status}
                       </Badge>
                       
-                      {teacher.contract_number && (
-                        <span className="text-xs text-muted-foreground">
-                          {teacher.contract_number}
-                        </span>
-                      )}
-                    </div>
+                         {teacher.contract_number && (
+                           <span className="text-xs text-muted-foreground">
+                             {teacher.contract_number}
+                           </span>
+                         )}
+                       </div>
+                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
