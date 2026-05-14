@@ -307,7 +307,7 @@ export function AppSidebar() {
           <div className="space-y-2">
             {accessibleModules.map(([key, module]) => {
               const moduleIsActive = isModuleActive(module.items);
-              const isOpen = openModules.includes(key) || (openModules.length === 0 && moduleIsActive);
+              const isOpen = openModules.includes(key);
               const ModuleIcon = module.icon;
 
               return (
