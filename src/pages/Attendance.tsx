@@ -648,8 +648,18 @@ export default function Attendance() {
   const { data: allClasses = [], isLoading: classesLoading } = useClasses();
   const { data: allSubjects = [] } = useSubjects();
   
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
-  const isProfessor = user?.role === 'PROFESSOR';
+  const { data: userRoles } = useQuery({
+    queryKey: ['user-roles-attendance', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data } = await supabase.from('user_roles').select('role').eq('user_id', user.id);
+      return data?.map(r => String(r.role)) || [];
+    },
+    enabled: !!user?.id
+  });
+
+  const isAdmin = userRoles?.some(r => ['ADMIN', 'PEDAGOGICO', 'DIRETORIA', 'SECRETARIA'].includes(r));
+  const isProfessor = userRoles?.includes('PROFESSOR');
   const hasTeacherProfile = !!teacher;
   const shouldFilterByTeacher = isProfessor || (hasTeacherProfile && assignments?.classes.length > 0);
 
