@@ -147,12 +147,6 @@ function GradeEntry({
       const current = newMap.get(studentId);
       if (current) {
          const updated = { ...current, [field]: numValue } as any;
-         updated.media = calculateTrimesterAverage(
-           updated.acs1 ?? null, 
-           updated.acs2 ?? null, 
-           updated.acs3 ?? null, 
-           updated.at ?? null
-         );
          newMap.set(studentId, updated as StudentGrade);
       }
       return newMap;
@@ -198,31 +192,40 @@ function GradeEntry({
 
   const GradeInput = ({ 
     value, 
-    onChange, 
+    onBlur, 
     placeholder 
   }: { 
     value: number | null; 
-    onChange: (v: string) => void; 
+    onBlur: (v: string) => void; 
     placeholder: string;
-  }) => (
-    <Input
-      type="text"
-      inputMode="decimal"
-      autoComplete="off"
-      spellCheck={false}
-      value={value ?? ''}
-      onChange={(e) => {
-        const val = e.target.value.replace(',', '.');
-        if (val === '' || /^\d*\.?\d*$/.test(val)) {
-          if (val.length <= 5) { // Allow up to 5 chars for cases like 18.50
-            onChange(val);
+  }) => {
+    const [localValue, setLocalValue] = React.useState(value?.toString() ?? '');
+
+    React.useEffect(() => {
+      setLocalValue(value?.toString() ?? '');
+    }, [value]);
+
+    return (
+      <Input
+        type="text"
+        inputMode="decimal"
+        autoComplete="off"
+        spellCheck={false}
+        value={localValue}
+        onChange={(e) => {
+          const val = e.target.value.replace(',', '.');
+          if (val === '' || /^\d*\.?\d*$/.test(val)) {
+            if (val.length <= 5) {
+              setLocalValue(val);
+            }
           }
-        }
-      }}
-      placeholder={placeholder}
-      className="w-16 text-center font-bold h-9 bg-background focus:ring-1 focus:ring-primary/30 border-muted-foreground/20"
-    />
-  );
+        }}
+        onBlur={() => onBlur(localValue)}
+        placeholder={placeholder}
+        className="w-16 text-center font-bold h-9 bg-background focus:ring-1 focus:ring-primary/30 border-muted-foreground/20"
+      />
+    );
+  };
 
   const MediaBadge = ({ media }: { media: number | null }) => {
     const { label, className } = classifyGrade(media);
@@ -406,28 +409,28 @@ function GradeEntry({
                        <TableCell className="text-center">
                          <GradeInput
                            value={grade.acs1}
-                           onChange={(v) => handleGradeChange(grade.student_id, 'acs1', v)}
+                           onBlur={(v) => handleGradeChange(grade.student_id, 'acs1', v)}
                            placeholder="ACS 1"
                          />
                        </TableCell>
                        <TableCell className="text-center">
                          <GradeInput
                            value={grade.acs2}
-                           onChange={(v) => handleGradeChange(grade.student_id, 'acs2', v)}
+                           onBlur={(v) => handleGradeChange(grade.student_id, 'acs2', v)}
                            placeholder="ACS 2"
                          />
                        </TableCell>
                        <TableCell className="text-center">
                          <GradeInput
                            value={grade.acs3}
-                           onChange={(v) => handleGradeChange(grade.student_id, 'acs3', v)}
+                           onBlur={(v) => handleGradeChange(grade.student_id, 'acs3', v)}
                            placeholder="ACS 3"
                          />
                        </TableCell>
                        <TableCell className="text-center">
                          <GradeInput
                            value={grade.at}
-                           onChange={(v) => handleGradeChange(grade.student_id, 'at', v)}
+                           onBlur={(v) => handleGradeChange(grade.student_id, 'at', v)}
                            placeholder="AT"
                          />
                        </TableCell>
