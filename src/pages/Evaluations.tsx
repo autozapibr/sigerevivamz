@@ -331,7 +331,7 @@ function GradeEntry({
         <CardContent>
           {/* Legenda MEC */}
           <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-            <p className="text-sm font-medium mb-2">Sistema de Avaliação MEC (0-20):</p>
+             <p className="text-sm font-medium mb-2">Sistema de Avaliação Moçambicano (SiGER):</p>
              <div className="flex flex-wrap gap-4 text-xs">
                <span><strong>ACS</strong> - Avaliação Contínua e Sistemática</span>
                <span><strong>AT</strong> - Avaliação Trimestral</span>
