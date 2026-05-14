@@ -111,7 +111,8 @@ const systemItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const { user, logout } = useAuth();
+   const { user } = useAuth();
+   const unreadCount = useUnreadNotificationCount();
   const location = useLocation();
   const [openModules, setOpenModules] = React.useState<string[]>(['gestao_escolar']);
   const sidebarScrollRef = React.useRef<HTMLDivElement | null>(null);
@@ -247,15 +248,34 @@ export function AppSidebar() {
               >
                 <RotateCw className="w-4 h-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                onClick={() => window.location.href = '/dashboard'}
-                title="Início"
-              >
-                <Home className="w-4 h-4" />
-              </Button>
+               <Button
+                 variant="ghost"
+                 size="icon"
+                 className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                 onClick={() => window.location.href = '/dashboard'}
+                 title="Início"
+               >
+                 <Home className="w-4 h-4" />
+               </Button>
+               <Button
+                 variant="ghost"
+                 size="icon"
+                 className="h-8 w-8 relative rounded-lg text-muted-foreground hover:text-foreground"
+                 onClick={() => window.location.href = '/notificacoes'}
+                 title="Notificações"
+               >
+                 <Bell className="w-4 h-4" />
+                 {unreadCount > 0 && (
+                   <motion.span 
+                     className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-0.5 bg-destructive text-destructive-foreground text-[8px] font-bold rounded-full flex items-center justify-center"
+                     initial={{ scale: 0 }}
+                     animate={{ scale: 1 }}
+                     transition={{ type: "spring", stiffness: 500 }}
+                   >
+                     {unreadCount > 99 ? '99+' : unreadCount}
+                   </motion.span>
+                 )}
+               </Button>
             </div>
           </div>
         )}
