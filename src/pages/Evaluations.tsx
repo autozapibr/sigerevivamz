@@ -708,7 +708,7 @@ function AnnualSummary({ classId, subjects, classes }: { classId: number | null;
               <TableHeader>
                 <TableRow>
                   <TableHead className="sticky left-0 bg-background">#</TableHead>
-                  <TableHead className="sticky left-8 bg-background min-w-[180px]">Educando</TableHead>
+                   <TableHead className="sticky left-8 bg-background min-w-[200px]">Educando</TableHead>
                   {subjects.slice(0, 5).map(subject => (
                     <TableHead key={subject.id} className="text-center min-w-[80px]">
                       {subject.code || subject.name.substring(0, 4)}
