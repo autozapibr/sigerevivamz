@@ -1062,7 +1062,7 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
         {/* Filtros Principais */}
         <Card>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {/* Turma */}
               <div className="space-y-2">
                 <Label>Turma</Label>
