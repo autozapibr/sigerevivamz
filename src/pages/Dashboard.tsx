@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDashboardStats, useFinancialDashboard } from '@/hooks/useDashboardStats';
+import { useCurrentTeacher } from '@/hooks/useTeachers';
 import {
   ChartCard,
   StudentDistributionChart,
