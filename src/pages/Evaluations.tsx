@@ -996,13 +996,13 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
   const { data: allClasses = [], isLoading: classesLoading } = useClasses();
   const { data: allSubjects = [] } = useSubjects();
 
-  const isSystemAdmin = user?.role === 'ADMIN';
-  const isPedagogical = user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA' || isSystemAdmin;
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'PEDAGOGICO' || user?.role === 'DIRETORIA';
+  const isProfessor = user?.role === 'PROFESSOR';
   const hasTeacherProfile = !!teacher;
 
   // If the user has a teacher profile, we should filter by their assignments
-  // unless they are a pure Admin/Pedagogical without teaching assignments.
-  const shouldFilterByTeacher = hasTeacherProfile && (user?.role === 'PROFESSOR' || !isPedagogical || assignments?.classes.length > 0);
+  // even if they have an admin/pedagogical role, if they have assignments.
+  const shouldFilterByTeacher = hasTeacherProfile && (isProfessor || assignments?.classes.length > 0);
 
   const classes = useMemo(() => {
     if (shouldFilterByTeacher && assignments?.classes) {
@@ -1027,17 +1027,15 @@ function GradeStatistics({ classId, subjectId }: { classId: number | null; subje
         }));
       }
       
-      // If we are filtering by teacher but they have no subjects for this class (e.g. they are just director)
-      // we might want to show all subjects or none. The user says "apenas as que lhe foram atribuídas".
       return [];
     }
     return allSubjects;
   }, [allSubjects, assignments, shouldFilterByTeacher, selectedClassId]);
  
-   const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
-   const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
+  const { data: students = [], isLoading: studentsLoading } = useStudentsByClass(selectedClassId);
+  const { data: existingGrades = [] } = useGradesByClass(selectedClassId, selectedSubjectId, selectedTrimestre);
  
-    const isPedagogical = isAdmin;
+  const isPedagogical = isAdmin;
 
   return (
     <MainLayout title="Pauta Digital" subtitle="Sistema de avaliação e lançamento de notas">
