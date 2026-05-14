@@ -7,7 +7,7 @@ import {
   Bell, LogOut, Wallet, TrendingUp, CreditCard, UsersRound, LibraryBig,
   CalendarDays, ChartBar, BookMarked, NotebookPen, FileSpreadsheet,
   FileCheck, Briefcase, ChevronRight, MessageSquare, Palette, User,
-  Brain, Plug, Database, ArrowLeft, ArrowRight, RotateCw
+   Brain, Plug, Database, ArrowLeft, ArrowRight, RotateCw, Menu
   , Map as MapIcon, Shield, HardDrive
 } from 'lucide-react';
 
@@ -249,48 +249,42 @@ export function AppSidebar() {
                 </>
               )}
               
-              {/* Always visible icons */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                onClick={toggleSidebar}
-                title={collapsed ? "Expandir" : "Recolher"}
-              >
-                {collapsed ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
-              </Button>
+               {!collapsed && (
+                 <>
+                   <Button
+                     variant="ghost"
+                     size="icon"
+                     className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                     onClick={() => window.location.href = '/dashboard'}
+                     title="Início"
+                   >
+                     <Home className="w-4 h-4" />
+                   </Button>
 
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 relative rounded-lg text-muted-foreground hover:text-foreground"
-                onClick={() => window.location.href = '/notificacoes'}
-                title="Notificações"
-              >
-                <Bell className="w-4 h-4" />
-                {unreadCount > 0 && (
-                  <motion.span 
-                    className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-0.5 bg-destructive text-destructive-foreground text-[8px] font-bold rounded-full flex items-center justify-center"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 500 }}
-                  >
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </motion.span>
-                )}
-              </Button>
+                   {/* Toggle Sidebar Button */}
+                   <Button
+                     variant="ghost"
+                     size="icon"
+                     className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                     onClick={toggleSidebar}
+                     title="Recolher"
+                   >
+                     <Menu className="w-4 h-4" />
+                   </Button>
+                 </>
+               )}
 
-              {!collapsed && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                  onClick={() => window.location.href = '/dashboard'}
-                  title="Início"
-                >
-                  <Home className="w-4 h-4" />
-                </Button>
-              )}
+               {collapsed && (
+                 <Button
+                   variant="ghost"
+                   size="icon"
+                   className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                   onClick={toggleSidebar}
+                   title="Expandir"
+                 >
+                   <Menu className="w-4 h-4" />
+                 </Button>
+               )}
             </div>
           </div>
         )}
