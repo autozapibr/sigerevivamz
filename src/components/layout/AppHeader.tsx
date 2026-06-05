@@ -1,9 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
- import { Search, Sun, Moon, ChevronDown } from 'lucide-react';
+import { Sun, Moon, ChevronDown, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -16,7 +15,6 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useNavigate } from 'react-router-dom';
-import { useSearch } from '@/contexts/SearchContext';
 import { NotificationBell } from './NotificationBell';
 
 interface AppHeaderProps {
@@ -28,7 +26,6 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
   const { user, logout } = useAuth();
   const { toggleTheme, isDark } = useTheme();
   const navigate = useNavigate();
-  const { searchQuery, setSearchQuery, placeholder } = useSearch();
 
   const getInitials = (name: string) => {
     return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
@@ -51,24 +48,11 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
         </div>
       )}
 
-      {/* Search Bar */}
-      <div className="flex-1 max-w-xl mx-auto">
-        <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-          <Input
-            placeholder={placeholder}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-10 bg-muted/50 border-0 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
-          />
-          <kbd className="hidden md:inline-flex absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            ⌘K
-          </kbd>
-        </div>
-      </div>
+      {/* Spacer */}
+      <div className="flex-1" />
 
       {/* Right Actions - Theme and User Menu */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {/* Notifications Bell */}
         <NotificationBell />
 
@@ -87,6 +71,11 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
              {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
            </motion.div>
          </Button>
+
+        {/* Mobile sidebar trigger */}
+        <SidebarTrigger className="md:hidden h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent">
+          <Menu className="w-5 h-5" />
+        </SidebarTrigger>
 
         {/* User Menu */}
         {user && (
