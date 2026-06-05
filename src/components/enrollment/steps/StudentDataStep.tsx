@@ -29,8 +29,55 @@ export function StudentDataStep({ form }: StudentDataStepProps) {
     <Form {...form}>
       <div className="space-y-6">
         <h3 className="text-lg font-semibold text-foreground">
-          Dados Pessoais do Educando
+          Dados do Aluno e Tipo de Matrícula
         </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/30 p-4 rounded-lg border border-dashed mb-6">
+          <FormField
+            control={form.control}
+            name="enrollment_type"
+            render={({ field }) => (
+              <FormItem className="md:col-span-1">
+                <FormLabel>Tipo de Matrícula *</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || 'NEW'}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="NEW">Matrícula (Novo Aluno)</SelectItem>
+                    <SelectItem value="RENEWAL">Re-matrícula (Aluno da Escola)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="education_level_id"
+            render={({ field }) => (
+              <FormItem className="md:col-span-1">
+                <FormLabel>Etapa de Educação *</FormLabel>
+                <Select onValueChange={(v) => field.onChange(parseInt(v))} value={field.value?.toString()}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione a etapa" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="1">Educação Pré-Escolar</SelectItem>
+                    <SelectItem value="2">Ensino Primário</SelectItem>
+                    <SelectItem value="3">Ensino Secundário</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Nome Completo */}

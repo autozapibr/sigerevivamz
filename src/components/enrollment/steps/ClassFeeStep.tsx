@@ -47,6 +47,44 @@ export function ClassFeeStep({ form }: ClassFeeStepProps) {
   const monthlyFee = form.watch('monthly_fee') || 0;
   const enrollmentFee = form.watch('enrollment_fee') || 0;
   const discountPercent = form.watch('discount_percent') || 0;
+  const enrollmentType = form.watch('enrollment_type') || 'NEW';
+  const educationLevelId = form.watch('education_level_id');
+  
+  const { data: academicYears = [] } = useQuery({
+    queryKey: ['academic-years-active'],
+    queryFn: async () => {
+      const { data } = await supabase.from('academic_years').select('id, name').eq('is_current', true).single();
+      return data;
+    }
+  });
+
+  // Fetch pre-configured fees for selected level and year
+  const { data: configuredFee } = useQuery({
+    queryKey: ['configured-fee', educationLevelId, academicYears?.id],
+    queryFn: async () => {
+      if (!educationLevelId || !academicYears?.id) return null;
+      const { data } = await supabase
+        .from('education_level_fees')
+        .select('*')
+        .eq('education_level_id', educationLevelId)
+        .eq('academic_year_id', academicYears.id)
+        .single();
+      return data;
+    },
+    enabled: !!educationLevelId && !!academicYears?.id
+  });
+
+  // Effect to auto-fill fees when configuredFee is available
+  React.useEffect(() => {
+    if (configuredFee) {
+      if (enrollmentType === 'NEW') {
+        form.setValue('enrollment_fee', Number(configuredFee.enrollment_fee));
+      } else {
+        form.setValue('enrollment_fee', Number(configuredFee.re_enrollment_fee));
+      }
+      form.setValue('monthly_fee', Number(configuredFee.monthly_fee));
+    }
+  }, [configuredFee, enrollmentType, form]);
   
   // Calculate totals
   const monthlyWithDiscount = monthlyFee * (1 - discountPercent / 100);
@@ -101,7 +139,7 @@ export function ClassFeeStep({ form }: ClassFeeStepProps) {
             name="enrollment_fee"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Taxa de Matrícula (MZN)</FormLabel>
+                <FormLabel>{enrollmentType === 'RENEWAL' ? 'Taxa de Re-matrícula' : 'Taxa de Matrícula'} (MZN)</FormLabel>
                 <FormControl>
                   <CurrencyInput
                     label=""
