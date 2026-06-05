@@ -44,6 +44,9 @@ import { STATUS_LABELS, type EnrollmentStatus } from '@/types/enrollment';
 
 export default function Matriculas() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdminOrDirector = user?.role === 'ADMIN' || user?.role === 'DIRETORIA';
+  
   const [showWizard, setShowWizard] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -105,6 +108,12 @@ export default function Matriculas() {
           title="Gestão de Matrículas"
           subtitle={`Ano Lectivo ${currentYear?.name || new Date().getFullYear()}`}
           actions={[
+            ...(isAdminOrDirector ? [{
+              label: 'Configurar',
+              onClick: () => navigate('/configuracoes/matriculas'),
+              icon: Settings,
+              variant: 'outline' as const,
+            }] : []),
             {
               label: 'Nova Matrícula',
               onClick: () => setShowWizard(true),
