@@ -17,6 +17,8 @@ export type EnrollmentStatus =
   | 'REJEITADA'
   | 'CANCELADA';
 
+export type EnrollmentType = 'NEW' | 'RENEWAL';
+
 export type GenderType = 'MASCULINO' | 'FEMININO';
 
 export interface AcademicYear {
@@ -26,6 +28,34 @@ export interface AcademicYear {
   end_date: string;
   is_current: boolean;
   created_at: string;
+}
+
+export interface EducationLevel {
+  id: number;
+  name: string;
+  description?: string;
+  created_at: string;
+}
+
+export interface EducationLevelFee {
+  id: number;
+  education_level_id: number;
+  academic_year_id: number;
+  enrollment_fee: number;
+  monthly_fee: number;
+  re_enrollment_fee: number;
+  education_level?: EducationLevel;
+}
+
+export interface EnrollmentPeriod {
+  id: number;
+  academic_year_id: number;
+  education_level_id: number;
+  type: EnrollmentType;
+  start_date: string;
+  end_date: string;
+  is_active: boolean;
+  education_level?: EducationLevel;
 }
 
 export interface Guardian {
@@ -71,6 +101,8 @@ export interface StudentEnrollment {
   enrollment_number?: string;
   enrollment_date: string;
   status: EnrollmentStatus;
+  enrollment_type: EnrollmentType;
+  previous_enrollment_id?: number;
   monthly_fee: number;
   enrollment_fee: number;
   discount_percent: number;
@@ -150,6 +182,9 @@ export interface EnrollmentFormData {
   monthly_fee: number;
   enrollment_fee: number;
   discount_percent: number;
+  enrollment_type?: EnrollmentType;
+  previous_enrollment_id?: number;
+  education_level_id?: number;
   
   // Step 4: Documentos (handled separately)
 }
