@@ -2682,10 +2682,15 @@ export type Database = {
         Args: { _t1: number; _t2: number; _t3: number }
         Returns: number
       }
-      calculate_trimester_average: {
-        Args: { _acf: number; _acp: number; _acs: number }
-        Returns: number
-      }
+      calculate_trimester_average:
+        | {
+            Args: { _acf: number; _acp: number; _acs: number }
+            Returns: number
+          }
+        | {
+            Args: { acf: number; acp: number[]; acs: number[] }
+            Returns: number
+          }
       classify_grade: { Args: { _grade: number }; Returns: string }
       consume_invitation: {
         Args: { _token: string; _user_id: string }

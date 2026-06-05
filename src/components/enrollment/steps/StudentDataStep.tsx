@@ -198,6 +198,11 @@ export function StudentDataStep({ form }: StudentDataStepProps) {
                     mask="PHONE"
                     value={field.value || ''}
                     onChange={field.onChange}
+                    showWhatsappToggle
+                    isWhatsapp={form.watch('student_phone_is_whatsapp') ?? true}
+                    onWhatsappChange={(checked) =>
+                      form.setValue('student_phone_is_whatsapp', checked)
+                    }
                   />
                 </FormControl>
                 <FormMessage />
