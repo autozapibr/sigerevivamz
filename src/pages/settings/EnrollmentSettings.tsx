@@ -11,6 +11,7 @@ import {
   GraduationCap, Clock, CheckCircle2, AlertCircle 
 } from 'lucide-react';
 import { useAcademicYears, useCurrentAcademicYear } from '@/hooks/useEnrollments';
+import { EnrollmentType } from '@/types/enrollment';
 import { 
   useEducationLevels, 
   useEducationLevelFees, 
@@ -127,7 +128,7 @@ export default function EnrollmentSettings() {
                     </Card>
                   ))
                 )}
-                <Button className="w-full gap-2" variant="dashed" onClick={() => setEditingFee({ 
+                <Button className="w-full gap-2 border-dashed" variant="outline" onClick={() => setEditingFee({ 
                   education_level_id: levels[0]?.id, 
                   enrollment_fee: 0, 
                   monthly_fee: 0, 
@@ -235,7 +236,7 @@ export default function EnrollmentSettings() {
                     </Card>
                   ))
                 )}
-                <Button className="w-full gap-2" variant="dashed" onClick={() => setEditingPeriod({ 
+                <Button className="w-full gap-2 border-dashed" variant="outline" onClick={() => setEditingPeriod({ 
                   education_level_id: levels[0]?.id,
                   type: 'NEW',
                   start_date: new Date().toISOString().split('T')[0],
