@@ -348,6 +348,8 @@ export function StaffForm({ staffType, formData, onChange, isEdit, staffId }: St
               mask="PHONE"
               value={formData.phone}
               onChange={(value) => onChange({ ...formData, phone: value })}
+              showWhatsappToggle
+              isWhatsapp={true} // Defaulting to true for now as it's common in MZ
             />
           </div>
         </div>
