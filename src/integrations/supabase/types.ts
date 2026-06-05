@@ -624,6 +624,75 @@ export type Database = {
         }
         Relationships: []
       }
+      education_level_fees: {
+        Row: {
+          academic_year_id: number | null
+          created_at: string | null
+          education_level_id: number | null
+          enrollment_fee: number
+          id: number
+          monthly_fee: number
+          re_enrollment_fee: number
+          updated_at: string | null
+        }
+        Insert: {
+          academic_year_id?: number | null
+          created_at?: string | null
+          education_level_id?: number | null
+          enrollment_fee?: number
+          id?: number
+          monthly_fee?: number
+          re_enrollment_fee?: number
+          updated_at?: string | null
+        }
+        Update: {
+          academic_year_id?: number | null
+          created_at?: string | null
+          education_level_id?: number | null
+          enrollment_fee?: number
+          id?: number
+          monthly_fee?: number
+          re_enrollment_fee?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "education_level_fees_academic_year_id_fkey"
+            columns: ["academic_year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "education_level_fees_education_level_id_fkey"
+            columns: ["education_level_id"]
+            isOneToOne: false
+            referencedRelation: "education_levels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      education_levels: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           address: string | null
@@ -722,6 +791,57 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      enrollment_periods: {
+        Row: {
+          academic_year_id: number | null
+          created_at: string | null
+          education_level_id: number | null
+          end_date: string
+          id: number
+          is_active: boolean | null
+          start_date: string
+          type: Database["public"]["Enums"]["enrollment_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          academic_year_id?: number | null
+          created_at?: string | null
+          education_level_id?: number | null
+          end_date: string
+          id?: number
+          is_active?: boolean | null
+          start_date: string
+          type: Database["public"]["Enums"]["enrollment_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          academic_year_id?: number | null
+          created_at?: string | null
+          education_level_id?: number | null
+          end_date?: string
+          id?: number
+          is_active?: boolean | null
+          start_date?: string
+          type?: Database["public"]["Enums"]["enrollment_type"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrollment_periods_academic_year_id_fkey"
+            columns: ["academic_year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollment_periods_education_level_id_fkey"
+            columns: ["education_level_id"]
+            isOneToOne: false
+            referencedRelation: "education_levels"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       enrollments: {
         Row: {
@@ -1750,9 +1870,11 @@ export type Database = {
           enrollment_date: string | null
           enrollment_fee: number | null
           enrollment_number: string | null
+          enrollment_type: Database["public"]["Enums"]["enrollment_type"] | null
           id: number
           monthly_fee: number | null
           notes: string | null
+          previous_enrollment_id: number | null
           status: Database["public"]["Enums"]["enrollment_status"] | null
           student_id: number
           updated_at: string | null
@@ -1767,9 +1889,13 @@ export type Database = {
           enrollment_date?: string | null
           enrollment_fee?: number | null
           enrollment_number?: string | null
+          enrollment_type?:
+            | Database["public"]["Enums"]["enrollment_type"]
+            | null
           id?: never
           monthly_fee?: number | null
           notes?: string | null
+          previous_enrollment_id?: number | null
           status?: Database["public"]["Enums"]["enrollment_status"] | null
           student_id: number
           updated_at?: string | null
@@ -1784,9 +1910,13 @@ export type Database = {
           enrollment_date?: string | null
           enrollment_fee?: number | null
           enrollment_number?: string | null
+          enrollment_type?:
+            | Database["public"]["Enums"]["enrollment_type"]
+            | null
           id?: never
           monthly_fee?: number | null
           notes?: string | null
+          previous_enrollment_id?: number | null
           status?: Database["public"]["Enums"]["enrollment_status"] | null
           student_id?: number
           updated_at?: string | null
@@ -1812,6 +1942,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "student_attendance_stats"
             referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "student_enrollments_previous_enrollment_id_fkey"
+            columns: ["previous_enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "student_enrollments"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_enrollments_student_id_fkey"
@@ -2635,6 +2772,7 @@ export type Database = {
         | "APROVADA"
         | "REJEITADA"
         | "CANCELADA"
+      enrollment_type: "NEW" | "RENEWAL"
       gender_type: "MASCULINO" | "FEMININO"
       payment_agreement_status:
         | "PENDENTE"
@@ -2848,6 +2986,7 @@ export const Constants = {
         "REJEITADA",
         "CANCELADA",
       ],
+      enrollment_type: ["NEW", "RENEWAL"],
       gender_type: ["MASCULINO", "FEMININO"],
       payment_agreement_status: [
         "PENDENTE",
