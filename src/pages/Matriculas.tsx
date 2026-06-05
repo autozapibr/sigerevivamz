@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
