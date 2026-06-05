@@ -90,6 +90,7 @@ const configModule = {
   icon: Settings,
   items: [
     { title: 'Perfis e Utilizadores', url: '/configuracoes/perfis-utilizadores', icon: Users },
+    { title: 'Matrículas e Taxas', url: '/configuracoes/matriculas', icon: FileCheck },
     { title: 'Aparência', url: '/configuracoes/aparencia', icon: Palette },
     { title: 'Perfil & Região', url: '/configuracoes/perfil', icon: User },
     { title: 'Notificações', url: '/configuracoes/notificacoes', icon: Bell },

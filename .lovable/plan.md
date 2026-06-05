@@ -1,25 +1,35 @@
-I will implement the requested features to adapt the system for Mozambican teachers and pedagogical management.
+I will implement a comprehensive enrollment and re-enrollment system that handles new student registration and priority renewals for existing students, including administrative configuration and financial integration.
 
-### Phase 1: Teacher Access & Filtering
-1.  **Teacher Identity**: Create a hook to identify the logged-in teacher by their email.
-2.  **Filter Assignments**: Update the Evaluations page to only show classes and subjects assigned to the logged-in teacher (either as Class Director or subject teacher).
-3.  **Permissions**: Ensure that only authorised personnel (Admins/Pedagogical) can see all data, while teachers see only their own.
+### Database Changes
+- Create `enrollment_periods` table to manage start/end dates for "Matrícula" (New) and "Re-matrícula" (Renewal) for each academic year and education level.
+- Add `enrollment_type` (NEW, RENEWAL) to `student_enrollments`.
+- Create `education_level_fees` table to define standard fees per level (e.g., Primary, Secondary) for specific academic years.
+- Add `previous_enrollment_id` to `student_enrollments` to track student history and continuity.
+- Implement a trigger to automatically link re-enrollments to the student's historical data.
 
-### Phase 2: Attendance (Faltas) Integration
-1.  **Attendance Tab**: Add an "Attendance" (Faltas) tab to the Evaluations page.
-2.  **Daily Recording**: Allow teachers to record daily attendance for their classes and subjects.
-3.  **Monthly/Trimestral Summary**: Display attendance statistics in the teacher's view.
+### Frontend Components
+- **Admin Configuration Page**: A new settings view for Admins and Directors to:
+  - Define enrollment periods with start/end dates.
+  - Set standard fees (Registration and Monthly) per education level.
+- **Enhanced Enrollment Wizard**:
+  - Add logic to detect if a student is existing (Re-matrícula) or new (Matrícula).
+  - Apply priority rules and validation based on active enrollment periods.
+  - Automatically fetch historical data for re-enrolling students.
+- **Reporting Dashboard**:
+  - Filterable list/charts for enrollment statistics.
+  - Specific indicators for "Taxa de Retenção" (Retention Rate) and "Novos Alunos" (New Students).
+  - Export capabilities for financial planning.
 
-### Phase 3: Caderneta do Aluno (Report Card)
-1.  **Report Card Generation**: Create a dedicated view and PDF export for the "Caderneta do Aluno".
-2.  **SiGER Standards**: Ensure the report card follows the Mozambican SiGER standards, including ACS1, ACS2, ACS3, AT, and Trimestral Averages.
-3.  **Comprehensive View**: Include overall attendance, behavior, and final results.
+### Financial Integration
+- Automatically generate tuition invoices based on the education level fees configured for the specific academic year.
+- Update the financial module to distinguish between registration fees and recurring monthly fees.
 
-### Phase 4: Pedagogical Release Logic
-1.  **Release Controls**: Implement a mechanism for the Pedagogical Department to "Release" (Release for Viewing) grades and report cards.
-2.  **Visibility**: Students and parents will only see the updated grades once released by the department.
+### Technical Details
+- Use Supabase RLS to restrict configuration access to `ADMIN` and `DIRETORIA` roles.
+- Implement React Query hooks for period validation and fee lookups.
+- Update `useCreateEnrollment` and `useUpdateEnrollmentStatus` hooks to handle the new logic.
 
-### Technical Steps
-- **Migration**: Add `released_at` and `release_status` to a new `pedagogical_settings` table.
-- **Hooks**: Create `useCurrentTeacher` and update `useGrades` / `useAttendance`.
-- **UI**: Enhance `Evaluations.tsx`, create `StudentReportCard.tsx`, and add a report card link in the class details.
+### User Roles
+- **Admin/Director**: Can configure periods and fees.
+- **Staff/Secretaria**: Can process both types of enrollments.
+- **Parents/Students**: Will see appropriate options based on their status and active periods.
