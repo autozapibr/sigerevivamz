@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   FileText, Calendar, Heart, Briefcase, GraduationCap,
-  ChevronRight, User, Search
+  ChevronRight, User, Search, Plus, Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,7 @@ interface ContractGeneratorDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type Step = 'select-template' | 'select-staff' | 'preview';
+type Step = 'select-template' | 'select-staff' | 'edit-clauses' | 'preview';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   FileText,
@@ -42,6 +42,8 @@ export function ContractGeneratorDialog({ open, onOpenChange }: ContractGenerato
   const [selectedStaff, setSelectedStaff] = useState<StaffContractData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [customClauses, setCustomClauses] = useState<string[]>([]);
+  const [newClause, setNewClause] = useState('');
 
   const { data: teachers = [] } = useTeachers({ status: 'Ativo' });
   const { data: employees = [] } = useEmployees({ status: 'Ativo' });
@@ -113,6 +115,21 @@ export function ContractGeneratorDialog({ open, onOpenChange }: ContractGenerato
 
   const handleStaffSelect = (staff: StaffContractData) => {
     setSelectedStaff(staff);
+    setStep('edit-clauses');
+  };
+
+  const handleAddClause = () => {
+    if (newClause.trim()) {
+      setCustomClauses([...customClauses, newClause.trim()]);
+      setNewClause('');
+    }
+  };
+
+  const handleRemoveClause = (index: number) => {
+    setCustomClauses(customClauses.filter((_, i) => i !== index));
+  };
+
+  const handleProceedToPreview = () => {
     setShowPreview(true);
   };
 
@@ -123,6 +140,7 @@ export function ContractGeneratorDialog({ open, onOpenChange }: ContractGenerato
       setSelectedTemplate(null);
       setSelectedStaff(null);
       setSearchTerm('');
+      setCustomClauses([]);
     }, 300);
   };
 
@@ -130,6 +148,8 @@ export function ContractGeneratorDialog({ open, onOpenChange }: ContractGenerato
     if (step === 'select-staff') {
       setStep('select-template');
       setSelectedTemplate(null);
+    } else if (step === 'edit-clauses') {
+      setStep('select-staff');
     }
   };
 
@@ -163,14 +183,24 @@ export function ContractGeneratorDialog({ open, onOpenChange }: ContractGenerato
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="w-5 h-5" />
-              {step === 'select-template' ? 'Gerar Novo Contrato' : 'Seleccionar Colaborador'}
+              {step === 'select-template' ? 'Gerar Novo Contrato' : 
+               step === 'select-staff' ? 'Seleccionar Colaborador' : 
+               'Adicionar Cláusulas Personalizadas'}
             </DialogTitle>
             <DialogDescription>
               {step === 'select-template' 
                 ? 'Escolha o modelo de contrato que deseja gerar'
-                : `Modelo: ${selectedTemplate?.name}`}
+                : step === 'select-staff'
+                ? `Modelo: ${selectedTemplate?.name}`
+                : `Colaborador: ${selectedStaff?.name}`}
             </DialogDescription>
           </DialogHeader>
+
+          {(step === 'select-staff' || step === 'edit-clauses') && (
+            <Button variant="ghost" size="sm" onClick={handleBack} className="mt-2">
+              ← Voltar
+            </Button>
+          )}
 
           {step === 'select-template' && (
             <div className="grid gap-3 py-4">
@@ -205,10 +235,6 @@ export function ContractGeneratorDialog({ open, onOpenChange }: ContractGenerato
 
           {step === 'select-staff' && (
             <div className="py-4 space-y-4">
-              <Button variant="ghost" size="sm" onClick={handleBack}>
-                ← Voltar aos modelos
-              </Button>
-
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -255,6 +281,56 @@ export function ContractGeneratorDialog({ open, onOpenChange }: ContractGenerato
               </ScrollArea>
             </div>
           )}
+          {step === 'edit-clauses' && (
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nova Cláusula</label>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Ex: Pagamento extra por horas nocturnas..." 
+                    value={newClause}
+                    onChange={(e) => setNewClause(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddClause()}
+                  />
+                  <Button onClick={handleAddClause} size="icon">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <ScrollArea className="h-[200px] pr-4 border rounded-md p-2">
+                {customClauses.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8 text-sm italic">
+                    Nenhuma cláusula adicional adicionada.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {customClauses.map((clause, index) => (
+                      <div key={index} className="flex items-start gap-2 p-2 bg-accent/30 rounded-md group">
+                        <span className="text-xs font-mono text-muted-foreground mt-0.5">{index + 1}.</span>
+                        <p className="text-sm flex-1">{clause}</p>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => handleRemoveClause(index)}
+                        >
+                          <Trash2 className="w-3 h-3 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+
+              <div className="flex justify-end pt-2">
+                <Button onClick={handleProceedToPreview}>
+                  Gerar Pré-visualização
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -268,6 +344,7 @@ export function ContractGeneratorDialog({ open, onOpenChange }: ContractGenerato
         }}
         staffData={selectedStaff}
         templateId={selectedTemplate?.id || ''}
+        customClauses={customClauses}
       />
     </>
   );

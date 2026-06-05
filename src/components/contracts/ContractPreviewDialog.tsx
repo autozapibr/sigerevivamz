@@ -20,6 +20,7 @@ interface ContractPreviewDialogProps {
   onOpenChange: (open: boolean) => void;
   staffData: StaffContractData | null;
   templateId: string;
+  customClauses?: string[];
 }
 
 export function ContractPreviewDialog({
@@ -27,6 +28,7 @@ export function ContractPreviewDialog({
   onOpenChange,
   staffData,
   templateId,
+  customClauses = [],
 }: ContractPreviewDialogProps) {
   const { toast } = useToast();
   const printRef = useRef<HTMLDivElement>(null);
@@ -36,7 +38,7 @@ export function ContractPreviewDialog({
   if (!staffData || !template) return null;
 
   // Sanitize HTML to prevent XSS attacks
-  const contractHTML = sanitizeHtml(generateContractHTML(templateId, staffData));
+  const contractHTML = sanitizeHtml(generateContractHTML(templateId, staffData, customClauses));
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');

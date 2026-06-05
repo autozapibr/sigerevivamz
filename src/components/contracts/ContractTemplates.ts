@@ -125,10 +125,20 @@ export function generateContractNumber(staffType: 'teacher' | 'employee', staffI
   return `CTR-${prefix}-${year}-${String(staffId).padStart(4, '0')}`;
 }
 
-export function generateContractHTML(template: string, data: StaffContractData): string {
+export function generateContractHTML(template: string, data: StaffContractData, customClauses: string[] = []): string {
   const today = formatDate(new Date().toISOString());
   const contractNumber = data.contract_number || generateContractNumber(data.staff_type, data.id);
   const salaryInWords = data.salary ? numberToWords(Math.floor(data.salary)) : '';
+  
+  const customClausesHTML = customClauses.length > 0 
+    ? `
+      <h3 style="margin-top: 30px;">CLÁUSULAS ADICIONAIS</h3>
+      ${customClauses.map((clause, index) => `
+        <p style="text-align: justify; line-height: 1.8;">
+          <strong>ADICIONAL ${index + 1}:</strong> ${clause}
+        </p>
+      `).join('')}
+    ` : '';
   
   const commonHeader = `
     <div style="text-align: center; margin-bottom: 30px;">
@@ -220,6 +230,8 @@ export function generateContractHTML(template: string, data: StaffContractData):
         <p style="margin-top: 30px;">Feito em duplicado, ficando cada parte com um exemplar.</p>
         <p>Nampula, ${today}</p>
 
+        ${customClausesHTML}
+
         ${signatures}
       `;
 
@@ -264,6 +276,8 @@ export function generateContractHTML(template: string, data: StaffContractData):
 
         <p style="margin-top: 30px;">Feito em duplicado, ficando cada parte com um exemplar.</p>
         <p>Nampula, ${today}</p>
+
+        ${customClausesHTML}
 
         ${signatures}
       `;
@@ -319,6 +333,8 @@ export function generateContractHTML(template: string, data: StaffContractData):
         <p style="margin-top: 30px;">Feito em duplicado, ficando cada parte com um exemplar.</p>
         <p>Nampula, ${today}</p>
 
+        ${customClausesHTML}
+
         ${signatures}
       `;
 
@@ -364,6 +380,8 @@ export function generateContractHTML(template: string, data: StaffContractData):
 
         <p style="margin-top: 30px;">Feito em duplicado, ficando cada parte com um exemplar.</p>
         <p>Nampula, ${today}</p>
+
+        ${customClausesHTML}
 
         ${signatures}
       `;
@@ -413,6 +431,8 @@ export function generateContractHTML(template: string, data: StaffContractData):
 
         <p style="margin-top: 30px;">Feito em duplicado, ficando cada parte com um exemplar.</p>
         <p>Nampula, ${today}</p>
+
+        ${customClausesHTML}
 
         ${signatures}
       `;

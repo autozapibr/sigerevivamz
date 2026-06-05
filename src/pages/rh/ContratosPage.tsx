@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   Search, FileText, AlertTriangle, CheckCircle, 
   Clock, Calendar, Plus, Eye, Printer,
-  MessageCircle, Mail, MoreHorizontal, Wand2, Edit
+  MessageCircle, Mail, MoreHorizontal, Wand2, Edit, RefreshCw, FileSignature
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -116,29 +116,68 @@ export default function ContratosPage() {
       staff_type: contract.staff_type,
       name: contract.staff_name,
       role: contract.staff_role,
-      bi_number: null,
-      nuit: null,
-      address: null,
-      province: null,
-      district: null,
-      phone: null,
-      email: null,
-      birth_date: null,
-      gender: null,
+      bi_number: contract.bi_number || null,
+      nuit: contract.nuit || null,
+      address: contract.address || null,
+      province: contract.province || null,
+      district: contract.district || null,
+      phone: contract.phone || null,
+      email: contract.email || null,
+      birth_date: contract.birth_date || null,
+      gender: contract.gender || null,
       contract_number: contract.contract_number,
       contract_type: contract.contract_type,
       contract_start: contract.contract_start,
       contract_end: contract.contract_end,
       salary: contract.salary,
-      hire_date: null,
-      bank_name: null,
-      bank_account: null,
-      payment_method: null,
-      mobile_money_provider: null,
-      mobile_money_number: null,
+      hire_date: contract.hire_date || null,
+      bank_name: contract.bank_name || null,
+      bank_account: contract.bank_account || null,
+      payment_method: contract.payment_method || null,
+      mobile_money_provider: contract.mobile_money_provider || null,
+      mobile_money_number: contract.mobile_money_number || null,
     };
     setSelectedContract(staffData);
     setShowPreview(true);
+  };
+
+  const handleRenewContract = (contract: Contract) => {
+    const nextStart = contract.contract_end 
+      ? new Date(new Date(contract.contract_end).getTime() + 86400000).toISOString()
+      : new Date().toISOString();
+    
+    const staffData: StaffContractData = {
+      id: contract.id,
+      staff_type: contract.staff_type,
+      name: contract.staff_name,
+      role: contract.staff_role,
+      bi_number: contract.bi_number || null,
+      nuit: contract.nuit || null,
+      address: contract.address || null,
+      province: contract.province || null,
+      district: contract.district || null,
+      phone: contract.phone || null,
+      email: contract.email || null,
+      birth_date: contract.birth_date || null,
+      gender: contract.gender || null,
+      contract_number: `CTR-RENEW-${new Date().getFullYear()}-${contract.id}`,
+      contract_type: contract.contract_type,
+      contract_start: nextStart,
+      contract_end: null,
+      salary: contract.salary,
+      hire_date: contract.hire_date || null,
+      bank_name: contract.bank_name || null,
+      bank_account: contract.bank_account || null,
+      payment_method: contract.payment_method || null,
+      mobile_money_provider: contract.mobile_money_provider || null,
+      mobile_money_number: contract.mobile_money_number || null,
+    };
+    setSelectedContract(staffData);
+    setShowPreview(true);
+    toast({
+      title: 'Renovação Iniciada',
+      description: `Iniciando renovação para ${contract.staff_name}. Verifique as datas.`,
+    });
   };
 
   const handleSendWhatsApp = (contract: Contract) => {
@@ -365,6 +404,14 @@ export default function ContratosPage() {
                               <DropdownMenuItem onClick={() => handleViewContract(contract)}>
                                 <Eye className="w-4 h-4 mr-2" />
                                 Visualizar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleRenewContract(contract)}>
+                                <RefreshCw className="w-4 h-4 mr-2" />
+                                Renovar Contrato
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleViewContract(contract)}>
+                                <FileSignature className="w-4 h-4 mr-2" />
+                                Assinatura Digital
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleViewContract(contract)}>
                                 <Printer className="w-4 h-4 mr-2" />
