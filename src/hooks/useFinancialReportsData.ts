@@ -97,10 +97,11 @@ export function useEnrollmentsFinancialReport(filters: {
         .from('student_enrollments')
         .select(`
           id, enrollment_number, enrollment_date, enrollment_fee, monthly_fee,
-          discount_percent, status,
+          discount_percent, status, enrollment_type, education_level_id,
           students (id, name),
           classes (id, name),
-          academic_years (id, name)
+          academic_years (id, name),
+          education_levels (id, name)
         `)
         .order('enrollment_date', { ascending: false });
 
@@ -127,6 +128,8 @@ export function useEnrollmentsFinancialReport(filters: {
           student_name: e.students?.name || '-',
           class_name: e.classes?.name || '-',
           academic_year: e.academic_years?.name || '-',
+          education_level: e.education_levels?.name || 'Geral',
+          enrollment_type: e.enrollment_type === 'RENEWAL' ? 'Re-matrícula' : 'Matrícula',
           enrollment_date: e.enrollment_date ? format(parseISO(e.enrollment_date), 'dd/MM/yyyy') : '-',
           enrollment_fee: enrollmentFee,
           monthly_fee: monthlyFee,
