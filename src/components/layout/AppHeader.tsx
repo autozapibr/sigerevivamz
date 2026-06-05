@@ -38,6 +38,11 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Mobile sidebar trigger - Left side */}
+      <SidebarTrigger className="md:hidden h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent">
+        <Menu className="w-5 h-5" />
+      </SidebarTrigger>
+
       {/* Page Title */}
       {title && (
         <div className="hidden sm:block flex-shrink-0">
@@ -56,28 +61,23 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
         {/* Notifications Bell */}
         <NotificationBell />
 
-        {/* Theme Toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
-        >
-           <motion.div
-             initial={false}
-             animate={{ rotate: isDark ? 180 : 0 }}
-             transition={{ duration: 0.3 }}
-           >
-             {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-           </motion.div>
-         </Button>
+         {/* Theme Toggle */}
+         <Button
+           variant="ghost"
+           size="icon"
+           onClick={toggleTheme}
+           className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
+         >
+            <motion.div
+              initial={false}
+              animate={{ rotate: isDark ? 180 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            </motion.div>
+          </Button>
 
-        {/* Mobile sidebar trigger */}
-        <SidebarTrigger className="md:hidden h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent">
-          <Menu className="w-5 h-5" />
-        </SidebarTrigger>
-
-        {/* User Menu */}
+         {/* User Menu */}
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
