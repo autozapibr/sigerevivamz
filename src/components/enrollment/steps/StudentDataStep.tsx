@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MozambiqueInput } from '@/components/shared/MozambiqueInput';
+import { ProvinceSelector } from '@/components/shared/ProvinceSelector';
 import type { EnrollmentFormData } from '@/types/enrollment';
 
 interface StudentDataStepProps {
@@ -220,35 +221,15 @@ export function StudentDataStep({ form }: StudentDataStepProps) {
             )}
           />
           
-          {/* Província */}
-          <FormField
-            control={form.control}
-            name="province"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Província *</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ex: Nampula" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          {/* Distrito */}
-          <FormField
-            control={form.control}
-            name="district"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Distrito *</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ex: Cidade de Nampula" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Province & District */}
+          <div className="md:col-span-2">
+            <ProvinceSelector
+              selectedProvince={form.watch('province')}
+              selectedDistrict={form.watch('district')}
+              onProvinceChange={(v) => form.setValue('province', v)}
+              onDistrictChange={(v) => form.setValue('district', v)}
+            />
+          </div>
           
           {/* Endereço */}
           <FormField

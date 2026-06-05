@@ -99,6 +99,7 @@ export default function RoadmapPage() {
           done_at: is_done ? new Date().toISOString() : null,
           done_by: is_done ? user?.id ?? null : null,
           updated_at: new Date().toISOString(),
+          notes: is_done ? 'Actualizado automaticamente via sistema de estabilização.' : null,
         })
         .eq('id', id);
       if (error) throw error;
