@@ -39,9 +39,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
       transition={{ duration: 0.3 }}
     >
       {/* Mobile sidebar trigger - Left side */}
-      <SidebarTrigger className="md:hidden h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent">
-        <Menu className="w-5 h-5" />
-      </SidebarTrigger>
+      <SidebarTrigger className="md:hidden h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent" />
 
       {/* Page Title */}
       {title && (
