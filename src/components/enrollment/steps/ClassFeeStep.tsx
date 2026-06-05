@@ -237,7 +237,7 @@ export function ClassFeeStep({ form }: ClassFeeStepProps) {
                   <span className="text-primary">{formatMZN(annualTotal)}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  (Taxa de matrícula + 12 meses de propina)
+                  ({enrollmentType === 'RENEWAL' ? 'Taxa de re-matrícula' : 'Taxa de matrícula'} + 12 meses de propina)
                 </p>
               </div>
             </div>

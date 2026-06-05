@@ -244,6 +244,8 @@ export function useCreateEnrollment() {
           student_id: student.id,
           academic_year_id: formData.academic_year_id,
           class_id: formData.class_id,
+          education_level_id: formData.education_level_id,
+          enrollment_type: formData.enrollment_type || 'NEW',
           monthly_fee: formData.monthly_fee,
           enrollment_fee: formData.enrollment_fee,
           discount_percent: formData.discount_percent,
