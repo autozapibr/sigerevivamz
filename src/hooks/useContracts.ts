@@ -14,6 +14,21 @@ export interface Contract {
   salary: number | null;
   status: string;
   photo_url: string | null;
+  bi_number?: string | null;
+  nuit?: string | null;
+  address?: string | null;
+  province?: string | null;
+  district?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  birth_date?: string | null;
+  gender?: string | null;
+  hire_date?: string | null;
+  bank_name?: string | null;
+  bank_account?: string | null;
+  payment_method?: string | null;
+  mobile_money_provider?: string | null;
+  mobile_money_number?: string | null;
 }
 
 export interface ContractFilters {
@@ -29,7 +44,7 @@ export function useContracts(filters: ContractFilters = {}) {
       // Fetch teachers
       const { data: teachers, error: teachersError } = await supabase
         .from('teachers')
-        .select('id, name, status, contract_number, contract_type, contract_start, contract_end, salary, photo_url')
+        .select('id, name, status, contract_number, contract_type, contract_start, contract_end, salary, photo_url, bi_number, nuit, address, province, district, phone, email, birth_date, gender, hire_date, bank_name, bank_account, payment_method, mobile_money_provider, mobile_money_number')
         .not('contract_number', 'is', null);
 
       if (teachersError) throw teachersError;
@@ -37,7 +52,7 @@ export function useContracts(filters: ContractFilters = {}) {
       // Fetch employees
       const { data: employees, error: employeesError } = await supabase
         .from('employees')
-        .select('id, name, role, status, contract_number, contract_type, contract_start, contract_end, salary, photo_url')
+        .select('id, name, role, status, contract_number, contract_type, contract_start, contract_end, salary, photo_url, bi_number, nuit, address, province, district, phone, email, birth_date, gender, hire_date, bank_name, bank_account, payment_method, mobile_money_provider, mobile_money_number')
         .not('contract_number', 'is', null);
 
       if (employeesError) throw employeesError;
@@ -66,6 +81,21 @@ export function useContracts(filters: ContractFilters = {}) {
           salary: t.salary,
           status,
           photo_url: t.photo_url,
+          bi_number: t.bi_number,
+          nuit: t.nuit,
+          address: t.address,
+          province: t.province,
+          district: t.district,
+          phone: t.phone,
+          email: t.email,
+          birth_date: t.birth_date,
+          gender: t.gender,
+          hire_date: t.hire_date,
+          bank_name: t.bank_name,
+          bank_account: t.bank_account,
+          payment_method: t.payment_method,
+          mobile_money_provider: t.mobile_money_provider,
+          mobile_money_number: t.mobile_money_number,
         };
       });
 
@@ -89,6 +119,21 @@ export function useContracts(filters: ContractFilters = {}) {
           salary: e.salary,
           status,
           photo_url: e.photo_url,
+          bi_number: e.bi_number,
+          nuit: e.nuit,
+          address: e.address,
+          province: e.province,
+          district: e.district,
+          phone: e.phone,
+          email: e.email,
+          birth_date: e.birth_date,
+          gender: e.gender,
+          hire_date: e.hire_date,
+          bank_name: e.bank_name,
+          bank_account: e.bank_account,
+          payment_method: e.payment_method,
+          mobile_money_provider: e.mobile_money_provider,
+          mobile_money_number: e.mobile_money_number,
         };
       });
 
