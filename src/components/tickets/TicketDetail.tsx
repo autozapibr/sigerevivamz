@@ -54,6 +54,20 @@ export function TicketDetail({ ticket, onClose }: TicketDetailProps) {
   const updateStatus = useUpdateTicketStatus();
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
+  // Mark related ticket notifications as read when opening this ticket
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        await supabase
+          .from('ticket_notifications')
+          .update({ is_read: true })
+          .eq('ticket_id', ticket.id)
+          .eq('is_read', false);
+      } catch {}
+    })();
+  }, [ticket.id]);
+
   const form = useForm<{ message: string }>({
     resolver: zodResolver(messageSchema),
     defaultValues: { message: '' },

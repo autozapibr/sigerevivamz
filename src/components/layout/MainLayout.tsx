@@ -4,6 +4,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { AppHeader } from './AppHeader';
 import { SearchProvider } from '@/contexts/SearchContext';
+import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ children, title, subtitle }: MainLayoutProps) {
+  useRealtimeNotifications();
   return (
     <SearchProvider>
     <SidebarProvider defaultOpen={true}>

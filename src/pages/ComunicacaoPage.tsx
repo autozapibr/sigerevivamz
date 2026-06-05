@@ -30,6 +30,7 @@ import {
 } from '@/hooks/useTickets';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useLocation } from 'react-router-dom';
 
 const statusFilters: { value: TicketStatus | 'all'; label: string; icon: React.ElementType }[] = [
   { value: 'all', label: 'Todos', icon: Inbox },
@@ -47,11 +48,24 @@ export default function ComunicacaoPage() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedTicket, setSelectedTicket] = React.useState<TicketType | null>(null);
   const isMobile = useIsMobile();
+  const location = useLocation();
 
   const { data: tickets = [], isLoading, refetch } = useTickets({
     status: statusFilter !== 'all' ? statusFilter : undefined,
     category: categoryFilter !== 'all' ? categoryFilter : undefined,
   });
+
+  // Auto-open ticket from navigation state (e.g. clicking notification)
+  React.useEffect(() => {
+    const targetId = (location.state as any)?.ticketId as number | undefined;
+    if (!targetId || !tickets.length) return;
+    const found = tickets.find((t) => t.id === targetId);
+    if (found) {
+      setSelectedTicket(found);
+      // clear state so it doesn't re-trigger
+      window.history.replaceState({}, '');
+    }
+  }, [tickets, location.state]);
 
   // Filter by search
   const filteredTickets = React.useMemo(() => {

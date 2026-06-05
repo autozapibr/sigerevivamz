@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
- import { Search, Sun, Moon, ChevronDown, Bell } from 'lucide-react';
+ import { Search, Sun, Moon, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
@@ -16,8 +16,8 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useNavigate } from 'react-router-dom';
-import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { useSearch } from '@/contexts/SearchContext';
+import { NotificationBell } from './NotificationBell';
 
 interface AppHeaderProps {
   title?: string;
@@ -28,7 +28,6 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
   const { user, logout } = useAuth();
   const { toggleTheme, isDark } = useTheme();
   const navigate = useNavigate();
-  const unreadCount = useUnreadNotificationCount();
   const { searchQuery, setSearchQuery, placeholder } = useSearch();
 
   const getInitials = (name: string) => {
@@ -70,6 +69,9 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
 
       {/* Right Actions - Theme and User Menu */}
       <div className="flex items-center gap-3">
+        {/* Notifications Bell */}
+        <NotificationBell />
+
         {/* Theme Toggle */}
         <Button
           variant="ghost"
