@@ -40,6 +40,7 @@ export interface EnrollmentReportData {
   student_name: string;
   class_name: string | null;
   status: string | null;
+  enrollment_type: string | null;
   enrollment_date: string | null;
   monthly_fee: number | null;
   enrollment_fee: number | null;
@@ -136,7 +137,7 @@ export function useEnrollmentsReport(filters: Omit<ReportFilters, 'reportType'>)
       let query = supabase
         .from('student_enrollments')
         .select(`
-          id, enrollment_number, status, enrollment_date, monthly_fee, enrollment_fee,
+          id, enrollment_number, status, enrollment_type, enrollment_date, monthly_fee, enrollment_fee,
           students (name),
           classes (name),
           academic_years (name)
@@ -165,6 +166,7 @@ export function useEnrollmentsReport(filters: Omit<ReportFilters, 'reportType'>)
         student_name: e.students?.name || '-',
         class_name: e.classes?.name || 'Sem turma',
         status: e.status || '-',
+        enrollment_type: e.enrollment_type === 'RENEWAL' ? 'Re-matrícula' : 'Matrícula',
         enrollment_date: e.enrollment_date ? format(parseISO(e.enrollment_date), 'dd/MM/yyyy', { locale: pt }) : '-',
         monthly_fee: e.monthly_fee || 0,
         enrollment_fee: e.enrollment_fee || 0,

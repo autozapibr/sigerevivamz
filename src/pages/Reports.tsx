@@ -60,6 +60,7 @@ const getColumnsForType = (type: ReportType): ReportColumn[] => {
         { key: 'student_name', header: 'Estudante' },
         { key: 'class_name', header: 'Turma' },
         { key: 'academic_year', header: 'Ano Lectivo' },
+        { key: 'enrollment_type', header: 'Tipo' },
         { key: 'enrollment_date', header: 'Data' },
         { key: 'enrollment_fee', header: 'Taxa Matr.', align: 'right', format: (v) => formatMZN(v) },
         { key: 'monthly_fee', header: 'Propina', align: 'right', format: (v) => formatMZN(v) },
