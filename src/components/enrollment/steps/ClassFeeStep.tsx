@@ -50,8 +50,8 @@ export function ClassFeeStep({ form }: ClassFeeStepProps) {
   const enrollmentType = form.watch('enrollment_type') || 'NEW';
   const educationLevelId = form.watch('education_level_id');
   
-  const { data: academicYears = [] } = useQuery({
-    queryKey: ['academic-years-active'],
+  const { data: currentAcademicYear } = useQuery({
+    queryKey: ['academic-year-active'],
     queryFn: async () => {
       const { data } = await supabase.from('academic_years').select('id, name').eq('is_current', true).single();
       return data;
@@ -60,18 +60,18 @@ export function ClassFeeStep({ form }: ClassFeeStepProps) {
 
   // Fetch pre-configured fees for selected level and year
   const { data: configuredFee } = useQuery({
-    queryKey: ['configured-fee', educationLevelId, academicYears?.id],
+    queryKey: ['configured-fee', educationLevelId, currentAcademicYear?.id],
     queryFn: async () => {
-      if (!educationLevelId || !academicYears?.id) return null;
+      if (!educationLevelId || !currentAcademicYear?.id) return null;
       const { data } = await supabase
         .from('education_level_fees')
         .select('*')
         .eq('education_level_id', educationLevelId)
-        .eq('academic_year_id', academicYears.id)
+        .eq('academic_year_id', currentAcademicYear.id)
         .single();
       return data;
     },
-    enabled: !!educationLevelId && !!academicYears?.id
+    enabled: !!educationLevelId && !!currentAcademicYear?.id
   });
 
   // Effect to auto-fill fees when configuredFee is available
