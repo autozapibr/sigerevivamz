@@ -82,7 +82,7 @@ export function Students() {
     gender: genderFilter,
   };
 
-  const { data: students = [], isLoading, refetch } = useStudents({ ...filters, staleTime: 30000 });
+  const { data: students = [], isLoading, refetch } = useStudents(filters);
   const { data: stats } = useStudentsStats();
   const { data: classes = [] } = useClasses();
   const createStudent = useCreateStudent();
