@@ -62,6 +62,7 @@ export function useStudents(filters: StudentFilters = {}) {
 
       return result;
     },
+    staleTime: 30 * 1000,
   });
 }
 
