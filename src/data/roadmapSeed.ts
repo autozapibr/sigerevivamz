@@ -19,6 +19,8 @@ export const PHASES: { key: string; label: string; subtitle: string }[] = [
   { key: 'fase_6', label: 'Fase 6 — Recursos Humanos & Contratos', subtitle: 'Folha de salários, assinatura digital e processos' },
   { key: 'fase_7', label: 'Fase 7 — Inteligência & Automação', subtitle: 'IA, relatórios automáticos, previsões e BI' },
   { key: 'fase_8', label: 'Fase 8 — Escalabilidade & Multi-escola', subtitle: 'Multi-tenant, API pública e integrações MEC' },
+  { key: 'fase_9', label: 'Fase 9 — Offline Híbrido (Secretaria + Financeiro)', subtitle: 'PWA instalável, base local e sincronização auto-hospedada (ElectricSQL na VPS)' },
+  { key: 'fase_10', label: 'Fase 10 — Offline Completo (Pedagógico + Admin)', subtitle: 'Cobertura offline total, robustez, backups e documentação' },
 ];
 
 export const ROADMAP_SEED: RoadmapSeedItem[] = [
@@ -90,4 +92,28 @@ export const ROADMAP_SEED: RoadmapSeedItem[] = [
   { id: 'f8-04', phase: 'fase_8', category: 'Infraestrutura', priority: 'media', display_order: 4, title: 'Domínio próprio + e-mail institucional para todos', description: 'Cada utilizador interno com @escolareviva.com.' },
   { id: 'f8-05', phase: 'fase_8', category: 'Infraestrutura', priority: 'baixa', display_order: 5, title: 'Monitorização (Sentry / Logs / Uptime)', description: 'Alertas de erro em produção e métricas de disponibilidade.' },
   { id: 'f8-06', phase: 'fase_8', category: 'Documentação', priority: 'media', display_order: 6, title: 'Manual do utilizador por papel (PDF + vídeo)', description: 'Documentação oficial entregável a novas escolas e novos colaboradores.' },
+
+  // ========== FASE 9 — OFFLINE HÍBRIDO (Secretaria + Financeiro) ==========
+  { id: 'f9-01', phase: 'fase_9', category: 'PWA', priority: 'alta', display_order: 1, title: 'PWA instalável (manifest + ícones + meta tags)', description: 'Manifest webmanifest, ícones 192/512, apple-touch-icon e meta tags PWA no index.html — SiGER instalável no telemóvel e desktop.' },
+  { id: 'f9-02', phase: 'fase_9', category: 'PWA', priority: 'alta', display_order: 2, title: 'Service Worker com cache do app shell (vite-plugin-pwa)', description: 'Registo guardado (só em produção, nunca em preview Lovable), NetworkFirst para HTML, CacheFirst para assets versionados.' },
+  { id: 'f9-03', phase: 'fase_9', category: 'Infra VPS', priority: 'alta', display_order: 3, title: 'Instalar ElectricSQL na VPS 1 (Docker + Traefik)', description: 'docker compose com serviço electric-sql/electric, Traefik a expor elec.escolareviva.com com TLS Let\'s Encrypt.' },
+  { id: 'f9-04', phase: 'fase_9', category: 'Infra VPS', priority: 'alta', display_order: 4, title: 'Ligar Electric ao Postgres do Supabase (session pooler)', description: 'Configurar DATABASE_URL com connection string do Supabase (session pooler, port 5432) e validar replicação lógica.' },
+  { id: 'f9-05', phase: 'fase_9', category: 'Base Local', priority: 'alta', display_order: 5, title: 'Integrar PGlite no browser (Postgres WASM + IndexedDB)', description: 'Base local persistente por origem (~500MB), inicialização assíncrona no arranque da app, migrations mínimas espelhadas.' },
+  { id: 'f9-06', phase: 'fase_9', category: 'Sync', priority: 'alta', display_order: 6, title: 'Shapes Electric — Secretaria (students, classes, enrollments, subjects)', description: 'Definir shapes filtrados por escola/turma, subscrição no cliente e sincronização bidireccional.' },
+  { id: 'f9-07', phase: 'fase_9', category: 'Sync', priority: 'alta', display_order: 7, title: 'Shapes Electric — Financeiro (fees, transactions, cashbook, collections)', description: 'Sincronização de propinas, movimentos de caixa e cobranças com filtros por função.' },
+  { id: 'f9-08', phase: 'fase_9', category: 'Offline Writes', priority: 'alta', display_order: 8, title: 'Outbox pattern + TanStack Query persister', description: 'Mutations feitas offline vão para outbox local; replay automático ao restaurar conexão. IndexedDB persister para cache do React Query.' },
+  { id: 'f9-09', phase: 'fase_9', category: 'Schema', priority: 'media', display_order: 9, title: 'Adicionar updated_at + deleted_at (soft delete) nas tabelas sincronizadas', description: 'Colunas obrigatórias para resolução de conflitos (last-write-wins) e replicação incremental.' },
+  { id: 'f9-10', phase: 'fase_9', category: 'UX', priority: 'media', display_order: 10, title: 'Indicador visual de estado online/offline + fila pendente', description: 'Badge no header mostrando "Offline · 3 alterações pendentes" com animação de sincronização.' },
+
+  // ========== FASE 10 — OFFLINE COMPLETO + ROBUSTEZ ==========
+  { id: 'f10-01', phase: 'fase_10', category: 'Sync', priority: 'alta', display_order: 1, title: 'Shapes Electric — Pedagógico (attendance, grades, lesson_plans, calendar_events)', description: 'Presenças, pauta, planos de aula e calendário disponíveis offline para professores.' },
+  { id: 'f10-02', phase: 'fase_10', category: 'Sync', priority: 'alta', display_order: 2, title: 'Shapes Electric — Admin (employees, user_roles, announcements, tickets, roadmap_items)', description: 'Gestão de RH, papéis, comunicados e tickets sincronizados.' },
+  { id: 'f10-03', phase: 'fase_10', category: 'Segurança', priority: 'alta', display_order: 3, title: 'Aplicação client-side das RLS via filtros de shape', description: 'Cada shape leva o auth.uid + role para garantir que só sincroniza linhas permitidas.' },
+  { id: 'f10-04', phase: 'fase_10', category: 'Ficheiros', priority: 'media', display_order: 4, title: 'Estratégia offline para ficheiros grandes (fotos, PDFs)', description: 'Cache selectivo em Cache Storage; upload em fila até conexão restaurar. Aviso quando ficheiro não está disponível offline.' },
+  { id: 'f10-05', phase: 'fase_10', category: 'Conflitos', priority: 'alta', display_order: 5, title: 'Resolução de conflitos (last-write-wins) + log de conflitos', description: 'Regra clara documentada; conflitos rejeitados são gravados em tabela para revisão do ADMIN.' },
+  { id: 'f10-06', phase: 'fase_10', category: 'Auth', priority: 'media', display_order: 6, title: 'Cache de sessão para arranque offline (até 24h)', description: 'Guardar sessão Supabase encriptada; permitir uso offline com credenciais válidas até expirar refresh token.' },
+  { id: 'f10-07', phase: 'fase_10', category: 'Backup VPS', priority: 'alta', display_order: 7, title: 'Backup automático do Electric + monitorização com Uptime Kuma (VPS 2)', description: 'Cron diário de dump; Uptime Kuma monitoriza elec.escolareviva.com e alerta em Telegram/e-mail.' },
+  { id: 'f10-08', phase: 'fase_10', category: 'Testes', priority: 'media', display_order: 8, title: 'Testes end-to-end de cenários offline reais', description: 'Simular: perda de rede a meio de matrícula, lançamento de notas sem sinal, pagamento offline com posterior conciliação.' },
+  { id: 'f10-09', phase: 'fase_10', category: 'Documentação', priority: 'media', display_order: 9, title: 'Manual "Como usar o SiGER sem internet" (PDF + vídeo)', description: 'Guia por papel explicando instalação, indicadores offline, limites e boas práticas.' },
+  { id: 'f10-10', phase: 'fase_10', category: 'Operação', priority: 'media', display_order: 10, title: 'Runbook de operação da VPS Electric (updates, restore, troubleshooting)', description: 'Documento técnico para actualizações mensais do Docker, restauro de backup e diagnóstico de sync.' },
 ];
