@@ -6,30 +6,38 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Fetch word definition from Webster's 1828 Dictionary
-async function fetchWebsterDefinition(word: string): Promise<string | null> {
+// Fetch word definition from Webster's 1828 Dictionary via Supabase lookup
+async function fetchWebsterDefinition(word: string, supabase: any): Promise<string | null> {
   try {
-    const url = `https://webstersdictionary1828.com/Dictionary/${encodeURIComponent(word)}`;
-    const response = await fetch(url, {
-      headers: { "User-Agent": "SGE-REVIVA-LessonPlanGenerator/1.0" },
-    });
-    if (!response.ok) return null;
+    const cleanWord = word.toLowerCase().trim();
+    
+    // 1. Busca exata
+    const { data: exactMatch } = await supabase
+      .from("dictionary_webster")
+      .select("definition")
+      .eq("word", cleanWord)
+      .single();
 
-    const html = await response.text();
-    
-    const defMatch = html.match(/<p[^>]*class="[^"]*defword[^"]*"[^>]*>([\s\S]*?)<\/p>/i) ||
-                     html.match(/<div[^>]*class="[^"]*definition[^"]*"[^>]*>([\s\S]*?)<\/div>/i) ||
-                     html.match(/<p[^>]*>([\s\S]{50,500}?)<\/p>/i);
-    
-    if (defMatch) {
-      const cleanDef = defMatch[1].replace(/<[^>]+>/g, "").trim();
-      if (cleanDef.length > 20) {
-        return cleanDef.substring(0, 800);
-      }
+    if (exactMatch?.definition) {
+      return exactMatch.definition.substring(0, 1000);
     }
+
+    // 2. Fallback: LIKE (palavra que começa com o termo)
+    const { data: prefixMatch } = await supabase
+      .from("dictionary_webster")
+      .select("definition")
+      .ilike("word", `${cleanWord}%`)
+      .order("word", { ascending: true })
+      .limit(1)
+      .single();
+
+    if (prefixMatch?.definition) {
+      return prefixMatch.definition.substring(0, 1000);
+    }
+
     return null;
   } catch (err) {
-    console.warn(`Error fetching Webster definition for "${word}":`, err);
+    console.warn(`Error looking up Webster definition for "${word}":`, err);
     return null;
   }
 }
@@ -419,7 +427,7 @@ REGRAS ABSOLUTAS DE LAYOUT:
         
         for (const word of lookupWords) {
           console.log(`Looking up Webster 1828 definition for: ${word}`);
-          const def = await fetchWebsterDefinition(word);
+          const def = await fetchWebsterDefinition(word, serviceClient);
           if (def) {
             definitions.push(`**${word}** (Webster 1828): ${def}`);
           }
