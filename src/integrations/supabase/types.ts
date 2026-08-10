@@ -624,6 +624,92 @@ export type Database = {
         }
         Relationships: []
       }
+      dictionary_queries: {
+        Row: {
+          found: boolean | null
+          id: number
+          requested_at: string | null
+          source: string | null
+          word: string
+        }
+        Insert: {
+          found?: boolean | null
+          id?: number
+          requested_at?: string | null
+          source?: string | null
+          word: string
+        }
+        Update: {
+          found?: boolean | null
+          id?: number
+          requested_at?: string | null
+          source?: string | null
+          word?: string
+        }
+        Relationships: []
+      }
+      dictionary_translations: {
+        Row: {
+          definition_pt: string
+          id: number
+          source: string | null
+          translated_at: string | null
+          word_id: number
+        }
+        Insert: {
+          definition_pt: string
+          id?: number
+          source?: string | null
+          translated_at?: string | null
+          word_id: number
+        }
+        Update: {
+          definition_pt?: string
+          id?: number
+          source?: string | null
+          translated_at?: string | null
+          word_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dictionary_translations_word_id_fkey"
+            columns: ["word_id"]
+            isOneToOne: true
+            referencedRelation: "dictionary_webster"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dictionary_webster: {
+        Row: {
+          created_at: string | null
+          definition: string
+          etymology: string | null
+          id: number
+          page_number: number | null
+          word: string
+          word_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          definition: string
+          etymology?: string | null
+          id?: number
+          page_number?: number | null
+          word: string
+          word_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          definition?: string
+          etymology?: string | null
+          id?: number
+          page_number?: number | null
+          word?: string
+          word_type?: string | null
+        }
+        Relationships: []
+      }
       education_level_fees: {
         Row: {
           academic_year_id: number | null
