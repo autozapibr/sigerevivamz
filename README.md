@@ -1,73 +1,122 @@
-# Welcome to your Lovable project
+# SiGER — Sistema de Gestão Escolar Reviva
 
-## Project info
+Plataforma web de gestão escolar da **Escola Reviva**, localizada para Moçambique e desenvolvida pela [AutoZapi](https://autozapi.com).
 
-**URL**: https://lovable.dev/projects/e9cc5031-afc1-4d3f-ad49-21bd7a412b48
+[Produção](https://escolareviva.com) · [Aplicação Lovable](https://sigerevivamz.lovable.app) · [Documentação](./docs/README.md)
 
-## How can I edit this code?
+## Sobre
 
-There are several ways of editing your application.
+O SiGER centraliza a operação académica, pedagógica, financeira e administrativa da escola. Usa português de Moçambique, MZN, escala de avaliação 0–20, validações locais e a metodologia AEP/PRRR.
 
-**Use Lovable**
+### Módulos
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e9cc5031-afc1-4d3f-ad49-21bd7a412b48) and start prompting.
+- **Gestão escolar:** educandos, encarregados, matrículas, rematrículas, turmas, disciplinas, calendário e biblioteca.
+- **Pedagógico:** pauta digital, assiduidade, currículo, provas, planos de aula AEP com IA e arquivos docentes.
+- **Financeiro:** propinas, livro caixa, cobranças, acordos, lembretes e relatórios.
+- **Recursos humanos:** professores, colaboradores, documentação, contratos e assinatura digital.
+- **Comunicação:** anúncios, notificações e tickets em tempo real.
+- **Administração:** utilizadores, perfis, permissões, integrações, auditoria, backups e roadmap.
 
-Changes made via Lovable will be committed automatically to this repo.
+## Funções de acesso
 
-**Use your preferred IDE**
+`ADMIN`, `DIRETORIA`, `SECRETARIA`, `FINANCEIRO`, `PROFESSOR`, `PEDAGOGICO`, `ENCARREGADO` e `ALUNO`.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+A autorização combina navegação por função, Supabase Auth e RLS no PostgreSQL. Contas são ligadas a cadastros reais por `profiles`; professores recebem apenas turmas, disciplinas e educandos atribuídos em `class_curriculum`.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Tecnologia
 
-Follow these steps:
+- React 18, TypeScript 5 e Vite 5;
+- Tailwind CSS, shadcn/ui e Radix UI;
+- React Router e TanStack Query;
+- React Hook Form e Zod;
+- Supabase PostgreSQL, Auth, Storage, Realtime e Edge Functions;
+- Framer Motion, Recharts, xlsx e html2pdf.js.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Execução local
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Requisitos
 
-# Step 3: Install the necessary dependencies.
-npm i
+- Node.js 20 ou superior;
+- npm;
+- acesso autorizado ao projecto Supabase ligado.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+A aplicação fica disponível em `http://localhost:8080`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Variáveis de ambiente
 
-**Use GitHub Codespaces**
+O ambiente ligado fornece:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+VITE_SUPABASE_PROJECT_ID
+```
 
-## What technologies are used for this project?
+Não colocar `SUPABASE_SERVICE_ROLE_KEY`, chaves de IA ou credenciais de integrações no frontend. Secrets privados pertencem à configuração das Edge Functions.
 
-This project is built with:
+## Comandos
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+| Comando | Finalidade |
+|---|---|
+| `npm run dev` | Servidor local com actualização automática. |
+| `npm run build` | Pacote optimizado de produção. |
+| `npm run build:dev` | Pacote em modo development. |
+| `npm run lint` | Verificação estática. |
+| `npm run preview` | Pré-visualização local do pacote. |
 
-## How can I deploy this project?
+## Estrutura resumida
 
-Simply open [Lovable](https://lovable.dev/projects/e9cc5031-afc1-4d3f-ad49-21bd7a412b48) and click on Share -> Publish.
+```text
+src/
+├── components/     interface por domínio e componentes shadcn
+├── contexts/       autenticação e pesquisa
+├── hooks/          consultas e mutações Supabase
+├── integrations/   cliente e tipos gerados
+├── lib/            validação, sanitização e exportação
+├── pages/          rotas da aplicação
+└── types/          tipos de domínio
 
-## Can I connect a custom domain to my Lovable project?
+supabase/functions/ Edge Functions Deno
+docs/               arquitectura, design e dados
+public/             manifesto, ícones e ficheiros públicos
+```
 
-Yes, you can!
+## PWA e offline
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+O SiGER possui manifesto e ícones, podendo ser instalado no telemóvel ou computador. Em Setembro de 2026, continua **online-first**: ainda não existe service worker, base local ou sincronização de escritas. A implementação gratuita e auto-hospedada está planeada nas Fases 9 e 10 do roadmap.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Segurança
+
+- RLS obrigatório para dados sensíveis;
+- funções de acesso numa tabela separada (`user_roles`);
+- buckets de documentos e backups privados;
+- operações administrativas em Edge Functions autenticadas;
+- sanitização de HTML e validação de inputs;
+- auditoria para operações críticas;
+- secrets nunca versionados nem documentados com valores.
+
+## Documentação
+
+- [Índice](./docs/README.md)
+- [Arquitectura](./docs/ARQUITETURA.md)
+- [Banco de dados e segurança](./docs/BANCO-DE-DADOS.md)
+- [Design system](./docs/DESIGN-SYSTEM.md)
+- [Landing page](./docs/LANDING-PAGE-DESIGN.md)
+- [Arquivo histórico de migração](./docs/migration/README.md)
+
+## Ambientes
+
+- Produção: <https://escolareviva.com>
+- Alias: <https://www.escolareviva.com>
+- Lovable: <https://sigerevivamz.lovable.app>
+
+A publicação do frontend é gerida pelo Lovable. O backend está ligado a um projecto Supabase externo.
+
+## Licença e propriedade
+
+Projecto privado da Escola Reviva. Não reutilizar dados, marca ou código sem autorização.
