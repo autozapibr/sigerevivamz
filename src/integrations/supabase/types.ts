@@ -1953,6 +1953,7 @@ export type Database = {
           class_id: number | null
           created_at: string | null
           discount_percent: number | null
+          education_level_id: number | null
           enrollment_date: string | null
           enrollment_fee: number | null
           enrollment_number: string | null
@@ -1972,6 +1973,7 @@ export type Database = {
           class_id?: number | null
           created_at?: string | null
           discount_percent?: number | null
+          education_level_id?: number | null
           enrollment_date?: string | null
           enrollment_fee?: number | null
           enrollment_number?: string | null
@@ -1993,6 +1995,7 @@ export type Database = {
           class_id?: number | null
           created_at?: string | null
           discount_percent?: number | null
+          education_level_id?: number | null
           enrollment_date?: string | null
           enrollment_fee?: number | null
           enrollment_number?: string | null
@@ -2028,6 +2031,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "student_attendance_stats"
             referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "student_enrollments_education_level_id_fkey"
+            columns: ["education_level_id"]
+            isOneToOne: false
+            referencedRelation: "education_levels"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_enrollments_previous_enrollment_id_fkey"
