@@ -71,12 +71,15 @@ export function Students() {
   const [genderFilter, setGenderFilter] = useState<StudentFilters['gender']>('all');
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [newStudent, setNewStudent] = useState<StudentFormData>({ ...initialStudentFormData });
+  const [editStudent, setEditStudent] = useState<StudentFormData>({ ...initialStudentFormData });
+  const [localSearch, setLocalSearch] = useState('');
 
   const filters: StudentFilters = {
-    search: searchTerm,
+    search: localSearch || searchTerm,
     status: statusFilter,
     class_id: classFilter !== 'all' ? Number(classFilter) : null,
     gender: genderFilter,
@@ -122,6 +125,57 @@ export function Students() {
       id: student.id,
       status: student.status === 'Ativo' ? 'Inativo' : 'Ativo',
     });
+  };
+
+  const studentToFormData = (s: any): StudentFormData => ({
+    ...initialStudentFormData,
+    name: s.name || '',
+    birth_date: s.birth_date || '',
+    gender: (s.gender as StudentFormData['gender']) || 'MASCULINO',
+    bi_number: s.bi_number || '',
+    nuit: s.nuit || '',
+    nationality: s.nationality || 'Moçambicana',
+    phone: s.phone || '',
+    email: s.email || '',
+    province: s.province || '',
+    district: s.district || '',
+    address: s.address || '',
+    photo_url: s.photo_url || '',
+    health_notes: s.health_notes || '',
+    previous_school: s.previous_school || '',
+    guardian: s.guardian || '',
+    class_id: s.class_id ?? undefined,
+  });
+
+  const handleOpenEdit = (student: any) => {
+    setSelectedStudent(student);
+    setEditStudent(studentToFormData(student));
+    setShowEditDialog(true);
+  };
+
+  const handleUpdateStudent = async () => {
+    if (!selectedStudent) return;
+    await updateStudent.mutateAsync({
+      id: selectedStudent.id,
+      name: editStudent.name,
+      birth_date: editStudent.birth_date || null,
+      gender: editStudent.gender,
+      phone: editStudent.phone || null,
+      bi_number: editStudent.bi_number || null,
+      nuit: editStudent.nuit || null,
+      nationality: editStudent.nationality || null,
+      email: editStudent.email || null,
+      province: editStudent.province || null,
+      district: editStudent.district || null,
+      address: editStudent.address || null,
+      class_id: editStudent.class_id ?? null,
+      guardian: editStudent.guardian || null,
+      health_notes: editStudent.health_notes || null,
+      previous_school: editStudent.previous_school || null,
+      photo_url: editStudent.photo_url || null,
+    });
+    setShowEditDialog(false);
+    setSelectedStudent(null);
   };
 
   const getInitials = (name: string) => 
@@ -188,6 +242,15 @@ export function Students() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col lg:flex-row gap-4">
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  placeholder="Pesquisar por nome, BI ou telefone..."
+                  value={localSearch}
+                  onChange={(e) => setLocalSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
               <div className="flex flex-wrap gap-2">
                 <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v as any)}>
                   <SelectTrigger className="w-32">
@@ -345,7 +408,7 @@ export function Students() {
                               <Eye className="w-4 h-4 mr-2" />
                               Ver Detalhes
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOpenEdit(student)}>
                               <Edit className="w-4 h-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
@@ -411,6 +474,38 @@ export function Students() {
             >
               {createStudent.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               {createStudent.isPending ? 'A registar...' : 'Registar Educando'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Educando</DialogTitle>
+            <DialogDescription>
+              Actualize os dados do educando <strong>{selectedStudent?.name}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+
+          <StudentForm
+            formData={editStudent}
+            onChange={setEditStudent}
+            classes={classes}
+            isEdit
+          />
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleUpdateStudent}
+              disabled={!editStudent.name || updateStudent.isPending}
+            >
+              {updateStudent.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {updateStudent.isPending ? 'A guardar...' : 'Guardar Alterações'}
             </Button>
           </DialogFooter>
         </DialogContent>
