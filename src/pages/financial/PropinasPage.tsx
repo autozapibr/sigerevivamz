@@ -30,9 +30,16 @@ import {
   Users,
   TrendingUp,
   FileText,
-  ArrowLeft
+  ArrowLeft,
+  MoreHorizontal,
+  Pencil,
+  RotateCcw,
+  Settings
 } from 'lucide-react';
-import { useTuitionFees, usePayTuition, useGenerateMonthlyFees, useFinancialSummary, type TuitionFee } from '@/hooks/useFinancial';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useTuitionFees, usePayTuition, useGenerateMonthlyFees, useFinancialSummary, useUndoPayment, useUpdatePayment, type TuitionFee } from '@/hooks/useFinancial';
+import { useLateFeeSettings } from '@/hooks/useLateFees';
+import { calculateLateFee } from '@/lib/lateFee';
 import { formatMZN } from '@/lib/validators/mozambique';
 import { format, parseISO } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -90,7 +97,24 @@ function getStatusBadge(status: string | null) {
 }
 
 // Mobile card view for tuition fees
-function TuitionCard({ fee, onPay }: { fee: TuitionFee; onPay: (fee: TuitionFee) => void }) {
+function TuitionCard({
+  fee,
+  lateFee,
+  onPay,
+  onEdit,
+  onUndo,
+}: {
+  fee: TuitionFee;
+  lateFee: number;
+  onPay: (fee: TuitionFee) => void;
+  onEdit: (fee: TuitionFee) => void;
+  onUndo: (fee: TuitionFee) => void;
+}) {
+  const isPaid = fee.status === 'Pago';
+  const displayValue = isPaid
+    ? (fee.paid_amount ?? fee.amount ?? 0)
+    : (fee.amount || 0) + lateFee;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -105,16 +129,19 @@ function TuitionCard({ fee, onPay }: { fee: TuitionFee; onPay: (fee: TuitionFee)
           </p>
           <div className="flex items-center gap-2 mt-2">
             {getStatusBadge(fee.status)}
-            <span className="text-sm font-medium">{formatMZN(fee.amount || 0)}</span>
+            <span className="text-sm font-medium">{formatMZN(displayValue)}</span>
           </div>
+          {!isPaid && lateFee > 0 && (
+            <p className="text-xs text-destructive mt-1">inclui multa {formatMZN(lateFee)}</p>
+          )}
           {fee.due_date && (
             <p className="text-xs text-muted-foreground mt-1">
               Vencimento: {format(parseISO(fee.due_date), 'dd/MM/yyyy')}
             </p>
           )}
         </div>
-        {fee.status !== 'Pago' && (
-          <Button 
+        {!isPaid ? (
+          <Button
             size="sm"
             onClick={() => onPay(fee)}
             className="bg-success hover:bg-success/90 flex-shrink-0"
@@ -122,6 +149,24 @@ function TuitionCard({ fee, onPay }: { fee: TuitionFee; onPay: (fee: TuitionFee)
             <CheckCircle2 className="h-3 w-3 mr-1" />
             Pagar
           </Button>
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="flex-shrink-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit(fee)}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Editar pagamento
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive" onClick={() => onUndo(fee)}>
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Estornar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
     </motion.div>
@@ -142,6 +187,13 @@ export default function PropinasPage() {
   const [generateDialog, setGenerateDialog] = useState(false);
   const [defaultAmount, setDefaultAmount] = useState('2500');
   const [localSearch, setLocalSearch] = useState('');
+  const [lateFeeInput, setLateFeeInput] = useState('0');
+  const [discountInput, setDiscountInput] = useState('0');
+  const [editDialog, setEditDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
+  const [editLateFee, setEditLateFee] = useState('0');
+  const [editDiscount, setEditDiscount] = useState('0');
+  const [editMethod, setEditMethod] = useState('NUMERARIO');
+  const [undoDialog, setUndoDialog] = useState<{ open: boolean; fee: TuitionFee | null }>({ open: false, fee: null });
 
   const effectiveSearch = localSearch || searchTerm;
 
@@ -152,20 +204,72 @@ export default function PropinasPage() {
   });
 
   const { data: summary } = useFinancialSummary(selectedMonth);
+  const { data: lateFeeSettings } = useLateFeeSettings();
   const payTuition = usePayTuition();
   const generateFees = useGenerateMonthlyFees();
+  const undoPayment = useUndoPayment();
+  const updatePayment = useUpdatePayment();
+
+  // Multa calculada automaticamente para uma propina ainda não paga.
+  const computeLate = (fee: TuitionFee) =>
+    calculateLateFee({
+      amount: fee.amount,
+      dueDate: fee.due_date,
+      status: fee.status,
+      settings: lateFeeSettings,
+    });
+
+  const openPayDialog = (fee: TuitionFee) => {
+    setLateFeeInput(String(computeLate(fee)));
+    setDiscountInput('0');
+    setPaymentMethod('NUMERARIO');
+    setPaymentDialog({ open: true, fee });
+  };
 
   const handlePayment = () => {
     if (!paymentDialog.fee) return;
-    
+
     payTuition.mutate(
-      { feeId: paymentDialog.fee.id, paymentMethod },
+      {
+        feeId: paymentDialog.fee.id,
+        paymentMethod,
+        lateFee: parseFloat(lateFeeInput) || 0,
+        discount: parseFloat(discountInput) || 0,
+      },
       {
         onSuccess: () => {
           setPaymentDialog({ open: false, fee: null });
           setPaymentMethod('NUMERARIO');
         },
       }
+    );
+  };
+
+  const openEditDialog = (fee: TuitionFee) => {
+    setEditLateFee(String(fee.late_fee ?? 0));
+    setEditDiscount(String(fee.discount ?? 0));
+    setEditMethod(fee.payment_method || 'NUMERARIO');
+    setEditDialog({ open: true, fee });
+  };
+
+  const handleEditPayment = () => {
+    if (!editDialog.fee) return;
+    updatePayment.mutate(
+      {
+        feeId: editDialog.fee.id,
+        lateFee: parseFloat(editLateFee) || 0,
+        discount: parseFloat(editDiscount) || 0,
+        paymentMethod: editMethod,
+      },
+      { onSuccess: () => setEditDialog({ open: false, fee: null }) }
+    );
+  };
+
+  const handleUndo = () => {
+    if (!undoDialog.fee) return;
+    undoPayment.mutate(
+      { feeId: undoDialog.fee.id },
+      { onSuccess: () => setUndoDialog({ open: false, fee: null }) }
     );
   };
 
@@ -352,6 +456,13 @@ export default function PropinasPage() {
                   <span className="hidden sm:inline">Exportar</span>
                   <span className="sm:hidden">Exportar</span>
                 </Button>
+                <Button variant="outline" asChild className="gap-2 flex-1 sm:flex-none">
+                  <Link to="/configuracoes/multas">
+                    <Settings className="h-4 w-4" />
+                    <span className="hidden sm:inline">Config. Multas</span>
+                    <span className="sm:hidden">Multas</span>
+                  </Link>
+                </Button>
               </div>
             </div>
           </CardHeader>
@@ -381,10 +492,13 @@ export default function PropinasPage() {
                 <div className="block lg:hidden space-y-3">
                   <AnimatePresence>
                     {filteredFees.map(fee => (
-                      <TuitionCard 
-                        key={fee.id} 
-                        fee={fee} 
-                        onPay={(f) => setPaymentDialog({ open: true, fee: f })}
+                      <TuitionCard
+                        key={fee.id}
+                        fee={fee}
+                        lateFee={computeLate(fee)}
+                        onPay={openPayDialog}
+                        onEdit={openEditDialog}
+                        onUndo={(f) => setUndoDialog({ open: true, fee: f })}
                       />
                     ))}
                   </AnimatePresence>
@@ -430,21 +544,67 @@ export default function PropinasPage() {
                               }
                             </TableCell>
                             <TableCell className="text-right font-medium">
-                              {formatMZN(fee.amount || 0)}
+                              {fee.status === 'Pago' ? (
+                                <div>
+                                  <div>{formatMZN(fee.paid_amount ?? fee.amount ?? 0)}</div>
+                                  {(fee.late_fee || fee.discount) ? (
+                                    <div className="text-xs text-muted-foreground">
+                                      base {formatMZN(fee.amount || 0)}
+                                      {fee.late_fee ? ` + multa ${formatMZN(fee.late_fee)}` : ''}
+                                      {fee.discount ? ` − desc. ${formatMZN(fee.discount)}` : ''}
+                                    </div>
+                                  ) : null}
+                                </div>
+                              ) : (
+                                (() => {
+                                  const lf = computeLate(fee);
+                                  return (
+                                    <div>
+                                      <div>{formatMZN((fee.amount || 0) + lf)}</div>
+                                      {lf > 0 && (
+                                        <div className="text-xs text-destructive">
+                                          inclui multa {formatMZN(lf)}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })()
+                              )}
                             </TableCell>
                             <TableCell className="text-center">
                               {getStatusBadge(fee.status)}
                             </TableCell>
                             <TableCell className="text-right">
-                              {fee.status !== 'Pago' && (
-                                <Button 
+                              {fee.status !== 'Pago' ? (
+                                <Button
                                   size="sm"
-                                  onClick={() => setPaymentDialog({ open: true, fee })}
+                                  onClick={() => openPayDialog(fee)}
                                   className="gap-1 bg-success hover:bg-success/90"
                                 >
                                   <CheckCircle2 className="h-3 w-3" />
                                   Pagar
                                 </Button>
+                              ) : (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => openEditDialog(fee)}>
+                                      <Pencil className="h-4 w-4 mr-2" />
+                                      Editar pagamento
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      className="text-destructive"
+                                      onClick={() => setUndoDialog({ open: true, fee })}
+                                    >
+                                      <RotateCcw className="h-4 w-4 mr-2" />
+                                      Estornar
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               )}
                             </TableCell>
                           </motion.tr>
@@ -507,10 +667,30 @@ export default function PropinasPage() {
                   <span className="text-muted-foreground">Referência:</span>
                   <span>{format(parseISO(`${paymentDialog.fee.month}-01`), 'MMMM yyyy', { locale: pt })}</span>
                 </div>
-                <div className="flex justify-between text-lg border-t pt-2 mt-2">
-                  <span className="font-medium">Valor:</span>
-                  <span className="font-bold text-success">{formatMZN(paymentDialog.fee.amount || 0)}</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Propina:</span>
+                  <span>{formatMZN(paymentDialog.fee.amount || 0)}</span>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <CurrencyInput
+                  label="Multa (MZN)"
+                  value={lateFeeInput}
+                  onChange={setLateFeeInput}
+                />
+                <CurrencyInput
+                  label="Desconto (MZN)"
+                  value={discountInput}
+                  onChange={setDiscountInput}
+                />
+              </div>
+
+              <div className="flex justify-between text-lg border-t pt-3">
+                <span className="font-medium">Total a pagar:</span>
+                <span className="font-bold text-success">
+                  {formatMZN(Math.max(0, (paymentDialog.fee.amount || 0) + (parseFloat(lateFeeInput) || 0) - (parseFloat(discountInput) || 0)))}
+                </span>
               </div>
 
               <div>
@@ -616,6 +796,116 @@ export default function PropinasPage() {
               Gerar Propinas
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Payment Dialog */}
+      <Dialog open={editDialog.open} onOpenChange={(open) => setEditDialog({ open, fee: open ? editDialog.fee : null })}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="h-5 w-5" />
+              Editar Pagamento
+            </DialogTitle>
+            <DialogDescription>
+              Ajuste a multa, o desconto ou o método deste pagamento.
+            </DialogDescription>
+          </DialogHeader>
+
+          {editDialog.fee && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Educando:</span>
+                  <span className="font-medium">{editDialog.fee.student?.name}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Propina:</span>
+                  <span>{formatMZN(editDialog.fee.amount || 0)}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <CurrencyInput label="Multa (MZN)" value={editLateFee} onChange={setEditLateFee} />
+                <CurrencyInput label="Desconto (MZN)" value={editDiscount} onChange={setEditDiscount} />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Método de Pagamento</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {PAYMENT_METHODS.map(method => (
+                    <Button
+                      key={method.value}
+                      type="button"
+                      variant={editMethod === method.value ? 'default' : 'outline'}
+                      onClick={() => setEditMethod(method.value)}
+                      className={cn('flex flex-col gap-1 h-auto py-3', editMethod === method.value && 'ring-2 ring-primary')}
+                    >
+                      <method.icon className="h-4 w-4" />
+                      <span className="text-xs">{method.label}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-between text-lg border-t pt-3">
+                <span className="font-medium">Total:</span>
+                <span className="font-bold text-success">
+                  {formatMZN(Math.max(0, (editDialog.fee.amount || 0) + (parseFloat(editLateFee) || 0) - (parseFloat(editDiscount) || 0)))}
+                </span>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditDialog({ open: false, fee: null })}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleEditPayment} disabled={updatePayment.isPending} className="gap-2">
+                  {updatePayment.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                  Guardar
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Undo Payment Dialog */}
+      <Dialog open={undoDialog.open} onOpenChange={(open) => setUndoDialog({ open, fee: open ? undoDialog.fee : null })}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RotateCcw className="h-5 w-5 text-destructive" />
+              Estornar Pagamento
+            </DialogTitle>
+            <DialogDescription>
+              Isto desfaz o pagamento e remove o lançamento de receita do caixa. A propina volta a ficar pendente/atrasada.
+            </DialogDescription>
+          </DialogHeader>
+
+          {undoDialog.fee && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Educando:</span>
+                  <span className="font-medium">{undoDialog.fee.student?.name}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Valor pago:</span>
+                  <span>{formatMZN(undoDialog.fee.paid_amount ?? undoDialog.fee.amount ?? 0)}</span>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setUndoDialog({ open: false, fee: null })}>
+                  Cancelar
+                </Button>
+                <Button variant="destructive" onClick={handleUndo} disabled={undoPayment.isPending} className="gap-2">
+                  {undoPayment.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+                  Estornar
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </MainLayout>

@@ -43,6 +43,7 @@ const RoadmapPage = lazy(() => import("./pages/settings/RoadmapPage"));
 const AuditoriaPage = lazy(() => import("./pages/settings/AuditoriaPage"));
 const BackupsPage = lazy(() => import("./pages/settings/BackupsPage"));
 const EnrollmentSettings = lazy(() => import("./pages/settings/EnrollmentSettings"));
+const MultasConfigPage = lazy(() => import("./pages/settings/MultasConfigPage"));
 
 const CaixaPage = lazy(() => import("./pages/financial/CaixaPage"));
 const PropinasPage = lazy(() => import("./pages/financial/PropinasPage"));
@@ -136,6 +137,7 @@ const AppRoutes = () => {
         <Route path="/configuracoes/backups" element={<ProtectedRoute><BackupsPage /></ProtectedRoute>} />
         <Route path="/configuracoes/auditoria" element={<ProtectedRoute><AuditoriaPage /></ProtectedRoute>} />
         <Route path="/configuracoes/matriculas" element={<ProtectedRoute><EnrollmentSettings /></ProtectedRoute>} />
+        <Route path="/configuracoes/multas" element={<ProtectedRoute><MultasConfigPage /></ProtectedRoute>} />
         <Route path="/rh/utilizadores" element={<ProtectedRoute><UtilizadoresPage /></ProtectedRoute>} />
         <Route path="/configuracoes/perfis-utilizadores" element={<ProtectedRoute><PerfisUtilizadoresPage /></ProtectedRoute>} />
         <Route path="/financeiro/dashboard" element={<ProtectedRoute><FinancialRoute><FinancialDashboard /></FinancialRoute></ProtectedRoute>} />

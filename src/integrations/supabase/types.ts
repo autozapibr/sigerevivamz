@@ -2623,33 +2623,78 @@ export type Database = {
           },
         ]
       }
+      late_fee_settings: {
+        Row: {
+          fixed_amount: number
+          grace_days: number
+          id: number
+          is_active: boolean
+          mode: string
+          percent: number
+          updated_at: string
+        }
+        Insert: {
+          fixed_amount?: number
+          grace_days?: number
+          id?: number
+          is_active?: boolean
+          mode?: string
+          percent?: number
+          updated_at?: string
+        }
+        Update: {
+          fixed_amount?: number
+          grace_days?: number
+          id?: number
+          is_active?: boolean
+          mode?: string
+          percent?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tuition_fees: {
         Row: {
           amount: number | null
+          discount: number
           due_date: string | null
           id: number
+          late_fee: number
           month: string
+          paid_amount: number | null
           paid_at: string | null
+          payment_method: string | null
           status: Database["public"]["Enums"]["tuition_status"] | null
           student_id: number
+          transaction_id: number | null
         }
         Insert: {
           amount?: number | null
+          discount?: number
           due_date?: string | null
           id?: never
+          late_fee?: number
           month: string
+          paid_amount?: number | null
           paid_at?: string | null
+          payment_method?: string | null
           status?: Database["public"]["Enums"]["tuition_status"] | null
           student_id: number
+          transaction_id?: number | null
         }
         Update: {
           amount?: number | null
+          discount?: number
           due_date?: string | null
           id?: never
+          late_fee?: number
           month?: string
+          paid_amount?: number | null
           paid_at?: string | null
+          payment_method?: string | null
           status?: Database["public"]["Enums"]["tuition_status"] | null
           student_id?: number
+          transaction_id?: number | null
         }
         Relationships: [
           {

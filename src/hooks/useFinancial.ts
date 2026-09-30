@@ -16,6 +16,11 @@ export interface TuitionFee {
   amount: number | null;
   due_date: string | null;
   status: TuitionStatus | null;
+  late_fee?: number | null;
+  discount?: number | null;
+  paid_amount?: number | null;
+  payment_method?: string | null;
+  transaction_id?: number | null;
   student?: {
     id: number;
     name: string;
@@ -390,37 +395,57 @@ export function usePayTuition() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      feeId, 
-      paymentMethod 
-    }: { 
-      feeId: number; 
+    mutationFn: async ({
+      feeId,
+      paymentMethod,
+      lateFee = 0,
+      discount = 0,
+    }: {
+      feeId: number;
       paymentMethod: string;
+      lateFee?: number;
+      discount?: number;
     }) => {
-      // Update tuition status
-      const { data: fee, error: feeError } = await supabase
+      // Load current fee to know the base amount and student name.
+      const { data: current, error: loadError } = await supabase
         .from('tuition_fees')
-        .update({ status: 'Pago' as TuitionStatus })
+        .select(`*, student:students(name)`)
         .eq('id', feeId)
-        .select(`
-          *,
-          student:students(name)
-        `)
         .single();
+      if (loadError) throw loadError;
 
-      if (feeError) throw feeError;
+      const base = Number(current.amount) || 0;
+      const paidAmount = Math.max(0, base + Number(lateFee || 0) - Number(discount || 0));
 
-      // Create transaction for the payment
-      const { error: txError } = await supabase
+      // Create the income transaction first, so we can link it to the fee.
+      const { data: tx, error: txError } = await supabase
         .from('transactions')
         .insert({
           type: 'Receita' as TransactionType,
-          amount: fee.amount || 0,
+          amount: paidAmount,
           date: format(new Date(), 'yyyy-MM-dd'),
-          description: `Propina ${fee.month} - ${fee.student?.name} (${paymentMethod})`,
-        });
-
+          description: `Propina ${current.month} - ${current.student?.name} (${paymentMethod})`,
+        })
+        .select()
+        .single();
       if (txError) throw txError;
+
+      // Mark fee as paid with the full breakdown + link to the transaction.
+      const { data: fee, error: feeError } = await supabase
+        .from('tuition_fees')
+        .update({
+          status: 'Pago' as TuitionStatus,
+          paid_at: new Date().toISOString(),
+          paid_amount: paidAmount,
+          late_fee: Number(lateFee || 0),
+          discount: Number(discount || 0),
+          payment_method: paymentMethod,
+          transaction_id: tx.id,
+        })
+        .eq('id', feeId)
+        .select(`*, student:students(name)`)
+        .single();
+      if (feeError) throw feeError;
 
       return fee;
     },
@@ -433,6 +458,127 @@ export function usePayTuition() {
     },
     onError: (error) => {
       toast.error('Erro ao registar pagamento: ' + error.message);
+    },
+  });
+}
+
+// Estorna (desfaz) um pagamento: apaga o lançamento de receita e volta a
+// propina para Pendente/Atrasado, limpando os dados de pagamento.
+export function useUndoPayment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ feeId }: { feeId: number }) => {
+      const { data: current, error: loadError } = await supabase
+        .from('tuition_fees')
+        .select('id, due_date, transaction_id')
+        .eq('id', feeId)
+        .single();
+      if (loadError) throw loadError;
+
+      // Apaga o lançamento de receita vinculado (se existir).
+      if (current.transaction_id) {
+        const { error: delError } = await supabase
+          .from('transactions')
+          .delete()
+          .eq('id', current.transaction_id);
+        if (delError) throw delError;
+      }
+
+      // Volta o estado com base no vencimento.
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const newStatus: TuitionStatus =
+        current.due_date && current.due_date < today ? 'Atrasado' : 'Pendente';
+
+      const { error: updError } = await supabase
+        .from('tuition_fees')
+        .update({
+          status: newStatus,
+          paid_at: null,
+          paid_amount: null,
+          payment_method: null,
+          late_fee: 0,
+          discount: 0,
+          transaction_id: null,
+        })
+        .eq('id', feeId);
+      if (updError) throw updError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tuition-fees'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['financial-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['overdue-fees'] });
+      toast.success('Pagamento estornado.');
+    },
+    onError: (error) => {
+      toast.error('Erro ao estornar pagamento: ' + error.message);
+    },
+  });
+}
+
+// Ajusta um pagamento já registado (multa, desconto ou método) e mantém o
+// lançamento de receita vinculado em sincronia.
+export function useUpdatePayment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      feeId,
+      lateFee,
+      discount,
+      paymentMethod,
+    }: {
+      feeId: number;
+      lateFee: number;
+      discount: number;
+      paymentMethod: string;
+    }) => {
+      const { data: current, error: loadError } = await supabase
+        .from('tuition_fees')
+        .select(`*, student:students(name)`)
+        .eq('id', feeId)
+        .single();
+      if (loadError) throw loadError;
+
+      const base = Number(current.amount) || 0;
+      const paidAmount = Math.max(0, base + Number(lateFee || 0) - Number(discount || 0));
+
+      const { data: fee, error: feeError } = await supabase
+        .from('tuition_fees')
+        .update({
+          late_fee: Number(lateFee || 0),
+          discount: Number(discount || 0),
+          payment_method: paymentMethod,
+          paid_amount: paidAmount,
+        })
+        .eq('id', feeId)
+        .select(`*, student:students(name)`)
+        .single();
+      if (feeError) throw feeError;
+
+      // Mantém o lançamento de receita coerente com o novo valor.
+      if (current.transaction_id) {
+        const { error: txError } = await supabase
+          .from('transactions')
+          .update({
+            amount: paidAmount,
+            description: `Propina ${current.month} - ${current.student?.name} (${paymentMethod})`,
+          })
+          .eq('id', current.transaction_id);
+        if (txError) throw txError;
+      }
+
+      return fee;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tuition-fees'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['financial-summary'] });
+      toast.success('Pagamento actualizado.');
+    },
+    onError: (error) => {
+      toast.error('Erro ao actualizar pagamento: ' + error.message);
     },
   });
 }
