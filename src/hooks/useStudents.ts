@@ -228,19 +228,24 @@ export interface StudentGuardianData {
 
 type Guardian = Database['public']['Tables']['guardians']['Row'];
 
-// Fetches the primary guardian linked to a student (for pre-filling the edit form).
+// Fetches the guardian linked to a student (for pre-filling the edit form).
+// Prefers the primary link, but falls back to any link — some records have
+// is_primary null/false. Normalises the embedded result (object or array).
 export async function fetchPrimaryGuardian(studentId: number): Promise<Guardian | null> {
   const { data, error } = await supabase
     .from('student_guardians')
-    .select('guardian_id, guardians(*)')
+    .select('guardian_id, is_primary, guardians(*)')
     .eq('student_id', studentId)
-    .eq('is_primary', true)
+    .order('is_primary', { ascending: false, nullsFirst: false })
     .order('id', { ascending: true })
     .limit(1)
     .maybeSingle();
 
   if (error) throw error;
-  return ((data as any)?.guardians ?? null) as Guardian | null;
+
+  const raw = (data as any)?.guardians;
+  const guardian = Array.isArray(raw) ? raw[0] : raw;
+  return (guardian ?? null) as Guardian | null;
 }
 
 // Creates or updates the primary guardian of a student and keeps the link in place.
@@ -250,11 +255,13 @@ export function useSaveStudentGuardian() {
 
   return useMutation({
     mutationFn: async ({ studentId, guardian }: { studentId: number; guardian: StudentGuardianData }) => {
+      // Reuse any existing link (prefer primary) so we update instead of
+      // creating a duplicate guardian for students whose link is not marked primary.
       const { data: link, error: linkError } = await supabase
         .from('student_guardians')
-        .select('guardian_id')
+        .select('guardian_id, is_primary')
         .eq('student_id', studentId)
-        .eq('is_primary', true)
+        .order('is_primary', { ascending: false, nullsFirst: false })
         .order('id', { ascending: true })
         .limit(1)
         .maybeSingle();

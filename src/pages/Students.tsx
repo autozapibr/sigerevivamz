@@ -59,6 +59,7 @@ import {
   type StudentFilters
 } from '@/hooks/useStudents';
 import { StudentAvatar } from '@/components/students/StudentAvatar';
+import { toast } from 'sonner';
 import { useClasses } from '@/hooks/useGrades';
 import { formatPhone, formatBI } from '@/lib/validators/mozambique';
 
@@ -126,7 +127,7 @@ export function Students() {
         const path = await uploadStudentPhoto(created.id, photoFile);
         await updateStudent.mutateAsync({ id: created.id, photo_url: path });
       } catch {
-        // não-fatal: educando fica sem foto
+        toast.error('Não foi possível enviar a foto (permissão do storage). O educando foi registado sem foto.');
       }
       (window as any).__tempStudentPhotoFile = null;
     }
@@ -234,7 +235,7 @@ export function Students() {
       try {
         photoValue = await uploadStudentPhoto(selectedStudent.id, photoFile);
       } catch {
-        // mantém a foto existente se o upload falhar
+        toast.error('Não foi possível enviar a foto (permissão do storage). Os restantes dados foram guardados.');
       }
       (window as any).__tempStudentPhotoFile = null;
     }
