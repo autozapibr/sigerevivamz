@@ -141,11 +141,14 @@ export default function PropinasPage() {
   const [paymentMethod, setPaymentMethod] = useState('NUMERARIO');
   const [generateDialog, setGenerateDialog] = useState(false);
   const [defaultAmount, setDefaultAmount] = useState('2500');
+  const [localSearch, setLocalSearch] = useState('');
+
+  const effectiveSearch = localSearch || searchTerm;
 
   const { data: fees = [], isLoading } = useTuitionFees({
     month: selectedMonth,
     status: statusFilter !== 'all' ? statusFilter as any : undefined,
-    search: searchTerm || undefined,
+    search: effectiveSearch || undefined,
   });
 
   const { data: summary } = useFinancialSummary(selectedMonth);
@@ -175,7 +178,7 @@ export default function PropinasPage() {
 
   const filteredFees = fees.filter(fee => {
     if (statusFilter !== 'all' && fee.status !== statusFilter) return false;
-    if (searchTerm && !fee.student?.name?.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    if (effectiveSearch && !fee.student?.name?.toLowerCase().includes(effectiveSearch.toLowerCase())) return false;
     return true;
   });
 
@@ -296,6 +299,16 @@ export default function PropinasPage() {
             <div className="flex flex-col gap-4">
               {/* Filters Row */}
               <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1 min-w-0">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    placeholder="Pesquisar educando por nome..."
+                    value={localSearch}
+                    onChange={(e) => setLocalSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                   <SelectTrigger className="w-full sm:w-[180px]">
                     <Calendar className="w-4 h-4 mr-2" />
