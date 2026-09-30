@@ -184,6 +184,31 @@ export function useDeleteStudent() {
   });
 }
 
+const STUDENT_PHOTOS_BUCKET = 'student-photos';
+
+// Uploads a student photo to the (private) student-photos bucket and returns the stored path.
+export async function uploadStudentPhoto(studentId: number, file: File): Promise<string> {
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const path = `${studentId}/photo_${Date.now()}.${ext}`;
+  const { error } = await supabase.storage
+    .from(STUDENT_PHOTOS_BUCKET)
+    .upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' });
+  if (error) throw error;
+  return path;
+}
+
+// Resolves a stored photo value to a displayable URL.
+// Accepts either a full URL (legacy/public) or a storage path (private bucket → signed URL).
+export async function getStudentPhotoSignedUrl(pathOrUrl: string | null): Promise<string | null> {
+  if (!pathOrUrl) return null;
+  if (/^(https?:|data:|blob:)/.test(pathOrUrl)) return pathOrUrl;
+  const { data, error } = await supabase.storage
+    .from(STUDENT_PHOTOS_BUCKET)
+    .createSignedUrl(pathOrUrl, 60 * 60);
+  if (error) return null;
+  return data?.signedUrl ?? null;
+}
+
 export interface StudentGuardianData {
   full_name: string;
   relationship: string;

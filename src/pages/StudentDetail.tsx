@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { StudentAvatar } from '@/components/students/StudentAvatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useStudentDocuments, useStudentGuardians } from '@/hooks/useEnrollments';
@@ -152,12 +153,12 @@ export function StudentDetail() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-4 flex-1">
-            <Avatar className="h-16 w-16">
-              {student.photo_url && <AvatarImage src={student.photo_url} />}
-              <AvatarFallback className="bg-primary/10 text-primary text-lg">
-                {getInitials(student.name)}
-              </AvatarFallback>
-            </Avatar>
+            <StudentAvatar
+              photoUrl={student.photo_url}
+              name={student.name}
+              className="h-16 w-16"
+              fallbackClassName="bg-primary/10 text-primary text-lg"
+            />
             <div>
               <h1 className="text-2xl font-bold">{student.name}</h1>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">

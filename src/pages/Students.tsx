@@ -55,8 +55,10 @@ import {
   useStudentsStats,
   useSaveStudentGuardian,
   fetchPrimaryGuardian,
+  uploadStudentPhoto,
   type StudentFilters
 } from '@/hooks/useStudents';
+import { StudentAvatar } from '@/components/students/StudentAvatar';
 import { useClasses } from '@/hooks/useGrades';
 import { formatPhone, formatBI } from '@/lib/validators/mozambique';
 
@@ -96,7 +98,7 @@ export function Students() {
   const saveGuardian = useSaveStudentGuardian();
 
   const handleCreateStudent = async () => {
-    await createStudent.mutateAsync({
+    const created = await createStudent.mutateAsync({
       name: newStudent.name,
       birth_date: newStudent.birth_date || undefined,
       gender: newStudent.gender,
@@ -113,6 +115,19 @@ export function Students() {
       health_notes: newStudent.health_notes || undefined,
       previous_school: newStudent.previous_school || undefined,
     });
+
+    // Envia a foto (se houver) agora que já temos o id do novo educando.
+    const photoFile = (window as any).__tempStudentPhotoFile as File | null;
+    if (created?.id && photoFile) {
+      try {
+        const path = await uploadStudentPhoto(created.id, photoFile);
+        await updateStudent.mutateAsync({ id: created.id, photo_url: path });
+      } catch {
+        // não-fatal: educando fica sem foto
+      }
+      (window as any).__tempStudentPhotoFile = null;
+    }
+
     setShowCreateDialog(false);
     setNewStudent({ ...initialStudentFormData });
   };
@@ -179,6 +194,20 @@ export function Students() {
 
   const handleUpdateStudent = async () => {
     if (!selectedStudent) return;
+
+    // Se uma nova foto foi seleccionada, envia-a ao storage privado. Falha aqui
+    // não bloqueia o resto da gravação.
+    let photoValue = editStudent.photo_url || null;
+    const photoFile = (window as any).__tempStudentPhotoFile as File | null;
+    if (photoFile) {
+      try {
+        photoValue = await uploadStudentPhoto(selectedStudent.id, photoFile);
+      } catch {
+        // mantém a foto existente se o upload falhar
+      }
+      (window as any).__tempStudentPhotoFile = null;
+    }
+
     await updateStudent.mutateAsync({
       id: selectedStudent.id,
       name: editStudent.name,
@@ -196,7 +225,7 @@ export function Students() {
       guardian: editStudent.guardian || null,
       health_notes: editStudent.health_notes || null,
       previous_school: editStudent.previous_school || null,
-      photo_url: editStudent.photo_url || null,
+      photo_url: photoValue,
     });
 
     // Grava/actualiza o encarregado completo (tabela guardians + ligação student_guardians).
@@ -399,12 +428,12 @@ export function Students() {
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            {student.photo_url && <AvatarImage src={student.photo_url} />}
-                            <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                              {getInitials(student.name)}
-                            </AvatarFallback>
-                          </Avatar>
+                          <StudentAvatar
+                            photoUrl={student.photo_url}
+                            name={student.name}
+                            className="h-10 w-10"
+                            fallbackClassName="bg-primary/10 text-primary text-sm"
+                          />
                           <div>
                             <p className="font-medium">{student.name}</p>
                             <p className="text-xs text-muted-foreground md:hidden">

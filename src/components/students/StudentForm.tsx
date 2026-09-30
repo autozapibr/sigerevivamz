@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { User, Users, Phone, FileText, Heart, Shield } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RELATIONSHIP_OPTIONS } from '@/types/enrollment';
+import { getStudentPhotoSignedUrl } from '@/hooks/useStudents';
+
+const isDisplayableUrl = (v?: string | null) =>
+  !!v && /^(https?:|data:|blob:)/.test(v);
 
 export interface StudentFormData {
   // Dados pessoais
@@ -99,7 +103,26 @@ export const initialStudentFormData: StudentFormData = {
 };
 
 export function StudentForm({ formData, onChange, classes, isEdit }: StudentFormProps) {
-  const [photoPreview, setPhotoPreview] = useState<string | null>(formData.photo_url || null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(
+    isDisplayableUrl(formData.photo_url) ? formData.photo_url : null
+  );
+
+  // Se a foto guardada for um caminho do storage privado, resolve uma URL assinada
+  // para mostrar no preview (só na montagem — o diálogo remonta a cada abertura).
+  useEffect(() => {
+    let active = true;
+    if (formData.photo_url && !isDisplayableUrl(formData.photo_url)) {
+      getStudentPhotoSignedUrl(formData.photo_url)
+        .then((resolved) => {
+          if (active && resolved) setPhotoPreview(resolved);
+        })
+        .catch(() => {});
+    }
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handlePhotoChange = (file: File | null, preview: string | null) => {
     setPhotoPreview(preview);
