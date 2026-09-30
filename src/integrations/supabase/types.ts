@@ -2626,6 +2626,24 @@ export type Database = {
           },
         ]
       }
+      class_group_settings: {
+        Row: {
+          groups: Json
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          groups?: Json
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          groups?: Json
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       late_fee_settings: {
         Row: {
           fixed_amount: number

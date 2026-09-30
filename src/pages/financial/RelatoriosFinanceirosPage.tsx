@@ -24,6 +24,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Banknote,
+  Settings,
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -48,7 +49,10 @@ import {
   useMonthlyFinancialSummary,
 } from '@/hooks/useFinancialReportsData';
 import { useClasses } from '@/hooks/useGrades';
+import { useClassGroups } from '@/hooks/useClassGroups';
+import { classGroupName } from '@/lib/classGroups';
 import { formatMZN } from '@/lib/validators/mozambique';
+import { Link } from 'react-router-dom';
 import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { motion } from 'framer-motion';
@@ -489,6 +493,7 @@ export default function RelatoriosFinanceirosPage() {
   const [enrollmentStatus, setEnrollmentStatus] = useState<string>('all');
   const [staffType, setStaffType] = useState<'all' | 'teachers' | 'employees'>('all');
   const [selectedClass, setSelectedClass] = useState<string>('all');
+  const [selectedGroup, setSelectedGroup] = useState<string>('all');
 
   // Período do Livro Caixa (diário / semanal / mensal / anual) para conferência.
   const [cashPeriod, setCashPeriod] = useState<'dia' | 'semana' | 'mes' | 'ano'>('mes');
@@ -512,6 +517,17 @@ export default function RelatoriosFinanceirosPage() {
 
   // Data hooks
   const { data: classes = [] } = useClasses();
+  const { data: classGroups = [] } = useClassGroups();
+
+  // Nomes de grupos disponíveis (para o filtro) e turmas de cada grupo.
+  const groupNames = Array.from(new Set(classGroups.map((g) => g.name)));
+  const groupClassIds =
+    selectedGroup !== 'all'
+      ? classes.filter((c) => classGroupName(c.name, classGroups) === selectedGroup).map((c) => c.id)
+      : undefined;
+  // Quando um grupo está seleccionado e nenhuma turma específica, filtra pelas turmas do grupo.
+  const effectiveClassIds = selectedClass === 'all' ? groupClassIds : undefined;
+
   const { data: cashBookData, isLoading: loadingCashBook } = useCashBookReport({
     year: selectedYear,
     type: cashBookType,
@@ -522,12 +538,14 @@ export default function RelatoriosFinanceirosPage() {
     year: selectedYear,
     status: enrollmentStatus,
     classId: selectedClass !== 'all' ? parseInt(selectedClass) : undefined,
+    classIds: effectiveClassIds,
   });
   const { data: tuitionData, isLoading: loadingTuition } = useTuitionFeesReport({
     year: selectedYear,
     month: selectedMonth || undefined,
     status: tuitionStatus,
     classId: selectedClass !== 'all' ? parseInt(selectedClass) : undefined,
+    classIds: effectiveClassIds,
   });
   const { data: salariesData, isLoading: loadingSalaries } = useSalariesReport({
     year: selectedYear,
@@ -629,7 +647,7 @@ export default function RelatoriosFinanceirosPage() {
         {/* Global Filters */}
         <Card>
           <CardContent className="p-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <div>
                 <Label className="text-xs text-muted-foreground">Ano</Label>
                 <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
@@ -659,6 +677,20 @@ export default function RelatoriosFinanceirosPage() {
                 </Select>
               </div>
               <div>
+                <Label className="text-xs text-muted-foreground">Grupo</Label>
+                <Select value={selectedGroup} onValueChange={(v) => { setSelectedGroup(v); setSelectedClass('all'); }}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Todos os grupos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os grupos</SelectItem>
+                    {groupNames.map((g) => (
+                      <SelectItem key={g} value={g}>{g}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label className="text-xs text-muted-foreground">Turma</Label>
                 <Select value={selectedClass} onValueChange={setSelectedClass}>
                   <SelectTrigger className="mt-1">
@@ -666,15 +698,18 @@ export default function RelatoriosFinanceirosPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas as turmas</SelectItem>
-                    {classes.map(c => (
-                      <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
-                    ))}
+                    {classes
+                      .filter((c) => selectedGroup === 'all' || classGroupName(c.name, classGroups) === selectedGroup)
+                      .map((c) => (
+                        <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex items-end">
                 <Button variant="outline" className="w-full gap-2" onClick={() => {
                   setSelectedMonth('');
+                  setSelectedGroup('all');
                   setSelectedClass('all');
                   setCashBookType('all');
                   setTuitionStatus('all');
@@ -684,6 +719,14 @@ export default function RelatoriosFinanceirosPage() {
                   Limpar Filtros
                 </Button>
               </div>
+            </div>
+            <div className="mt-3 flex justify-end">
+              <Button variant="ghost" size="sm" asChild className="gap-2 text-muted-foreground">
+                <Link to="/configuracoes/niveis">
+                  <Settings className="w-4 h-4" />
+                  Configurar níveis / grupos
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>

@@ -120,6 +120,7 @@ export function useEnrollmentsFinancialReport(filters: {
   year: number;
   status?: string;
   classId?: number;
+  classIds?: number[];
 }) {
   return useQuery({
     queryKey: ['report-enrollments-financial', filters],
@@ -141,6 +142,8 @@ export function useEnrollmentsFinancialReport(filters: {
       }
       if (filters.classId) {
         query = query.eq('class_id', filters.classId);
+      } else if (filters.classIds && filters.classIds.length > 0) {
+        query = query.in('class_id', filters.classIds);
       }
 
       const { data, error } = await query;
@@ -197,6 +200,7 @@ export function useTuitionFeesReport(filters: {
   month?: string;
   status?: string;
   classId?: number;
+  classIds?: number[];
 }) {
   return useQuery({
     queryKey: ['report-tuition-fees', filters],
@@ -224,10 +228,13 @@ export function useTuitionFeesReport(filters: {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Client-side filter for class
+      // Client-side filter for class / class group
       let filteredData = data || [];
       if (filters.classId) {
         filteredData = filteredData.filter((f: any) => f.students?.class_id === filters.classId);
+      } else if (filters.classIds && filters.classIds.length > 0) {
+        const idSet = new Set(filters.classIds);
+        filteredData = filteredData.filter((f: any) => idSet.has(f.students?.class_id));
       }
 
       const mappedData = filteredData.map((f: any) => {
