@@ -214,6 +214,8 @@ export interface StudentGuardianData {
   relationship: string;
   phone: string;
   phone_alt?: string | null;
+  phone_is_whatsapp?: boolean | null;
+  phone_alt_is_whatsapp?: boolean | null;
   bi_number?: string | null;
   nuit?: string | null;
   email?: string | null;

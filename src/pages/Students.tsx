@@ -114,6 +114,9 @@ export function Students() {
       guardian: newStudent.guardian || undefined,
       health_notes: newStudent.health_notes || undefined,
       previous_school: newStudent.previous_school || undefined,
+      emergency_contact: newStudent.emergency_contact || undefined,
+      emergency_phone: newStudent.emergency_phone || undefined,
+      emergency_relationship: newStudent.emergency_relationship || undefined,
     });
 
     // Envia a foto (se houver) agora que já temos o id do novo educando.
@@ -126,6 +129,29 @@ export function Students() {
         // não-fatal: educando fica sem foto
       }
       (window as any).__tempStudentPhotoFile = null;
+    }
+
+    // Grava o encarregado completo (tabela guardians + ligação), se informado.
+    if (created?.id && newStudent.guardian.trim()) {
+      await saveGuardian.mutateAsync({
+        studentId: created.id,
+        guardian: {
+          full_name: newStudent.guardian.trim(),
+          relationship: newStudent.guardian_relationship || '',
+          phone: newStudent.guardian_phone || '',
+          phone_alt: newStudent.guardian_phone_alt || null,
+          phone_is_whatsapp: newStudent.guardian_phone_is_whatsapp,
+          phone_alt_is_whatsapp: newStudent.guardian_phone_alt_is_whatsapp,
+          bi_number: newStudent.guardian_bi || null,
+          nuit: newStudent.guardian_nuit || null,
+          email: newStudent.guardian_email || null,
+          occupation: newStudent.guardian_occupation || null,
+          workplace: newStudent.guardian_workplace || null,
+          province: newStudent.guardian_province || null,
+          district: newStudent.guardian_district || null,
+          address: newStudent.guardian_address || null,
+        },
+      });
     }
 
     setShowCreateDialog(false);
@@ -162,6 +188,9 @@ export function Students() {
     health_notes: s.health_notes || '',
     previous_school: s.previous_school || '',
     guardian: s.guardian || '',
+    emergency_contact: s.emergency_contact || '',
+    emergency_phone: s.emergency_phone || '',
+    emergency_relationship: s.emergency_relationship || '',
     class_id: s.class_id ?? undefined,
   });
 
@@ -178,6 +207,8 @@ export function Students() {
         form.guardian_nuit = g.nuit || '';
         form.guardian_phone = g.phone || '';
         form.guardian_phone_alt = g.phone_alt || '';
+        form.guardian_phone_is_whatsapp = g.phone_is_whatsapp ?? true;
+        form.guardian_phone_alt_is_whatsapp = g.phone_alt_is_whatsapp ?? false;
         form.guardian_email = g.email || '';
         form.guardian_occupation = g.occupation || '';
         form.guardian_workplace = g.workplace || '';
@@ -225,6 +256,9 @@ export function Students() {
       guardian: editStudent.guardian || null,
       health_notes: editStudent.health_notes || null,
       previous_school: editStudent.previous_school || null,
+      emergency_contact: editStudent.emergency_contact || null,
+      emergency_phone: editStudent.emergency_phone || null,
+      emergency_relationship: editStudent.emergency_relationship || null,
       photo_url: photoValue,
     });
 
@@ -237,6 +271,8 @@ export function Students() {
           relationship: editStudent.guardian_relationship || '',
           phone: editStudent.guardian_phone || '',
           phone_alt: editStudent.guardian_phone_alt || null,
+          phone_is_whatsapp: editStudent.guardian_phone_is_whatsapp,
+          phone_alt_is_whatsapp: editStudent.guardian_phone_alt_is_whatsapp,
           bi_number: editStudent.guardian_bi || null,
           nuit: editStudent.guardian_nuit || null,
           email: editStudent.guardian_email || null,
@@ -543,12 +579,12 @@ export function Students() {
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
               Cancelar
             </Button>
-            <Button 
+            <Button
               onClick={handleCreateStudent}
-              disabled={!newStudent.name || createStudent.isPending}
+              disabled={!newStudent.name || createStudent.isPending || saveGuardian.isPending}
             >
-              {createStudent.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {createStudent.isPending ? 'A registar...' : 'Registar Educando'}
+              {(createStudent.isPending || saveGuardian.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {(createStudent.isPending || saveGuardian.isPending) ? 'A registar...' : 'Registar Educando'}
             </Button>
           </DialogFooter>
         </DialogContent>

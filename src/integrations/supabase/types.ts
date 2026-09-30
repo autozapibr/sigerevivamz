@@ -1170,6 +1170,8 @@ export type Database = {
           occupation: string | null
           phone: string
           phone_alt: string | null
+          phone_alt_is_whatsapp: boolean | null
+          phone_is_whatsapp: boolean | null
           province: string | null
           relationship: string
           updated_at: string | null
@@ -1188,6 +1190,8 @@ export type Database = {
           occupation?: string | null
           phone: string
           phone_alt?: string | null
+          phone_alt_is_whatsapp?: boolean | null
+          phone_is_whatsapp?: boolean | null
           province?: string | null
           relationship: string
           updated_at?: string | null
@@ -1206,6 +1210,8 @@ export type Database = {
           occupation?: string | null
           phone?: string
           phone_alt?: string | null
+          phone_alt_is_whatsapp?: boolean | null
+          phone_is_whatsapp?: boolean | null
           province?: string | null
           relationship?: string
           updated_at?: string | null
@@ -2155,6 +2161,9 @@ export type Database = {
           created_at: string | null
           district: string | null
           email: string | null
+          emergency_contact: string | null
+          emergency_phone: string | null
+          emergency_relationship: string | null
           enrollment_status:
             | Database["public"]["Enums"]["enrollment_status"]
             | null
@@ -2181,6 +2190,9 @@ export type Database = {
           created_at?: string | null
           district?: string | null
           email?: string | null
+          emergency_contact?: string | null
+          emergency_phone?: string | null
+          emergency_relationship?: string | null
           enrollment_status?:
             | Database["public"]["Enums"]["enrollment_status"]
             | null
@@ -2207,6 +2219,9 @@ export type Database = {
           created_at?: string | null
           district?: string | null
           email?: string | null
+          emergency_contact?: string | null
+          emergency_phone?: string | null
+          emergency_relationship?: string | null
           enrollment_status?:
             | Database["public"]["Enums"]["enrollment_status"]
             | null
