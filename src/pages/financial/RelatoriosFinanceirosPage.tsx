@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
-import { 
+import { Input } from '@/components/ui/input';
+import {
   BookOpen,
   GraduationCap,
   Wallet,
@@ -22,6 +23,7 @@ import {
   Printer,
   ArrowUpRight,
   ArrowDownRight,
+  Banknote,
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -47,7 +49,7 @@ import {
 } from '@/hooks/useFinancialReportsData';
 import { useClasses } from '@/hooks/useGrades';
 import { formatMZN } from '@/lib/validators/mozambique';
-import { format } from 'date-fns';
+import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
@@ -441,6 +443,40 @@ function ReportSection({
   );
 }
 
+// Card de quebra de recebimentos por método de pagamento (para conferência de caixa).
+function MethodBreakdownCard({ title, byMethod }: { title: string; byMethod?: Record<string, number> }) {
+  const entries = Object.entries(byMethod || {});
+  const total = entries.reduce((sum, [, v]) => sum + v, 0);
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Banknote className="h-5 w-5 text-primary" />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {entries.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Sem recebimentos no período.</p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {entries.map(([label, value]) => (
+              <div key={label} className="rounded-lg border p-3">
+                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="text-lg font-bold">{formatMZN(value)}</p>
+              </div>
+            ))}
+            <div className="rounded-lg border p-3 bg-muted/40">
+              <p className="text-xs text-muted-foreground">Total recebido</p>
+              <p className="text-lg font-bold text-success">{formatMZN(total)}</p>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function RelatoriosFinanceirosPage() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<string>('');
@@ -454,12 +490,33 @@ export default function RelatoriosFinanceirosPage() {
   const [staffType, setStaffType] = useState<'all' | 'teachers' | 'employees'>('all');
   const [selectedClass, setSelectedClass] = useState<string>('all');
 
+  // Período do Livro Caixa (diário / semanal / mensal / anual) para conferência.
+  const [cashPeriod, setCashPeriod] = useState<'dia' | 'semana' | 'mes' | 'ano'>('mes');
+  const [cashRefDate, setCashRefDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+
+  const cashRange = (() => {
+    const ref = parseISO(cashRefDate);
+    if (cashPeriod === 'dia') return { start: cashRefDate, end: cashRefDate };
+    if (cashPeriod === 'semana')
+      return {
+        start: format(startOfWeek(ref, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
+        end: format(endOfWeek(ref, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
+      };
+    if (cashPeriod === 'mes')
+      return {
+        start: format(startOfMonth(ref), 'yyyy-MM-dd'),
+        end: format(endOfMonth(ref), 'yyyy-MM-dd'),
+      };
+    return { start: `${selectedYear}-01-01`, end: `${selectedYear}-12-31` };
+  })();
+
   // Data hooks
   const { data: classes = [] } = useClasses();
   const { data: cashBookData, isLoading: loadingCashBook } = useCashBookReport({
     year: selectedYear,
-    month: selectedMonth || undefined,
     type: cashBookType,
+    startDate: cashRange.start,
+    endDate: cashRange.end,
   });
   const { data: enrollmentsData, isLoading: loadingEnrollments } = useEnrollmentsFinancialReport({
     year: selectedYear,
@@ -526,6 +583,7 @@ export default function RelatoriosFinanceirosPage() {
     { key: 'description', header: 'Descrição' },
     { key: 'category', header: 'Categoria' },
     { key: 'type', header: 'Tipo' },
+    { key: 'payment_method_label', header: 'Método' },
     { key: 'amount', header: 'Valor', format: 'currency' as const },
     { key: 'balance', header: 'Saldo', format: 'currency' as const },
   ];
@@ -692,7 +750,34 @@ export default function RelatoriosFinanceirosPage() {
             {/* Filters */}
             <Card>
               <CardContent className="p-3">
-                <div className="flex flex-wrap gap-3 items-center">
+                <div className="flex flex-wrap gap-3 items-end">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Período</Label>
+                    <Select value={cashPeriod} onValueChange={(v) => setCashPeriod(v as any)}>
+                      <SelectTrigger className="w-36 mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="dia">Diário</SelectItem>
+                        <SelectItem value="semana">Semanal</SelectItem>
+                        <SelectItem value="mes">Mensal</SelectItem>
+                        <SelectItem value="ano">Anual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {cashPeriod !== 'ano' && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground">
+                        {cashPeriod === 'dia' ? 'Data' : cashPeriod === 'semana' ? 'Semana de' : 'Mês de referência'}
+                      </Label>
+                      <Input
+                        type="date"
+                        value={cashRefDate}
+                        onChange={(e) => setCashRefDate(e.target.value)}
+                        className="w-44 mt-1"
+                      />
+                    </div>
+                  )}
                   <div>
                     <Label className="text-xs text-muted-foreground">Tipo de Movimento</Label>
                     <Select value={cashBookType} onValueChange={(v) => setCashBookType(v as any)}>
@@ -706,9 +791,17 @@ export default function RelatoriosFinanceirosPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="text-xs text-muted-foreground pb-2">
+                    {cashRange.start === cashRange.end
+                      ? cashRange.start
+                      : `${cashRange.start} → ${cashRange.end}`}
+                  </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Quebra por método (conferência) */}
+            <MethodBreakdownCard title="Recebido por método (período)" byMethod={cashBookData?.receitasByMethod} />
 
             {/* Cash Book Chart */}
             <Card>
@@ -742,7 +835,7 @@ export default function RelatoriosFinanceirosPage() {
             {/* Cash Book Table */}
             <ReportSection
               title="Livro Caixa"
-              description={`Movimentações financeiras de ${selectedMonth ? months.find(m => m.value === selectedMonth)?.label : selectedYear}`}
+              description={`Movimentações de ${cashRange.start === cashRange.end ? cashRange.start : `${cashRange.start} a ${cashRange.end}`}`}
               icon={<BookOpen className="h-5 w-5 text-primary" />}
               data={cashBookData?.data || []}
               columns={cashBookColumns}
@@ -850,6 +943,9 @@ export default function RelatoriosFinanceirosPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Quebra das propinas recebidas por método */}
+            <MethodBreakdownCard title="Propinas recebidas por método" byMethod={tuitionData?.paidByMethod} />
 
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

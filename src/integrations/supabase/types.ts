@@ -2595,6 +2595,7 @@ export type Database = {
           date: string
           description: string | null
           id: number
+          payment_method: string | null
           type: Database["public"]["Enums"]["transaction_type"]
         }
         Insert: {
@@ -2603,6 +2604,7 @@ export type Database = {
           date: string
           description?: string | null
           id?: never
+          payment_method?: string | null
           type: Database["public"]["Enums"]["transaction_type"]
         }
         Update: {
@@ -2611,6 +2613,7 @@ export type Database = {
           date?: string
           description?: string | null
           id?: never
+          payment_method?: string | null
           type?: Database["public"]["Enums"]["transaction_type"]
         }
         Relationships: [

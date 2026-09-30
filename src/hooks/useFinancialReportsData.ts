@@ -3,21 +3,41 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
+// Normaliza o código do método de pagamento para um rótulo legível.
+export function paymentMethodLabel(method: string | null | undefined): string {
+  switch (method) {
+    case 'NUMERARIO':
+      return 'Numerário';
+    case 'CARTEIRA_MOVEL':
+      return 'Carteira Móvel (e-Mola)';
+    case 'CONTA_BANCARIA':
+      return 'Banco';
+    default:
+      return 'Outro / Não informado';
+  }
+}
+
 // ============ LIVRO CAIXA (Cash Book) ============
 export function useCashBookReport(filters: {
   year: number;
   month?: string;
   type?: 'Receita' | 'Despesa' | 'all';
+  startDate?: string; // sobrepõe year/month quando informado (para períodos dia/semana)
+  endDate?: string;
 }) {
   return useQuery({
     queryKey: ['report-cash-book', filters],
     queryFn: async () => {
-      // Calculate date range
-      const startDate = filters.month 
+      // Calculate date range (explicit range > month > year)
+      const startDate = filters.startDate
+        ? filters.startDate
+        : filters.month
         ? format(startOfMonth(parseISO(`${filters.month}-01`)), 'yyyy-MM-dd')
         : `${filters.year}-01-01`;
-      
-      const endDate = filters.month
+
+      const endDate = filters.endDate
+        ? filters.endDate
+        : filters.month
         ? format(endOfMonth(parseISO(`${filters.month}-01`)), 'yyyy-MM-dd')
         : `${filters.year}-12-31`;
 
@@ -25,7 +45,7 @@ export function useCashBookReport(filters: {
       const { data: allData, error } = await supabase
         .from('transactions')
         .select(`
-          id, date, description, amount, type,
+          id, date, description, amount, type, payment_method,
           financial_categories (name)
         `)
         .gte('date', startDate)
@@ -35,6 +55,15 @@ export function useCashBookReport(filters: {
       if (error) throw error;
 
       const transactions = allData || [];
+
+      // Quebra das RECEITAS por método de pagamento (para conferência de caixa).
+      const receitasByMethod: Record<string, number> = {};
+      transactions
+        .filter((t: any) => t.type === 'Receita')
+        .forEach((t: any) => {
+          const label = paymentMethodLabel(t.payment_method);
+          receitasByMethod[label] = (receitasByMethod[label] || 0) + (Number(t.amount) || 0);
+        });
 
       // Calculate totals from ALL transactions (regardless of type filter)
       const totalReceitas = transactions
@@ -59,6 +88,7 @@ export function useCashBookReport(filters: {
           amount: amount,
           category: t.financial_categories?.name || 'Sem categoria',
           formatted_date: t.date ? format(parseISO(t.date), 'dd/MM/yyyy') : '-',
+          payment_method_label: t.type === 'Receita' ? paymentMethodLabel(t.payment_method) : '-',
           balance: runningBalance,
         };
       });
@@ -79,6 +109,7 @@ export function useCashBookReport(filters: {
           despesas: totalDespesas,
           saldo: totalReceitas - totalDespesas,
         },
+        receitasByMethod,
       };
     },
   });
@@ -174,6 +205,7 @@ export function useTuitionFeesReport(filters: {
         .from('tuition_fees')
         .select(`
           id, month, amount, due_date, status, paid_at, payment_method,
+          paid_amount, late_fee, discount,
           students (id, name, class_id, classes (id, name))
         `)
         .order('month', { ascending: false });
@@ -216,12 +248,26 @@ export function useTuitionFeesReport(filters: {
           month: formattedMonth,
           month_raw: f.month,
           amount: f.amount || 0,
+          paid_amount: f.paid_amount ?? null,
+          late_fee: f.late_fee || 0,
+          discount: f.discount || 0,
           due_date: f.due_date ? format(parseISO(f.due_date), 'dd/MM/yyyy') : '-',
           status: f.status || 'Pendente',
           paid_at: f.paid_at ? format(parseISO(f.paid_at), 'dd/MM/yyyy') : '-',
-          payment_method: f.payment_method || '-',
+          payment_method: f.status === 'Pago' ? paymentMethodLabel(f.payment_method) : '-',
+          payment_method_raw: f.payment_method || null,
         };
       });
+
+      // Quebra do valor recebido (propinas pagas) por método de pagamento.
+      const paidByMethod: Record<string, number> = {};
+      mappedData
+        .filter((f) => f.status === 'Pago')
+        .forEach((f) => {
+          const label = paymentMethodLabel(f.payment_method_raw);
+          const received = Number(f.paid_amount ?? f.amount) || 0;
+          paidByMethod[label] = (paidByMethod[label] || 0) + received;
+        });
 
       // Calculate totals
       const totalExpected = mappedData.reduce((acc, f) => acc + f.amount, 0);
@@ -250,6 +296,7 @@ export function useTuitionFeesReport(filters: {
           pendente: mappedData.filter(f => f.status === 'Pendente').length,
           atrasado: mappedData.filter(f => f.status === 'Atrasado').length,
         },
+        paidByMethod,
       };
     },
   });

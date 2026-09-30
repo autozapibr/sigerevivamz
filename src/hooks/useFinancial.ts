@@ -317,6 +317,7 @@ export function useCreateTransaction() {
       date: string;
       description?: string;
       category_id?: number;
+      payment_method?: string;
     }) => {
       const { data: result, error } = await supabase
         .from('transactions')
@@ -425,6 +426,7 @@ export function usePayTuition() {
           amount: paidAmount,
           date: format(new Date(), 'yyyy-MM-dd'),
           description: `Propina ${current.month} - ${current.student?.name} (${paymentMethod})`,
+          payment_method: paymentMethod,
         })
         .select()
         .single();
@@ -564,6 +566,7 @@ export function useUpdatePayment() {
           .update({
             amount: paidAmount,
             description: `Propina ${current.month} - ${current.student?.name} (${paymentMethod})`,
+            payment_method: paymentMethod,
           })
           .eq('id', current.transaction_id);
         if (txError) throw txError;
