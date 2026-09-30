@@ -47,13 +47,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StudentForm, initialStudentFormData, type StudentFormData } from '@/components/students/StudentForm';
-import { 
-  useStudents, 
-  useCreateStudent, 
-  useUpdateStudent, 
+import {
+  useStudents,
+  useCreateStudent,
+  useUpdateStudent,
   useDeleteStudent,
   useStudentsStats,
-  type StudentFilters 
+  useSaveStudentGuardian,
+  fetchPrimaryGuardian,
+  type StudentFilters
 } from '@/hooks/useStudents';
 import { useClasses } from '@/hooks/useGrades';
 import { formatPhone, formatBI } from '@/lib/validators/mozambique';
@@ -91,6 +93,7 @@ export function Students() {
   const createStudent = useCreateStudent();
   const updateStudent = useUpdateStudent();
   const deleteStudent = useDeleteStudent();
+  const saveGuardian = useSaveStudentGuardian();
 
   const handleCreateStudent = async () => {
     await createStudent.mutateAsync({
@@ -147,9 +150,30 @@ export function Students() {
     class_id: s.class_id ?? undefined,
   });
 
-  const handleOpenEdit = (student: any) => {
+  const handleOpenEdit = async (student: any) => {
     setSelectedStudent(student);
-    setEditStudent(studentToFormData(student));
+    const form = studentToFormData(student);
+    // Pre-carrega o encarregado ligado ao aluno (se existir) para preencher o formulário.
+    try {
+      const g = await fetchPrimaryGuardian(student.id);
+      if (g) {
+        form.guardian = g.full_name || form.guardian;
+        form.guardian_relationship = g.relationship || '';
+        form.guardian_bi = g.bi_number || '';
+        form.guardian_nuit = g.nuit || '';
+        form.guardian_phone = g.phone || '';
+        form.guardian_phone_alt = g.phone_alt || '';
+        form.guardian_email = g.email || '';
+        form.guardian_occupation = g.occupation || '';
+        form.guardian_workplace = g.workplace || '';
+        form.guardian_province = g.province || '';
+        form.guardian_district = g.district || '';
+        form.guardian_address = g.address || '';
+      }
+    } catch {
+      // Se não conseguir carregar o encarregado, ainda permite editar o resto.
+    }
+    setEditStudent(form);
     setShowEditDialog(true);
   };
 
@@ -174,6 +198,28 @@ export function Students() {
       previous_school: editStudent.previous_school || null,
       photo_url: editStudent.photo_url || null,
     });
+
+    // Grava/actualiza o encarregado completo (tabela guardians + ligação student_guardians).
+    if (editStudent.guardian.trim()) {
+      await saveGuardian.mutateAsync({
+        studentId: selectedStudent.id,
+        guardian: {
+          full_name: editStudent.guardian.trim(),
+          relationship: editStudent.guardian_relationship || '',
+          phone: editStudent.guardian_phone || '',
+          phone_alt: editStudent.guardian_phone_alt || null,
+          bi_number: editStudent.guardian_bi || null,
+          nuit: editStudent.guardian_nuit || null,
+          email: editStudent.guardian_email || null,
+          occupation: editStudent.guardian_occupation || null,
+          workplace: editStudent.guardian_workplace || null,
+          province: editStudent.guardian_province || null,
+          district: editStudent.guardian_district || null,
+          address: editStudent.guardian_address || null,
+        },
+      });
+    }
+
     setShowEditDialog(false);
     setSelectedStudent(null);
   };
@@ -502,10 +548,10 @@ export function Students() {
             </Button>
             <Button
               onClick={handleUpdateStudent}
-              disabled={!editStudent.name || updateStudent.isPending}
+              disabled={!editStudent.name || updateStudent.isPending || saveGuardian.isPending}
             >
-              {updateStudent.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {updateStudent.isPending ? 'A guardar...' : 'Guardar Alterações'}
+              {(updateStudent.isPending || saveGuardian.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {(updateStudent.isPending || saveGuardian.isPending) ? 'A guardar...' : 'Guardar Alterações'}
             </Button>
           </DialogFooter>
         </DialogContent>

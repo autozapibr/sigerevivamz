@@ -184,6 +184,90 @@ export function useDeleteStudent() {
   });
 }
 
+export interface StudentGuardianData {
+  full_name: string;
+  relationship: string;
+  phone: string;
+  phone_alt?: string | null;
+  bi_number?: string | null;
+  nuit?: string | null;
+  email?: string | null;
+  occupation?: string | null;
+  workplace?: string | null;
+  province?: string | null;
+  district?: string | null;
+  address?: string | null;
+}
+
+type Guardian = Database['public']['Tables']['guardians']['Row'];
+
+// Fetches the primary guardian linked to a student (for pre-filling the edit form).
+export async function fetchPrimaryGuardian(studentId: number): Promise<Guardian | null> {
+  const { data, error } = await supabase
+    .from('student_guardians')
+    .select('guardian_id, guardians(*)')
+    .eq('student_id', studentId)
+    .eq('is_primary', true)
+    .order('id', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  return ((data as any)?.guardians ?? null) as Guardian | null;
+}
+
+// Creates or updates the primary guardian of a student and keeps the link in place.
+export function useSaveStudentGuardian() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ studentId, guardian }: { studentId: number; guardian: StudentGuardianData }) => {
+      const { data: link, error: linkError } = await supabase
+        .from('student_guardians')
+        .select('guardian_id')
+        .eq('student_id', studentId)
+        .eq('is_primary', true)
+        .order('id', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (linkError) throw linkError;
+
+      if (link?.guardian_id) {
+        const { error } = await supabase
+          .from('guardians')
+          .update({ ...guardian, is_primary: true })
+          .eq('id', link.guardian_id);
+        if (error) throw error;
+      } else {
+        const { data: created, error } = await supabase
+          .from('guardians')
+          .insert({ ...guardian, is_primary: true })
+          .select()
+          .single();
+        if (error) throw error;
+
+        const { error: insertLinkError } = await supabase
+          .from('student_guardians')
+          .insert({ student_id: studentId, guardian_id: created.id, is_primary: true });
+        if (insertLinkError) throw insertLinkError;
+      }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['student-guardians', variables.studentId] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erro ao guardar encarregado',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+}
+
 export function useStudentsStats() {
   return useQuery({
     queryKey: ['students-stats'],
